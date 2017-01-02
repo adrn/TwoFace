@@ -12,6 +12,7 @@ dependencies:
   - scipy
   - h5py
   - sqlalchemy
+  - pyyaml
   - pip
   - pip:
     - emcee
