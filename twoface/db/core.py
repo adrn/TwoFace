@@ -18,25 +18,27 @@ Base = declarative_base()
 def db_connect(host="localhost", port=5432, user=None, dbname=None, password=None,
                ensure_db_exists=True):
     """
-    Establish a connection to the Postgres database.
-    After running :func:`connect`, sessions can be established.
-    >> import starplex
-    >> starplex.database.connect(**args)
-    >> session = starplex.database.Session()
+    Connect to the specified postgres database.
+
     Parameters
     ----------
-    host : str
-        Hostname
-    port : int
-        Server port
-    user : str
-        Username for server
-    password : str
-        Password to log into server
-    name : str
+    host : str (optional)
+        Hostname.
+    port : int (optional)
+        Server port.
+    user : str (optional)
+        Username.
+    password : str (optional)
+        Password.
+    dbname : str (optional)
         Name of database
-    kwargs : dict
-        Additional keyword arguments passed to ``sqlalchemy.create_engine``.
+    ensure_db_exists : bool (optional)
+        Ensure the database ``dbname`` exists.
+
+    Returns
+    -------
+    engine :
+        The sqlalchemy database engine.
     """
 
     url = "postgresql://{user}:{password}@{host}:{port:d}/{dbname}".format(host=host,
