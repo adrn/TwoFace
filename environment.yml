@@ -11,7 +11,7 @@ dependencies:
   - matplotlib
   - scipy
   - h5py
-  - psycopg2
+  - sqlalchemy
   - pip
   - pip:
     - emcee
