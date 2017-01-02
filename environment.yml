@@ -1,0 +1,20 @@
+name: twoface
+
+channels:
+  - astropy
+
+dependencies:
+  - python=3
+  - astropy
+  - numpy
+  - cython
+  - matplotlib
+  - scipy
+  - h5py
+  - psycopg2
+  - pip
+  - pip:
+    - emcee
+    - corner
+    # - git+https://github.com/adrn/thejoker
+
