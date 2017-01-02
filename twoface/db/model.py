@@ -42,6 +42,25 @@ class JokerState(Base):
     allstar_id = Column('allstar_id', types.Integer, ForeignKey('allstar.id'))
     stars = relationship("AllStar")
 
-    complete = Column(types.Boolean)
-    status = Column(types.String)
-    notes = Column(types.String)
+    complete = Column('completed', types.Boolean)
+    status_id = Column('starstatus_id', types.Integer, ForeignKey('starstatus.id'))
+    status = relationship("starstatus")
+    notes = Column('notes', types.String)
+
+class StarStatus(Base):
+    __tablename__ = 'starstatus'
+
+    id = Column(types.Integer, primary_key=True)
+    message = Column('message', types.String)
+
+"""
+TODO: status needs to be something like
+
+    0 - untouched
+    1 - pending
+    2 - needs more prior samples
+    3 - needs mcmc
+    4 - error
+    5 - done
+
+"""
