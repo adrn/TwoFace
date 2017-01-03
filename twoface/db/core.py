@@ -41,7 +41,7 @@ def db_connect(host="localhost", port=5432, user=None, database=None, password=N
         The sqlalchemy database engine.
     """
 
-    url = "postgresql://{user}:{password}@{host}:{port:d}/{database}".format(host=host,
+    url = "postgresql://{user}:{password}@{host}:{port}/{database}".format(host=host,
                                                                            port=port,
                                                                            user=user,
                                                                            database=database,
