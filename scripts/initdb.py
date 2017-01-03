@@ -12,8 +12,10 @@ from astropy.table import Table
 import yaml
 
 # Project
+from twoface.util import Timer
 from twoface.log import log
-from twoface.db import Session, db_connect, table_to_sql_columns, AllStar, AllVisit
+from twoface.db import (Session, db_connect, table_to_sql_columns,
+                        AllStar, AllVisit, JokerState, StarStatus)
 from twoface.db.core import Base
 from twoface.db.helper import copy_from_table
 
@@ -48,23 +50,49 @@ def main(allVisit_file, allStar_file, credentials_file, **kwargs):
     raw_conn = engine.raw_connection()
     _cursor = raw_conn.cursor()
 
-    copy_from_table(_cursor, allstar_tbl, 'allstar', skip=allstar_skip)
-    copy_from_table(_cursor, allvisit_tbl, 'allvisit', skip=allvisit_skip)
+    log.debug("Copying allStar file into database...")
+    with Timer() as t:
+        copy_from_table(_cursor, allstar_tbl, 'allstar', skip=allstar_skip)
+    log.debug("...done after {} seconds".format(t.time))
+
+    log.debug("Copying allVisit file into database...")
+    with Timer() as t:
+        copy_from_table(_cursor, allvisit_tbl, 'allvisit', skip=allvisit_skip)
+    log.debug("...done after {} seconds".format(t.time))
 
     _cursor.execute("commit")
     raw_conn.close()
+    log.debug("allStar and allVisit committed to database tables")
+
+    # add status table and modify star-visit mapping
+    session = Session()
+
+    # Load the status table
+    log.debug("Populating StarStatus table...")
+    statuses = list()
+    statuses.append(StarStatus(id=0, message='untouched'))
+    statuses.append(StarStatus(id=1, message='pending'))
+    statuses.append(StarStatus(id=2, message='needs more prior samples'))
+    statuses.append(StarStatus(id=3, message='needs mcmc'))
+    statuses.append(StarStatus(id=4, message='error'))
+    statuses.append(StarStatus(id=5, message='completed'))
+
+    session.add_all(statuses)
+    session.flush()
+    log.debug("...done")
 
     # Loop through and match up allstar to allvisit (many-to-many)
-    session = Session()
-    for star in session.query(AllStar).all():
+    for star in session.query(AllStar).filter(AllStar.apogee_id == '2M00000032+5737103').all():
         visits = session.query(AllVisit).filter(AllVisit.apogee_id == star.apogee_id).all()
         star.visits = visits
 
-    session.commit()
+        star.jokerstate = JokerState(status_id=0, notes='')
+        session.flush()
 
-    visits = session.query(AllVisit).filter(AllVisit.apogee_id == '2M00000032+5737103').all()
-    print(visits[0])
-    print(visits[0].stars)
+    stars = session.query(AllStar).filter(AllStar.apogee_id == '2M00000032+5737103').all()
+    print(stars[0])
+    print(stars[0].visits)
+    print(stars[0].jokerstate)
 
     session.close()
 

@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship
 # Project
 from .core import Base
 
-__all__ = ['AllStar', 'AllVisit', 'JokerState']
+__all__ = ['AllStar', 'AllVisit', 'JokerState', 'StarStatus']
 
 join_table = Table('allvisit_to_allstar',
                    Base.metadata,
@@ -22,8 +22,14 @@ class AllStar(Base):
     visits = relationship("AllVisit", secondary=join_table, back_populates="stars")
     # Note: columns must be auto-populated based on the FITS table columns
 
+    jokerstate_id = Column('jokerstate_id', types.Integer, ForeignKey('jokerstate.id'))
+    jokerstate = relationship("JokerState")
+
     def __repr__(self):
-        return "<ApogeeStar(id='{}', apogee_id='{}')>".format(self.id, self.apogee_id)
+        msg = self.jokerstate.status.message
+        return "<ApogeeStar(id='{}', apogee_id='{}', status='{}')>".format(self.id,
+                                                                           self.apogee_id,
+                                                                           msg)
 
 class AllVisit(Base):
     __tablename__ = 'allvisit'
@@ -39,18 +45,18 @@ class JokerState(Base):
     __tablename__ = 'jokerstate'
 
     id = Column(types.Integer, primary_key=True)
-    allstar_id = Column('allstar_id', types.Integer, ForeignKey('allstar.id'))
-    stars = relationship("AllStar")
 
-    complete = Column('completed', types.Boolean)
     status_id = Column('starstatus_id', types.Integer, ForeignKey('starstatus.id'))
-    status = relationship("starstatus")
+    status = relationship("StarStatus")
     notes = Column('notes', types.String)
+
+    def __repr__(self):
+        return "<JokerState(status='{}')>".format(self.status.message)
 
 class StarStatus(Base):
     __tablename__ = 'starstatus'
 
-    id = Column(types.Integer, primary_key=True)
+    id = Column('id', types.Integer, primary_key=True, autoincrement=False)
     message = Column('message', types.String)
 
 """
