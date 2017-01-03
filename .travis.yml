@@ -88,8 +88,10 @@ install:
     - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
 
 before_script:
-   - cp twoface/tests/credentials.yml.travis credentials.yml
-   # - TODO: run initdb.py??
+   - cp twoface/db/tests/travis_db.cfg ~/.twoface_config
+   - cd scripts/
+   - python initdb.py --test -v
+   - cd ..
 
 script:
    - $MAIN_CMD $SETUP_CMD
