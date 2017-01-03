@@ -14,7 +14,7 @@ from ..core import db_connect
 if 'CI' in os.environ and os.environ['CI']:
     # when in continuous integration, only run database tests on Travis
     if 'TRAVIS' in os.environ and os.environ['TRAVIS']:
-        conf.read(get_pkg_data_filename("twoface/db/tests/travis_db.cfg"))
+        conf.read(get_pkg_data_filename("travis_db.cfg"))
         skip_db_tests = conf['testing']['skip_db_tests']
 
     else:
