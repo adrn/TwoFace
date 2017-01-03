@@ -6,7 +6,6 @@ import os
 # Third-party
 from astropy.utils.data import get_pkg_data_filename
 import pytest
-import yaml
 
 # Project
 from ...config import conf
@@ -15,9 +14,8 @@ from ..core import db_connect
 if 'CI' in os.environ and os.environ['CI']:
     # when in continuous integration, only run database tests on Travis
     if 'TRAVIS' in os.environ and os.environ['TRAVIS']:
-        credentials_file = get_pkg_data_filename("twoface/tests/credentials.yml.travis")
-        with open(credentials_file, 'r') as f:
-            credentials = dict(yaml.load(f))
+        conf.read(get_pkg_data_filename("twoface/db/tests/travis_db.cfg"))
+        skip_db_tests = conf['testing']['skip_db_tests']
 
     else:
         skip_db_tests = True
@@ -25,16 +23,16 @@ if 'CI' in os.environ and os.environ['CI']:
 else:
     skip_db_tests = conf['testing']['skip_db_tests']
 
-    credentials = dict()
-    credentials['host'] = conf['testing']['host']
-    credentials['database'] = conf['testing']['database']
-    credentials['port'] = conf['testing']['port']
-    credentials['user'] = conf['testing']['user']
-    credentials['password'] = conf['testing']['password']
-
 class TestDB(object):
 
     def setup(self):
+        credentials = dict()
+        credentials['host'] = conf['testing']['host']
+        credentials['database'] = conf['testing']['database']
+        credentials['port'] = conf['testing']['port']
+        credentials['user'] = conf['testing']['user']
+        credentials['password'] = conf['testing']['password']
+
         # connect to database
         self.engine = db_connect(**credentials)
 
