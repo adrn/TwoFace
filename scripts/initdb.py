@@ -14,8 +14,7 @@ import yaml
 # Project
 from twoface.util import Timer
 from twoface.log import log
-from twoface.db import (Session, db_connect,
-                        AllStar, AllVisit, JokerState, StarStatus)
+from twoface.db import Session, db_connect, AllStar, AllVisit, Status
 from twoface.db.core import Base
 from twoface.db.helper import copy_from_table
 
@@ -42,12 +41,12 @@ def main(allVisit_file, allStar_file, credentials_file, **kwargs):
     log.debug("Copying allStar file into database...")
     with Timer() as t:
         copy_from_table(_cursor, allstar_tbl, AllStar)
-    log.debug("...done after {} seconds".format(t.time))
+    log.debug("...done after {:.2f} seconds".format(t.time))
 
     log.debug("Copying allVisit file into database...")
     with Timer() as t:
         copy_from_table(_cursor, allvisit_tbl, AllVisit)
-    log.debug("...done after {} seconds".format(t.time))
+    log.debug("...done after {:.2f} seconds".format(t.time))
 
     _cursor.execute("commit")
     raw_conn.close()
@@ -57,14 +56,14 @@ def main(allVisit_file, allStar_file, credentials_file, **kwargs):
     session = Session()
 
     # Load the status table
-    log.debug("Populating StarStatus table...")
+    log.debug("Populating Status table...")
     statuses = list()
-    statuses.append(StarStatus(id=0, message='untouched'))
-    statuses.append(StarStatus(id=1, message='pending'))
-    statuses.append(StarStatus(id=2, message='needs more prior samples'))
-    statuses.append(StarStatus(id=3, message='needs mcmc'))
-    statuses.append(StarStatus(id=4, message='error'))
-    statuses.append(StarStatus(id=5, message='completed'))
+    statuses.append(Status(id=0, message='untouched'))
+    statuses.append(Status(id=1, message='pending'))
+    statuses.append(Status(id=2, message='needs more prior samples'))
+    statuses.append(Status(id=3, message='needs mcmc'))
+    statuses.append(Status(id=4, message='error'))
+    statuses.append(Status(id=5, message='completed'))
 
     session.add_all(statuses)
     session.flush()
@@ -74,26 +73,25 @@ def main(allVisit_file, allStar_file, credentials_file, **kwargs):
     batch_stride = 1000
     n_batches = len(allstar_tbl) // batch_stride
 
+    log.debug("Matching star-visit...")
     with Timer() as t:
         for i,star in enumerate(session.query(AllStar).all()):
             visits = session.query(AllVisit).filter(AllVisit.apogee_id == star.apogee_id).all()
             star.visits = visits
-            star.jokerstate = JokerState(status_id=0, notes='')
 
-            if i % batch_stride == 0:
-                log.debug("Flushing batch {}/{} to database [{:.2f} sec]".format(i//batch_stride,
-                                                                                 n_batches,
-                                                                                 t.elapsed()))
-                session.flush()
+            if i % batch_stride == 0 and i != 0:
+                log.debug("Committing batch {}/{} to database [{:.2f} sec]".format(i//batch_stride,
+                                                                                   n_batches,
+                                                                                   t.elapsed()))
+                session.commit()
                 t.reset()
 
-    log.debug("Flushing final batch to database")
-    session.flush()
+    log.debug("Committing final batch to database [{:.2f} sec]".format(t.elapsed()))
+    session.commit()
 
     stars = session.query(AllStar).filter(AllStar.apogee_id == '2M00000032+5737103').all()
     print(stars[0])
     print(stars[0].visits)
-    print(stars[0].jokerstate)
 
     session.close()
 
