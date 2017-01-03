@@ -12,23 +12,45 @@ from astropy.table import Table
 import yaml
 
 # Project
+import twoface
+from twoface.config import conf
 from twoface.util import Timer
 from twoface.log import log
 from twoface.db import Session, db_connect, AllStar, AllVisit, Status
 from twoface.db.core import Base
 from twoface.db.helper import copy_from_table
 
-def main(allVisit_file, allStar_file, credentials_file, **kwargs):
+def main(allVisit_file=None, allStar_file=None, credentials_file=None, test=False, **kwargs):
+
+    # if running in test mode, get test files
+    if test:
+        base_path = os.path.abspath(os.path.dirname(twoface.__file__))
+        allVisit_file = os.path.join(base_path, 'db', 'tests', 'test-allVisit.fits')
+        allStar_file = os.path.join(base_path, 'db', 'tests', 'test-allStar.fits')
+
+        # get credentials from conf
+        credentials = dict()
+        credentials['host'] = conf['testing']['host']
+        credentials['database'] = conf['testing']['database']
+        credentials['port'] = conf['testing']['port']
+        credentials['user'] = conf['testing']['user']
+        credentials['password'] = conf['testing']['password']
+
+    else:
+        assert allVisit_file is not None
+        assert allStar_file is not None
+
+        # connect to database
+        with open(credentials_file, 'r') as f:
+            credentials = dict(yaml.load(f))
+        credentials.setdefault('database', 'apogee')
+
     norm = lambda x: os.path.abspath(os.path.expanduser(x))
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
     allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
 
-    # connect to database
-    with open(credentials_file, 'r') as f:
-        credentials = dict(yaml.load(f))
-    credentials.setdefault('dbname', 'apogee')
     engine = db_connect(**credentials)
-    log.debug("Connected to database '{}'".format(credentials['dbname']))
+    log.debug("Connected to database '{}'".format(credentials['database']))
 
     # this is the magic that creates the tables based on the definitions in twoface/db/model.py
     Base.metadata.drop_all()
@@ -104,14 +126,25 @@ if __name__ == "__main__":
     # parser.add_argument('-o', '--overwrite', action='store_true', dest='overwrite',
     #                     default=False, help='Destroy everything.')
 
-    parser.add_argument("--allstar", dest="allStar_file", required=True,
+    parser.add_argument("--allstar", dest="allStar_file", default=None,
                         type=str, help="Path to APOGEE allStar FITS file.")
-    parser.add_argument("--allvisit", dest="allVisit_file", required=True,
+    parser.add_argument("--allvisit", dest="allVisit_file", default=None,
                         type=str, help="Path to APOGEE allVisit FITS file.")
-    parser.add_argument("--credentials", dest="credentials_file", required=True,
-                        type=str, help="Path to YAML file with database credentials.")
+
+    cred_group = parser.add_mutually_exclusive_group(required=True)
+
+    cred_group.add_argument("--credentials", dest="credentials_file",
+                            type=str, help="Path to YAML file with database credentials.")
+
+    cred_group.add_argument("--test", dest="test", action="store_true", default=False,
+                            help="Setup test database.")
 
     args = parser.parse_args()
+
+    if not args.test:
+        if args.allStar_file is None or args.allVisit_file is None:
+            raise ValueError("--allstar and --allvisit are required if not running in "
+                             "test mode (--test)!")
 
     # Set logger level based on verbose flags
     if args.verbosity != 0:
