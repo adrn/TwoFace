@@ -6,9 +6,14 @@ __all__ = ['Timer']
 class Timer(object):
 
     def __enter__(self):
-        self.start = time.clock()
+        self.reset()
         return self
 
     def __exit__(self, *args):
-        self.end = time.clock()
-        self.time = self.end - self.start
+        self.time = self.elapsed()
+
+    def reset(self):
+        self.start = time.clock()
+
+    def elapsed(self):
+        return time.clock() - self.start

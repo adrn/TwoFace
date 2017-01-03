@@ -14,7 +14,7 @@ import yaml
 # Project
 from twoface.util import Timer
 from twoface.log import log
-from twoface.db import (Session, db_connect, table_to_sql_columns,
+from twoface.db import (Session, db_connect,
                         AllStar, AllVisit, JokerState, StarStatus)
 from twoface.db.core import Base
 from twoface.db.helper import copy_from_table
@@ -24,23 +24,12 @@ def main(allVisit_file, allStar_file, credentials_file, **kwargs):
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
     allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
 
-    # Columns to skip
-    allstar_skip = ['VISITS', 'ALL_VISITS', 'ALL_VISIT_PK', 'VISIT_PK']
-    allvisit_skip = []
-
     # connect to database
     with open(credentials_file, 'r') as f:
         credentials = dict(yaml.load(f))
     credentials.setdefault('dbname', 'apogee')
     engine = db_connect(**credentials)
     log.debug("Connected to database '{}'".format(credentials['dbname']))
-
-    # populate columns of the tables
-    for name,col in table_to_sql_columns(allstar_tbl, skip=allstar_skip).items():
-        setattr(AllStar, name, col)
-
-    for name,col in table_to_sql_columns(allvisit_tbl, skip=allvisit_skip).items():
-        setattr(AllVisit, name, col)
 
     # this is the magic that creates the tables based on the definitions in twoface/db/model.py
     Base.metadata.drop_all()
@@ -52,12 +41,12 @@ def main(allVisit_file, allStar_file, credentials_file, **kwargs):
 
     log.debug("Copying allStar file into database...")
     with Timer() as t:
-        copy_from_table(_cursor, allstar_tbl, 'allstar', skip=allstar_skip)
+        copy_from_table(_cursor, allstar_tbl, AllStar)
     log.debug("...done after {} seconds".format(t.time))
 
     log.debug("Copying allVisit file into database...")
     with Timer() as t:
-        copy_from_table(_cursor, allvisit_tbl, 'allvisit', skip=allvisit_skip)
+        copy_from_table(_cursor, allvisit_tbl, AllVisit)
     log.debug("...done after {} seconds".format(t.time))
 
     _cursor.execute("commit")
@@ -82,12 +71,24 @@ def main(allVisit_file, allStar_file, credentials_file, **kwargs):
     log.debug("...done")
 
     # Loop through and match up allstar to allvisit (many-to-many)
-    for star in session.query(AllStar).filter(AllStar.apogee_id == '2M00000032+5737103').all():
-        visits = session.query(AllVisit).filter(AllVisit.apogee_id == star.apogee_id).all()
-        star.visits = visits
+    batch_stride = 1000
+    n_batches = len(allstar_tbl) // batch_stride
 
-        star.jokerstate = JokerState(status_id=0, notes='')
-        session.flush()
+    with Timer() as t:
+        for i,star in enumerate(session.query(AllStar).all()):
+            visits = session.query(AllVisit).filter(AllVisit.apogee_id == star.apogee_id).all()
+            star.visits = visits
+            star.jokerstate = JokerState(status_id=0, notes='')
+
+            if i % batch_stride == 0:
+                log.debug("Flushing batch {}/{} to database [{:.2f} sec]".format(i//batch_stride,
+                                                                                 n_batches,
+                                                                                 t.elapsed()))
+                session.flush()
+                t.reset()
+
+    log.debug("Flushing final batch to database")
+    session.flush()
 
     stars = session.query(AllStar).filter(AllStar.apogee_id == '2M00000032+5737103').all()
     print(stars[0])
