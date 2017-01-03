@@ -10,4 +10,7 @@ from astropy.utils.data import get_pkg_data_filename
 
 conf = ConfigParser()
 conf.read(get_pkg_data_filename("defaults.cfg"))
-conf.read(os.path.abspath(os.path.expanduser("~/.twoface_config")))
+
+user_config_path = os.path.abspath(os.path.expanduser("~/.twoface_config"))
+if os.path.exists(user_config_path):
+    conf.read(user_config_path)
