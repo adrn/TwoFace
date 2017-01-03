@@ -12,7 +12,6 @@ from sqlalchemy.dialects import postgresql
 
 # Project
 from .core import Base
-from .enum import DeclEnum
 from .quantity_type import QuantityTypeClassFactory
 
 __all__ = ['AllStar', 'AllVisit', 'JokerRun', 'StarResult', 'Status']
