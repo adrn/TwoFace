@@ -89,10 +89,6 @@ def main(allVisit_file, allStar_file, credentials_file, **kwargs):
     log.debug("Committing final batch to database [{:.2f} sec]".format(t.elapsed()))
     session.commit()
 
-    stars = session.query(AllStar).filter(AllStar.apogee_id == '2M00000032+5737103').all()
-    print(stars[0])
-    print(stars[0].visits)
-
     session.close()
 
 if __name__ == "__main__":
