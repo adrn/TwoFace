@@ -38,7 +38,7 @@ env:
         # For this package-template, we include examples of Cython modules,
         # so Cython is required for testing. If your package does not include
         # Cython code, you can set CONDA_DEPENDENCIES=''
-        # - CONDA_DEPENDENCIES='Cython'
+        - CONDA_DEPENDENCIES='pyyaml sqlalchemy'
 
         - CONDA_CHANNELS='astropy-ci-extras astropy'
 
@@ -86,7 +86,7 @@ install:
 before_script:
    - cp twoface/db/tests/travis_db.cfg ~/.twoface_config
    - cd scripts/
-   - python initdb.py --test -v
+   - if [[ $SETUP_CMD != *"egg_info"* ]]; then python initdb.py --test -v; fi
    - cd ..
 
 script:
