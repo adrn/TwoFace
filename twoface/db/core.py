@@ -15,7 +15,7 @@ from ..log import log
 Session = scoped_session(sessionmaker(autoflush=True, autocommit=False))
 Base = declarative_base()
 
-def db_connect(host="localhost", port=5432, user=None, dbname=None, password=None,
+def db_connect(host="localhost", port=5432, user=None, database=None, password=None,
                ensure_db_exists=True):
     """
     Connect to the specified postgres database.
@@ -30,10 +30,10 @@ def db_connect(host="localhost", port=5432, user=None, dbname=None, password=Non
         Username.
     password : str (optional)
         Password.
-    dbname : str (optional)
+    database : str (optional)
         Name of database
     ensure_db_exists : bool (optional)
-        Ensure the database ``dbname`` exists.
+        Ensure the database ``database`` exists.
 
     Returns
     -------
@@ -41,28 +41,28 @@ def db_connect(host="localhost", port=5432, user=None, dbname=None, password=Non
         The sqlalchemy database engine.
     """
 
-    url = "postgresql://{user}:{password}@{host}:{port:d}/{dbname}".format(host=host,
+    url = "postgresql://{user}:{password}@{host}:{port:d}/{database}".format(host=host,
                                                                            port=port,
                                                                            user=user,
-                                                                           dbname=dbname,
+                                                                           database=database,
                                                                            password=password)
 
     engine = create_engine(url)
     try:
         conn = engine.connect()
         conn.execute("select * from information_schema.tables")
-        log.debug("Database '{}' exists".format(dbname))
+        log.debug("Database '{}' exists".format(database))
 
     except OperationalError:
         if ensure_db_exists:
-            log.info("Database '{}' does not exist -- creating for you...".format(dbname))
+            log.info("Database '{}' does not exist -- creating for you...".format(database))
 
             # make sure the database exists
             _url = os.path.join(os.path.dirname(str(url)), 'postgres')
             _engine = create_engine(_url)
             _conn = _engine.connect()
             _conn.execute("commit")
-            _conn.execute("CREATE DATABASE {0}".format(dbname))
+            _conn.execute("CREATE DATABASE {0}".format(database))
             _conn.close()
             del _engine
         else:
