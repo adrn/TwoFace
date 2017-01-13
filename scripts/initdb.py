@@ -2,10 +2,8 @@ from __future__ import division, print_function
 
 __author__ = "adrn <adrn@astro.princeton.edu>"
 
-# TODO: remove this shite
+# Standard library
 import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
 
 # Third-party
 from astropy.table import Table
@@ -20,7 +18,7 @@ from twoface.db import Session, db_connect, AllStar, AllVisit, Status
 from twoface.db.core import Base
 from twoface.db.helper import copy_from_table
 
-def main(allVisit_file=None, allStar_file=None, credentials_file=None, test=False, **kwargs):
+def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
 
     # if running in test mode, get test files
     if test:
@@ -40,10 +38,13 @@ def main(allVisit_file=None, allStar_file=None, credentials_file=None, test=Fals
         assert allVisit_file is not None
         assert allStar_file is not None
 
-        # connect to database
-        with open(credentials_file, 'r') as f:
-            credentials = dict(yaml.load(f))
-        credentials.setdefault('database', 'apogee')
+        # get credentials from conf
+        credentials = dict()
+        credentials['host'] = conf['apogee']['host']
+        credentials['database'] = conf['apogee']['database']
+        credentials['port'] = conf['apogee']['port']
+        credentials['user'] = conf['apogee']['user']
+        credentials['password'] = conf['apogee']['password']
 
     norm = lambda x: os.path.abspath(os.path.expanduser(x))
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
@@ -131,13 +132,8 @@ if __name__ == "__main__":
     parser.add_argument("--allvisit", dest="allVisit_file", default=None,
                         type=str, help="Path to APOGEE allVisit FITS file.")
 
-    cred_group = parser.add_mutually_exclusive_group(required=True)
-
-    cred_group.add_argument("--credentials", dest="credentials_file",
-                            type=str, help="Path to YAML file with database credentials.")
-
-    cred_group.add_argument("--test", dest="test", action="store_true", default=False,
-                            help="Setup test database.")
+    parser.add_argument("--test", dest="test", action="store_true", default=False,
+                        help="Setup test database.")
 
     args = parser.parse_args()
 
