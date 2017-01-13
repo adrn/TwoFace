@@ -84,6 +84,7 @@ install:
     - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
 
 before_script:
+   - mkdir -p ~/.config/twoface/
    - cp twoface/db/tests/travis_db.cfg ~/.config/twoface/twoface.cfg
    - if [[ $SETUP_CMD != *"egg_info"* ]]; then python scripts/initdb.py --test -v; fi
 
