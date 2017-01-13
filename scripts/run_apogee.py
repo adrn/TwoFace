@@ -1,5 +1,5 @@
 # Standard library
-from os.path import abspath, expanduser
+from os.path import abspath, expanduser, join
 import os
 import sys
 
@@ -9,8 +9,9 @@ import h5py
 import numpy as np
 from schwimmbad import choose_pool
 from sqlalchemy import func
-from thejoker.data import RVData
+from thejoker.log import log as joker_logger
 from thejoker.sampler import JokerParams, TheJoker, save_prior_samples
+from thejoker.utils import quantity_to_hdf5
 import yaml
 
 # Project
@@ -95,58 +96,76 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
     # create TheJoker sampler instance
     rnd = np.random.RandomState(seed=seed)
+    logger.debug("Creating TheJoker instance with {}, {}".format(rnd, pool))
     params = JokerParams(P_min=run.P_min, P_max=run.P_max, jitter=run.jitter,
                          anomaly_tol=1E-11)
-    joker = TheJoker(params, random_state=rnd) # TODO: pool?
+    joker = TheJoker(params, random_state=rnd, pool=pool)
 
     # create prior samples cache, store to file and store filename in DB
+    base_path = os.path.dirname(run.prior_samples_file)
     if not os.path.exists(run.prior_samples_file):
         logger.debug("Prior samples file not found - generating now...")
-        base_path = os.path.dirname(run.prior_samples_file)
         os.makedirs(base_path, exist_ok=True)
 
         prior_samples = joker.sample_prior(config['prior']['num_cache'])
-        save_prior_samples(run.prior_samples_file, prior_samples, u.km/u.s) # all data in km/s
+        prior_units = save_prior_samples(run.prior_samples_file, prior_samples, u.km/u.s) # data in km/s
         del prior_samples
         # TODO: for large prior samples libraries, may want a way to write
         #   without storing all samples in memory
 
         logger.debug("...done")
 
+    else:
+        with h5py.File(run.prior_samples_file, 'r') as f:
+            prior_units = [u.Unit(uu) for uu in f.attrs['units']]
+
+    # build a query to get all stars associated with this JokerRun that need processing
+    star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
+                                       .filter(JokerRun.name == run.name)\
+                                       .filter(Status.id == 0)
+
+    # create a file to cache the results
+    n_stars = star_query.count()
+    logger.info("{} stars left to process for run '{}'".format(n_stars, run.name))
+
+    results_filename = join(base_path, "{}.hdf5".format(run.name))
+
+    # TODO: what should structure be? currently thinking /APOGEE_ID/key, e.g.,
+    #       /2M00000222+5625359/P for period, etc.
+    # TODO: deal with existing file
+    with h5py.File(results_filename, 'w') as f:
+        pass
+
     # TODO: grab a batch of targets to process
-    star = session.query(AllStar).join(StarResult, JokerRun, Status)\
-                  .filter(JokerRun.name == run.name)\
-                  .filter(Status.id == 0)\
-                  .limit(1)\
-                  .one() # get a single untouched star
-
-    print(star.visits)
+    star = star_query.limit(1).one() # get a single untouched star
     data = APOGEERVData.from_visits(star.visits)
-
-    import matplotlib.pyplot as plt
-    data.plot()
-    plt.show()
-
-    return
 
     # adaptive scheme for the rejection sampling:
     n_process = 64 * run.requested_samples_per_star
     n_samples = 0 # running total of good samples returned
+    start_idx = 0
+    all_samples = None
     for n in range(128): # magic number we should never hit
-        # grab n_process samples from prior cache
+        logger.debug("Iteration {}, star {} - using {} prior samples".format(n, star, n_process))
 
-        # process, see how many remain
+        # process n_process samples from prior cache
+        samples = joker._rejection_sample_from_cache(data, n_process,
+                                                     run.prior_samples_file, start_idx)
 
-        n_survive = ...
-
+        n_survive = samples.shape[0]
         if n_survive > 1:
             n_samples += n_survive
-            # save info on the samples that survived
+
+            if all_samples is None:
+                all_samples = samples
+            else:
+                all_samples = np.vstack((all_samples, samples))
 
         if n_samples >= run.requested_samples_per_star:
             break
 
-        n_process *= 4
+        start_idx += n_process
+        n_process *= 2
 
         if n_process > run.max_prior_samples:
             if n_process == run.max_prior_samples:
@@ -158,6 +177,18 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     else: # hit maxiter
         # TODO: error, should never get here
         pass
+
+    # for now, it's sufficient to write the run results to an HDF5 file
+    n = run.requested_samples_per_star
+    samples_dict = joker.unpack_full_samples(all_samples[:n], data.t_offset, prior_units)
+
+    with h5py.File(results_filename, 'r+') as f:
+        g = f.create_group(star.apogee_id)
+        for key in samples_dict.keys():
+            quantity_to_hdf5(g, key, samples_dict[key])
+
+    pool.close()
+    session.close()
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
@@ -193,21 +224,24 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Set logger level based on verbose flags
-    if args.verbosity != 0:
-        if args.verbosity == 1:
-            logger.setLevel(logging.DEBUG)
-        else: # anything >= 2
-            logger.setLevel(1)
+    loggers = [joker_logger, logger]
 
-    elif args.quietness != 0:
-        if args.quietness == 1:
-            logger.setLevel(logging.WARNING)
-        else: # anything >= 2
-            logger.setLevel(logging.ERROR)
+    for _logger in loggers:
+        # Set logger level based on verbose flags
+        if args.verbosity != 0:
+            if args.verbosity == 1:
+                _logger.setLevel(logging.DEBUG)
+            else: # anything >= 2
+                _logger.setLevel(1)
 
-    else: # default
-        logger.setLevel(logging.INFO)
+        elif args.quietness != 0:
+            if args.quietness == 1:
+                _logger.setLevel(logging.WARNING)
+            else: # anything >= 2
+                _logger.setLevel(logging.ERROR)
+
+        else: # default
+            _logger.setLevel(logging.INFO)
 
     pool_kwargs = dict(mpi=args.mpi, processes=args.n_procs)
     pool = choose_pool(**pool_kwargs)
