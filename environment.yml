@@ -16,4 +16,5 @@ dependencies:
     - emcee
     - corner
     - git+https://github.com/adrn/thejoker
+    - git+https://github.com/adrn/schwimmbad
 
