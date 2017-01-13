@@ -33,7 +33,7 @@ env:
         - ASTROPY_VERSION=stable
         - MAIN_CMD='python setup.py'
         - SETUP_CMD='test'
-        - PIP_DEPENDENCIES='' # TODO: install TheJoker
+        - PIP_DEPENDENCIES='git+https://github.com/adrn/thejoker'
 
         # For this package-template, we include examples of Cython modules,
         # so Cython is required for testing. If your package does not include
