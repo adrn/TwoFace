@@ -9,6 +9,7 @@
 # I'll need to write a careful adaptive scheme for the rejection sampling. My
 #   original idea was to do something like this:
 
+max_n_process = 2**28
 n_req = 128 # number of samples requested
 n_process = 64 * n_req
 n_samples = 0
@@ -27,6 +28,10 @@ for n in range(maxiter):
         break
 
     n_process *= 2
+
+    if n_process > max_n_process:
+        # TODO: warning
+        break
 
 else: # hit maxiter
     # TODO: warning...
