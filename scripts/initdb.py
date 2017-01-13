@@ -98,7 +98,7 @@ def main(allVisit_file=None, allStar_file=None, credentials_file=None, test=Fals
     log.debug("Matching star-visit...")
     with Timer() as t:
         for i,star in enumerate(session.query(AllStar).all()):
-            visits = session.query(AllVisit).filter(AllVisit.target_id == star.target_id).all()
+            visits = session.query(AllVisit).filter(AllVisit.apogee_id == star.apogee_id).all()
             star.visits = visits
 
             if i % batch_stride == 0 and i != 0:

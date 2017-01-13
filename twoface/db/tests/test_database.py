@@ -46,11 +46,11 @@ class TestDB(object):
 
         # get star entry and check total num of visits
         star = session.query(AllStar).filter(AllStar.target_id == test_target_ID).one()
-        assert len(star.visits) == 3
+        assert len(star.visits) == 6
 
         # get a visit and check that it has one star
         visit = session.query(AllVisit).filter(AllVisit.target_id == test_target_ID).limit(1).one()
-        assert len(visit.stars) == 1
+        assert len(visit.stars) == 2
 
         session.close()
 
