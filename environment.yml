@@ -11,6 +11,7 @@ dependencies:
   - psycopg2
   - sqlalchemy
   - pyyaml
+  - h5py
   - pip
   - pip:
     - emcee
