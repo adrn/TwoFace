@@ -25,8 +25,9 @@ def copy_from_table(cursor, table, Table):
 
         # turn the array into a string, following:
         #   http://stackoverflow.com/questions/11170099/copy-import-data-into-postgresql-array-column
-        table[colname] = [str(x.tolist()).replace('[','{').replace(']','}')
-                          for x in table[colname]]
+        data = [str(x.tolist()).replace('[','{').replace(']','}') for x in table[colname]]
+        del table[colname]
+        table[colname] = data
 
     with tempfile.TemporaryFile(mode='r+') as f:
         table[tbl_colnames].write(f, format='ascii.fast_no_header', delimiter='\t')
