@@ -65,7 +65,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         run.P_max = u.Quantity(*config['hyperparams']['P_max'].split())
         run.requested_samples_per_star = int(config['hyperparams']['requested_samples_per_star'])
         run.max_prior_samples = int(config['prior']['max_samples'])
-        run.prior_samples_file = join(cache_path, config['prior']['samples_file'])
+        run.prior_samples_file = join(TWOFACE_CACHE_PATH, config['prior']['samples_file'])
 
         if 'jitter' in config['hyperparams']:
             run.jitter = u.Quantity(*config['hyperparams']['jitter'].split())
@@ -130,7 +130,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     n_stars = star_query.count()
     logger.info("{} stars left to process for run '{}'".format(n_stars, run.name))
 
-    results_filename = join(cache_path, "{}.hdf5".format(run.name))
+    results_filename = join(TWOFACE_CACHE_PATH, "{}.hdf5".format(run.name))
 
     # TODO: what should structure be? currently thinking /APOGEE_ID/key, e.g.,
     #       /2M00000222+5625359/P for period, etc.
