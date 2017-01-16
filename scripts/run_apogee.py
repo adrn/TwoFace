@@ -193,8 +193,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             for key in samples_dict.keys():
                 quantity_to_hdf5(g, key, samples_dict[key])
 
-        logger.debug("done with star {} - {:.2f} seconds".format(star.apogee_id,
-                                                                 time.time()-t0))
+        logger.debug("...done with star {} - {:.2f} seconds".format(star.apogee_id,
+                                                                    time.time()-t0))
 
     pool.close()
     session.close()
