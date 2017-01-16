@@ -1,7 +1,7 @@
 # Standard library
-from os.path import abspath, expanduser, join, dirname
+from os.path import abspath, expanduser, join
 import os
-import sys
+import time
 
 # Third-party
 import astropy.units as u
@@ -139,55 +139,62 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         pass
 
     # TODO: grab a batch of targets to process
-    star = star_query.limit(1).one() # get a single untouched star
-    data = APOGEERVData.from_visits(star.visits)
+    # star = star_query.limit(1).one() # get a single untouched star
+    for star in star_query.all():
+        logger.debub("Starting star {}".format(star.apogee_id))
+        t0 = time.time()
 
-    # adaptive scheme for the rejection sampling:
-    n_process = 64 * run.requested_samples_per_star
-    n_samples = 0 # running total of good samples returned
-    start_idx = 0
-    all_samples = None
-    for n in range(128): # magic number we should never hit
-        logger.debug("Iteration {}, star {} - using {} prior samples".format(n, star, n_process))
+        data = APOGEERVData.from_visits(star.visits)
 
-        # process n_process samples from prior cache
-        samples = joker._rejection_sample_from_cache(data, n_process,
-                                                     run.prior_samples_file, start_idx)
+        # adaptive scheme for the rejection sampling:
+        n_process = 256 * run.requested_samples_per_star
+        n_samples = 0 # running total of good samples returned
+        start_idx = 0
+        all_samples = None
+        for n in range(128): # magic number we should never hit
+            logger.debug("Iteration {}, using {} prior samples".format(n, n_process))
 
-        n_survive = samples.shape[0]
-        if n_survive > 1:
-            n_samples += n_survive
+            # process n_process samples from prior cache
+            samples = joker._rejection_sample_from_cache(data, n_process,
+                                                         run.prior_samples_file, start_idx)
 
-            if all_samples is None:
-                all_samples = samples
-            else:
-                all_samples = np.vstack((all_samples, samples))
+            n_survive = samples.shape[0]
+            if n_survive > 1:
+                n_samples += n_survive
 
-        if n_samples >= run.requested_samples_per_star:
-            break
+                if all_samples is None:
+                    all_samples = samples
+                else:
+                    all_samples = np.vstack((all_samples, samples))
 
-        start_idx += n_process
-        n_process *= 2
-
-        if n_process > run.max_prior_samples:
-            if n_process == run.max_prior_samples:
+            if n_samples >= run.requested_samples_per_star:
                 break
 
-            else:
-                n_process = run.max_prior_samples
+            start_idx += n_process
+            n_process *= 2
 
-    else: # hit maxiter
-        # TODO: error, should never get here
-        pass
+            if n_process > run.max_prior_samples:
+                if n_process == run.max_prior_samples:
+                    break
 
-    # for now, it's sufficient to write the run results to an HDF5 file
-    n = run.requested_samples_per_star
-    samples_dict = joker.unpack_full_samples(all_samples[:n], data.t_offset, prior_units)
+                else:
+                    n_process = run.max_prior_samples
 
-    with h5py.File(results_filename, 'r+') as f:
-        g = f.create_group(star.apogee_id)
-        for key in samples_dict.keys():
-            quantity_to_hdf5(g, key, samples_dict[key])
+        else: # hit maxiter
+            # TODO: error, should never get here
+            pass
+
+        # for now, it's sufficient to write the run results to an HDF5 file
+        n = run.requested_samples_per_star
+        samples_dict = joker.unpack_full_samples(all_samples[:n], data.t_offset, prior_units)
+
+        with h5py.File(results_filename, 'r+') as f:
+            g = f.create_group(star.apogee_id)
+            for key in samples_dict.keys():
+                quantity_to_hdf5(g, key, samples_dict[key])
+
+        logger.debug("done with star {} - {:.2f} seconds".format(star.apogee_id,
+                                                                 time.time()-t0))
 
     pool.close()
     session.close()
