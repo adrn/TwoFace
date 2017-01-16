@@ -1,5 +1,4 @@
 name: test
-# cache_path: /Users/adrian/projects/twoface/cache/
 database_file: test.sqlite
 hyperparams:
   P_min: 8 day
