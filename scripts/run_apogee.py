@@ -141,7 +141,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     # TODO: grab a batch of targets to process
     # star = star_query.limit(1).one() # get a single untouched star
     for star in star_query.all():
-        logger.debub("Starting star {}".format(star.apogee_id))
+        logger.debug("Starting star {}".format(star.apogee_id))
         t0 = time.time()
 
         data = APOGEERVData.from_visits(star.visits)
