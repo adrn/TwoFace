@@ -12,7 +12,7 @@ from sqlalchemy.orm import relationship
 # Project
 from .core import Base
 from .quantity_type import QuantityTypeClassFactory
-from . import numpy_adapt
+from . import numpy_adapt # just need to execute code
 
 __all__ = ['AllStar', 'AllVisit', 'JokerRun', 'StarResult', 'Status', 'AllVisitToAllStar']
 
