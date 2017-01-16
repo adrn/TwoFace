@@ -1,5 +1,5 @@
 # Standard library
-from os.path import abspath, expanduser, join
+from os.path import abspath, expanduser, join, dirname
 import os
 import sys
 
@@ -27,8 +27,30 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     with open(config_file, 'r') as f:
         config = yaml.load(f.read())
 
-    logger.debug("Connecting to sqlite database at '{}'".format(config['db_path']))
-    engine = db_connect(database_path=config['db_path'], ensure_db_exists=False)
+    # get cache path from config file or relative to this script
+    if 'cache_path' not in config:
+        root_path = dirname(abspath(join(abspath(__file__), '..')))
+        cache_path = join(root_path, 'cache')
+
+    else:
+        cache_path = config['cache_path']
+    logger.debug("Using cache path: '{}'".format(cache_path))
+
+    # filename of sqlite database
+    if 'database_file' not in config:
+        database_file = None
+
+    else:
+        database_file = config['database_file']
+
+    db_path = join(cache_path, database_file)
+
+    if not os.path.exists(db_path):
+        raise IOError("sqlite database not found at '{}'\n Did you run scripts/initdb.py yet?"
+                      .format(db_path))
+
+    logger.debug("Connecting to sqlite database at '{}'".format(db_path))
+    engine = db_connect(database_path=db_path, ensure_db_exists=False)
     session = Session()
     logger.debug("...connected!")
 
@@ -51,7 +73,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         run.P_max = u.Quantity(*config['hyperparams']['P_max'].split())
         run.requested_samples_per_star = int(config['hyperparams']['requested_samples_per_star'])
         run.max_prior_samples = int(config['prior']['max_samples'])
-        run.prior_samples_file = abspath(expanduser(config['prior']['cache_path']))
+        run.prior_samples_file = join(cache_path, config['prior']['samples_file'])
 
         if 'jitter' in config['hyperparams']:
             run.jitter = u.Quantity(*config['hyperparams']['jitter'].split())
@@ -92,10 +114,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     joker = TheJoker(params, random_state=rnd, pool=pool)
 
     # create prior samples cache, store to file and store filename in DB
-    base_path = os.path.dirname(run.prior_samples_file)
     if not os.path.exists(run.prior_samples_file):
         logger.debug("Prior samples file not found - generating now...")
-        os.makedirs(base_path, exist_ok=True)
 
         prior_samples = joker.sample_prior(config['prior']['num_cache'])
         prior_units = save_prior_samples(run.prior_samples_file, prior_samples, u.km/u.s) # data in km/s
@@ -118,7 +138,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     n_stars = star_query.count()
     logger.info("{} stars left to process for run '{}'".format(n_stars, run.name))
 
-    results_filename = join(base_path, "{}.hdf5".format(run.name))
+    results_filename = join(cache_path, "{}.hdf5".format(run.name))
 
     # TODO: what should structure be? currently thinking /APOGEE_ID/key, e.g.,
     #       /2M00000222+5625359/P for period, etc.

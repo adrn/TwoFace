@@ -15,41 +15,37 @@ from twoface.log import log as logger
 from twoface.db import Session, db_connect, AllStar, AllVisit, Status
 from twoface.db.core import Base
 
-def main(config_file, allVisit_file=None, allStar_file=None, test=False, **kwargs):
-    config_file = abspath(expanduser(config_file))
+def main(database_path, allVisit_file=None, allStar_file=None, test=False, **kwargs):
 
-    # parse config file
-    with open(config_file, 'r') as f:
-        config = yaml.load(f.read())
+    root_path = dirname(abspath(join(abspath(__file__), '..')))
+    cache_path = join(root_path, 'cache')
 
-    # get cache path from config file or relative to this script
-    if 'cache_path' not in config:
-        root_path = dirname(abspath(join(abspath(__file__), '..')))
-        cache_path = join(root_path, 'cache')
-
-    else:
-        cache_path = config['cache_path']
-    logger.debug("Using cache path: '{}'".format(cache_path))
+    if not os.path.exists(cache_path):
+        os.makedirs(cache_path, exist_ok=True)
 
     # if running in test mode, get test files
     if test:
         base_path = abspath(dirname(twoface.__file__))
         allVisit_file = os.path.join(base_path, 'db', 'tests', 'test-allVisit.fits')
         allStar_file = os.path.join(base_path, 'db', 'tests', 'test-allStar.fits')
-        db_path = join(cache_path, 'test.sqlite')
+
+        if database_path is None:
+            database_file = join(cache_path, 'test.sqlite')
 
     else:
         assert allVisit_file is not None
         assert allStar_file is not None
-        db_path = join(cache_path, 'apogee.sqlite')
+
+        if database_file is None:
+            database_file = join(cache_path, 'apogee.sqlite')
 
     norm = lambda x: os.path.abspath(os.path.expanduser(x))
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
     allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
 
-    engine = db_connect(db_path)
+    engine = db_connect(database_file)
     # engine.echo = True
-    logger.debug("Connected to database at '{}'".format(db_path))
+    logger.debug("Connected to database at '{}'".format(database_file))
 
     # this is the magic that creates the tables based on the definitions in twoface/db/model.py
     Base.metadata.drop_all()
@@ -120,9 +116,8 @@ if __name__ == "__main__":
     # parser.add_argument('-o', '--overwrite', action='store_true', dest='overwrite',
     #                     default=False, help='Destroy everything.')
 
-    parser.add_argument("-c", "--config", dest="config_file", required=True,
-                        type=str, help="Path to config file that specifies the parameters for "
-                                       "this JokerRun.")
+    parser.add_argument("-d", "--dbpath", dest="database_path", default=None,
+                        type=str, help="Path to create database file.")
 
     parser.add_argument("--allstar", dest="allStar_file", default=None,
                         type=str, help="Path to APOGEE allStar FITS file.")
