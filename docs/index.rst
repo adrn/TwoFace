@@ -8,3 +8,4 @@ Two Face
    Running the tests locally <run-tests>
 
 
+Info on APOGEE radial velocities: http://www.sdss.org/dr13/irspec/radialvelocities/
