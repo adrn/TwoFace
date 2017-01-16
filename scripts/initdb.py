@@ -6,7 +6,6 @@ from os.path import abspath, expanduser, join, dirname
 
 # Third-party
 from astropy.table import Table
-import yaml
 
 # Project
 import twoface
@@ -39,7 +38,7 @@ def main(database_path, allVisit_file=None, allStar_file=None, test=False, **kwa
         if database_file is None:
             database_file = join(cache_path, 'apogee.sqlite')
 
-    norm = lambda x: os.path.abspath(os.path.expanduser(x))
+    norm = lambda x: abspath(expanduser(x))
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
     allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
 
