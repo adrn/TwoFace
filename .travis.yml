@@ -79,6 +79,7 @@ matrix:
 install:
     - git clone git://github.com/astropy/ci-helpers.git
     - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
+    - python setup.py install
 
 before_script:
    - export TWOFACE_CACHE_PATH=~/twoface_test/

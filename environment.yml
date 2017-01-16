@@ -8,7 +8,6 @@ dependencies:
   - astropy
   - numpy
   - matplotlib
-  - psycopg2
   - sqlalchemy
   - pyyaml
   - h5py
