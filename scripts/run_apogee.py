@@ -19,7 +19,6 @@ from twoface.data import APOGEERVData
 from twoface.log import log as logger
 from twoface.db import Session, db_connect
 from twoface.db import JokerRun, AllStar, AllVisit, StarResult, Status, AllVisitToAllStar
-from twoface.config import conf
 
 def main(config_file, pool, seed, overwrite=False, _continue=False):
     config_file = abspath(expanduser(config_file))
@@ -28,17 +27,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     with open(config_file, 'r') as f:
         config = yaml.load(f.read())
 
-    # look for database credentials in ~/.config/twoface/twoface.cfg - read the [apogee] section
-    credentials = dict()
-    credentials['host'] = conf['apogee']['host']
-    credentials['database'] = conf['apogee']['database']
-    credentials['port'] = conf['apogee']['port']
-    credentials['user'] = conf['apogee']['user']
-    credentials['password'] = conf['apogee']['password']
-    logger.debug("Connecting to postgres database '{host}:{port}/{database}' with "
-                 "user '{user}'...".format(**credentials))
-
-    engine = db_connect(ensure_db_exists=False, **credentials)
+    logger.debug("Connecting to sqlite database at '{}'".format(config['db_path']))
+    engine = db_connect(database_path=config['db_path'], ensure_db_exists=False)
     session = Session()
     logger.debug("...connected!")
 

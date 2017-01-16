@@ -1,4 +1,5 @@
 name: test
+db_path: /Users/adrian/projects/twoface/cache/test-db.sqlite
 hyperparams:
   P_min: 8 day
   P_max: 8192 day
