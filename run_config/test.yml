@@ -1,5 +1,6 @@
 name: test
-db_path: /Users/adrian/projects/twoface/cache/test-db.sqlite
+# cache_path: /Users/adrian/projects/twoface/cache/
+database_file: test.sqlite
 hyperparams:
   P_min: 8 day
   P_max: 8192 day
@@ -7,4 +8,4 @@ hyperparams:
 prior:
   max_samples: 1048576
   num_cache: 2097152
-  cache_path: /Users/adrian/projects/twoface/cache/P8-8192_prior_samples.hdf5
+  cache_file: P8-8192_prior_samples.hdf5

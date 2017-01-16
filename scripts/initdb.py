@@ -2,41 +2,46 @@ __author__ = "adrn <adrn@astro.princeton.edu>"
 
 # Standard library
 import os
+from os.path import abspath, expanduser, join, dirname
 
 # Third-party
 from astropy.table import Table
+import yaml
 
 # Project
 import twoface
-from twoface.config import conf
 from twoface.util import Timer
-from twoface.log import log
+from twoface.log import log as logger
 from twoface.db import Session, db_connect, AllStar, AllVisit, Status
 from twoface.db.core import Base
 
-def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
+def main(config_file, allVisit_file=None, allStar_file=None, test=False, **kwargs):
+    config_file = abspath(expanduser(config_file))
+
+    # parse config file
+    with open(config_file, 'r') as f:
+        config = yaml.load(f.read())
+
+    # get cache path from config file or relative to this script
+    if 'cache_path' not in config:
+        root_path = dirname(abspath(join(abspath(__file__), '..')))
+        cache_path = join(root_path, 'cache')
+
+    else:
+        cache_path = config['cache_path']
+    logger.debug("Using cache path: '{}'".format(cache_path))
 
     # if running in test mode, get test files
     if test:
-        base_path = os.path.abspath(os.path.dirname(twoface.__file__))
+        base_path = abspath(dirname(twoface.__file__))
         allVisit_file = os.path.join(base_path, 'db', 'tests', 'test-allVisit.fits')
         allStar_file = os.path.join(base_path, 'db', 'tests', 'test-allStar.fits')
-
-        # TODO: HACK
-        db_path = "/Users/adrian/projects/twoface/cache/test-db.sqlite"
+        db_path = join(cache_path, 'test.sqlite')
 
     else:
-        raise NotImplementedError()
         assert allVisit_file is not None
         assert allStar_file is not None
-
-        # get credentials from conf
-        credentials = dict()
-        credentials['host'] = conf['apogee']['host']
-        credentials['database'] = conf['apogee']['database']
-        credentials['port'] = conf['apogee']['port']
-        credentials['user'] = conf['apogee']['user']
-        credentials['password'] = conf['apogee']['password']
+        db_path = join(cache_path, 'apogee.sqlite')
 
     norm = lambda x: os.path.abspath(os.path.expanduser(x))
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
@@ -44,7 +49,7 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
 
     engine = db_connect(db_path)
     # engine.echo = True
-    log.debug("Connected to database at '{}'".format(db_path))
+    logger.debug("Connected to database at '{}'".format(db_path))
 
     # this is the magic that creates the tables based on the definitions in twoface/db/model.py
     Base.metadata.drop_all()
@@ -55,7 +60,7 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
 
     session = Session()
 
-    log.debug("Loading allStar, allVisit tables...")
+    logger.debug("Loading allStar, allVisit tables...")
 
     allstar_colnames = [str(x).split('.')[1].upper() for x in AllStar.__table__.columns]
     i = allstar_colnames.index('ID')
@@ -84,10 +89,10 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
         session.add_all(stars)
         session.add_all(all_visits)
         session.commit()
-    log.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))
+    logger.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))
 
     # Load the status table
-    log.debug("Populating Status table...")
+    logger.debug("Populating Status table...")
     statuses = list()
     statuses.append(Status(id=0, message='untouched'))
     statuses.append(Status(id=1, message='pending'))
@@ -98,7 +103,7 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
 
     session.add_all(statuses)
     session.commit()
-    log.debug("...done")
+    logger.debug("...done")
 
     session.close()
 
@@ -114,6 +119,10 @@ if __name__ == "__main__":
     vq_group.add_argument('-q', '--quiet', action='count', default=0, dest='quietness')
     # parser.add_argument('-o', '--overwrite', action='store_true', dest='overwrite',
     #                     default=False, help='Destroy everything.')
+
+    parser.add_argument("-c", "--config", dest="config_file", required=True,
+                        type=str, help="Path to config file that specifies the parameters for "
+                                       "this JokerRun.")
 
     parser.add_argument("--allstar", dest="allStar_file", default=None,
                         type=str, help="Path to APOGEE allStar FITS file.")
@@ -133,17 +142,17 @@ if __name__ == "__main__":
     # Set logger level based on verbose flags
     if args.verbosity != 0:
         if args.verbosity == 1:
-            log.setLevel(logging.DEBUG)
+            logger.setLevel(logging.DEBUG)
         else: # anything >= 2
-            log.setLevel(1)
+            logger.setLevel(1)
 
     elif args.quietness != 0:
         if args.quietness == 1:
-            log.setLevel(logging.WARNING)
+            logger.setLevel(logging.WARNING)
         else: # anything >= 2
-            log.setLevel(logging.ERROR)
+            logger.setLevel(logging.ERROR)
 
     else: # default
-        log.setLevel(logging.INFO)
+        logger.setLevel(logging.INFO)
 
     main(**vars(args))
