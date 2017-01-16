@@ -19,6 +19,7 @@ from twoface.data import APOGEERVData
 from twoface.log import log as logger
 from twoface.db import Session, db_connect
 from twoface.db import JokerRun, AllStar, AllVisit, StarResult, Status, AllVisitToAllStar
+from twoface.config import TWOFACE_CACHE_PATH
 
 def main(config_file, pool, seed, overwrite=False, _continue=False):
     config_file = abspath(expanduser(config_file))
@@ -27,15 +28,6 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     with open(config_file, 'r') as f:
         config = yaml.load(f.read())
 
-    # get cache path from config file or relative to this script
-    if 'cache_path' not in config:
-        root_path = dirname(abspath(join(abspath(__file__), '..')))
-        cache_path = join(root_path, 'cache')
-
-    else:
-        cache_path = config['cache_path']
-    logger.debug("Using cache path: '{}'".format(cache_path))
-
     # filename of sqlite database
     if 'database_file' not in config:
         database_file = None
@@ -43,7 +35,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     else:
         database_file = config['database_file']
 
-    db_path = join(cache_path, database_file)
+    db_path = join(TWOFACE_CACHE_PATH, database_file)
 
     if not os.path.exists(db_path):
         raise IOError("sqlite database not found at '{}'\n Did you run scripts/initdb.py yet?"

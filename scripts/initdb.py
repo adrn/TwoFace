@@ -13,14 +13,9 @@ from twoface.util import Timer
 from twoface.log import log as logger
 from twoface.db import Session, db_connect, AllStar, AllVisit, Status
 from twoface.db.core import Base
+from twoface.config import TWOFACE_CACHE_PATH
 
-def main(database_path, allVisit_file=None, allStar_file=None, test=False, **kwargs):
-
-    root_path = dirname(abspath(join(abspath(__file__), '..')))
-    cache_path = join(root_path, 'cache')
-
-    if not os.path.exists(cache_path):
-        os.makedirs(cache_path, exist_ok=True)
+def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
 
     # if running in test mode, get test files
     if test:
@@ -28,23 +23,21 @@ def main(database_path, allVisit_file=None, allStar_file=None, test=False, **kwa
         allVisit_file = os.path.join(base_path, 'db', 'tests', 'test-allVisit.fits')
         allStar_file = os.path.join(base_path, 'db', 'tests', 'test-allStar.fits')
 
-        if database_path is None:
-            database_file = join(cache_path, 'test.sqlite')
+        database_path = join(TWOFACE_CACHE_PATH, 'test.sqlite')
 
     else:
         assert allVisit_file is not None
         assert allStar_file is not None
 
-        if database_file is None:
-            database_file = join(cache_path, 'apogee.sqlite')
+        database_path = join(TWOFACE_CACHE_PATH, 'apogee.sqlite')
 
     norm = lambda x: abspath(expanduser(x))
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
     allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
 
-    engine = db_connect(database_file)
+    engine = db_connect(database_path)
     # engine.echo = True
-    logger.debug("Connected to database at '{}'".format(database_file))
+    logger.debug("Connected to database at '{}'".format(database_path))
 
     # this is the magic that creates the tables based on the definitions in twoface/db/model.py
     Base.metadata.drop_all()
@@ -66,23 +59,27 @@ def main(database_path, allVisit_file=None, allStar_file=None, test=False, **kwa
     allvisit_colnames.pop(i)
 
     stars = []
-    all_visits = []
+    all_visits = dict()
     with Timer() as t:
         for i,row in enumerate(allstar_tbl):
             row_data = dict([(k.lower(), row[k]) for k in allstar_colnames])
             star = AllStar(**row_data)
             stars.append(star)
 
-            visits = []
-            for j,visit_row in enumerate(allvisit_tbl[allvisit_tbl['APOGEE_ID'] == row['APOGEE_ID']]):
-                _data = dict([(k.lower(), visit_row[k]) for k in allvisit_colnames])
-                visits.append(AllVisit(**_data))
+            if star.apogee_id not in all_visits:
+                visits = []
+                for j,visit_row in enumerate(allvisit_tbl[allvisit_tbl['APOGEE_ID'] == row['APOGEE_ID']]):
+                    _data = dict([(k.lower(), visit_row[k]) for k in allvisit_colnames])
+                    visits.append(AllVisit(**_data))
+                all_visits[star.apogee_id] = visits
+
+            else:
+                visits = all_visits[star.apogee_id]
+
             star.visits = visits
 
-            all_visits += visits
-
         session.add_all(stars)
-        session.add_all(all_visits)
+        session.add_all([item for sublist in all_visits.values() for item in sublist])
         session.commit()
     logger.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))
 
@@ -114,9 +111,6 @@ if __name__ == "__main__":
     vq_group.add_argument('-q', '--quiet', action='count', default=0, dest='quietness')
     # parser.add_argument('-o', '--overwrite', action='store_true', dest='overwrite',
     #                     default=False, help='Destroy everything.')
-
-    parser.add_argument("-d", "--dbpath", dest="database_path", default=None,
-                        type=str, help="Path to create database file.")
 
     parser.add_argument("--allstar", dest="allStar_file", default=None,
                         type=str, help="Path to APOGEE allStar FITS file.")

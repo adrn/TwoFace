@@ -1,8 +1,5 @@
 language: python
 
-services:
-  - postgresql
-
 python:
     # - 2.7
     - 3.5
@@ -38,7 +35,7 @@ env:
         # For this package-template, we include examples of Cython modules,
         # so Cython is required for testing. If your package does not include
         # Cython code, you can set CONDA_DEPENDENCIES=''
-        - CONDA_DEPENDENCIES='pyyaml sqlalchemy psycopg2'
+        - CONDA_DEPENDENCIES='pyyaml sqlalchemy'
 
         - CONDA_CHANNELS='astropy-ci-extras astropy'
 
@@ -84,8 +81,7 @@ install:
     - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
 
 before_script:
-   - mkdir -p ~/.config/twoface/
-   - cp twoface/db/tests/travis_db.cfg ~/.config/twoface/twoface.cfg
+   - export TWOFACE_CACHE_PATH=~/twoface_test/
    - if [[ $SETUP_CMD != *"egg_info"* ]]; then python scripts/initdb.py --test -v; fi
 
 script:

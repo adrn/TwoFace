@@ -6,38 +6,28 @@ import os
 # Third-party
 from astropy.utils.data import get_pkg_data_filename
 import pytest
+import yaml
 
 # Project
-from ...config import conf
+from ...config import TWOFACE_CACHE_PATH
 from ..core import db_connect, Session
 from ..model import AllStar, AllVisit, StarResult, Status, JokerRun
-
-if 'CI' in os.environ and os.environ['CI']:
-    # when in continuous integration, only run database tests on Travis
-    if 'TRAVIS' in os.environ and os.environ['TRAVIS']:
-        conf.read(get_pkg_data_filename("travis_db.cfg"))
-        skip_db_tests = conf['testing']['skip_db_tests']
-
-    else:
-        skip_db_tests = True
-
-else:
-    skip_db_tests = conf['testing']['skip_db_tests']
 
 class TestDB(object):
 
     def setup(self):
-        credentials = dict()
-        credentials['host'] = conf['testing']['host']
-        credentials['database'] = conf['testing']['database']
-        credentials['port'] = conf['testing']['port']
-        credentials['user'] = conf['testing']['user']
-        credentials['password'] = conf['testing']['password']
-
         # connect to database
-        self.engine = db_connect(**credentials)
+        with open(get_pkg_data_filename('travis_db.yml')) as f:
+            config = yaml.load(f)
 
-    @pytest.mark.skipif(skip_db_tests, reason="skipping database tests")
+        path = os.path.join(TWOFACE_CACHE_PATH, config['database_file'])
+        if not os.path.exists(path):
+            cmd = "python scripts/initdb.py --test -v"
+            raise IOError("Test database file doest not exist! Before running the tests, you "
+                          "should run: \n {}".format(cmd))
+
+        self.engine = db_connect(path)
+
     def test_one(self):
         # a target in both test FITS files included in the repo
         test_target_ID = "4264.2M00000032+5737103"
