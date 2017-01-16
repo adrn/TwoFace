@@ -1,5 +1,3 @@
-from __future__ import division, print_function
-
 __author__ = "adrn <adrn@astro.princeton.edu>"
 
 # Standard library
@@ -7,7 +5,6 @@ import os
 
 # Third-party
 from astropy.table import Table
-import yaml
 
 # Project
 import twoface
@@ -16,7 +13,6 @@ from twoface.util import Timer
 from twoface.log import log
 from twoface.db import Session, db_connect, AllStar, AllVisit, Status
 from twoface.db.core import Base
-from twoface.db.helper import copy_from_table
 
 def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
 
