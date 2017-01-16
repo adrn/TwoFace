@@ -26,15 +26,11 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
         allVisit_file = os.path.join(base_path, 'db', 'tests', 'test-allVisit.fits')
         allStar_file = os.path.join(base_path, 'db', 'tests', 'test-allStar.fits')
 
-        # get credentials from conf
-        credentials = dict()
-        credentials['host'] = conf['testing']['host']
-        credentials['database'] = conf['testing']['database']
-        credentials['port'] = conf['testing']['port']
-        credentials['user'] = conf['testing']['user']
-        credentials['password'] = conf['testing']['password']
+        # TODO: HACK
+        db_path = "/Users/adrian/projects/twoface/cache/test-db.sqlite"
 
     else:
+        raise NotImplementedError()
         assert allVisit_file is not None
         assert allStar_file is not None
 
@@ -50,33 +46,49 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
     allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
 
-    engine = db_connect(**credentials)
-    log.debug("Connected to database '{}'".format(credentials['database']))
+    engine = db_connect(db_path)
+    # engine.echo = True
+    log.debug("Connected to database at '{}'".format(db_path))
 
     # this is the magic that creates the tables based on the definitions in twoface/db/model.py
     Base.metadata.drop_all()
     Base.metadata.create_all()
 
-    # Load data using COPY FROM because we are going to add a lot of rows...
-    raw_conn = engine.raw_connection()
-    _cursor = raw_conn.cursor()
+    # load allVisit and allStar files
+    # allvisit_tbl
 
-    log.debug("Copying allStar file into database...")
-    with Timer() as t:
-        copy_from_table(_cursor, allstar_tbl, AllStar)
-    log.debug("...done after {:.2f} seconds".format(t.time))
-
-    log.debug("Copying allVisit file into database...")
-    with Timer() as t:
-        copy_from_table(_cursor, allvisit_tbl, AllVisit)
-    log.debug("...done after {:.2f} seconds".format(t.time))
-
-    _cursor.execute("commit")
-    raw_conn.close()
-    log.debug("allStar and allVisit committed to database tables")
-
-    # add status table and modify star-visit mapping
     session = Session()
+
+    log.debug("Loading allStar, allVisit tables...")
+
+    allstar_colnames = [str(x).split('.')[1].upper() for x in AllStar.__table__.columns]
+    i = allstar_colnames.index('ID')
+    allstar_colnames.pop(i)
+
+    allvisit_colnames = [str(x).split('.')[1].upper() for x in AllVisit.__table__.columns]
+    i = allvisit_colnames.index('ID')
+    allvisit_colnames.pop(i)
+
+    stars = []
+    all_visits = []
+    with Timer() as t:
+        for i,row in enumerate(allstar_tbl):
+            row_data = dict([(k.lower(), row[k]) for k in allstar_colnames])
+            star = AllStar(**row_data)
+            stars.append(star)
+
+            visits = []
+            for j,visit_row in enumerate(allvisit_tbl[allvisit_tbl['APOGEE_ID'] == row['APOGEE_ID']]):
+                _data = dict([(k.lower(), visit_row[k]) for k in allvisit_colnames])
+                visits.append(AllVisit(**_data))
+            star.visits = visits
+
+            all_visits += visits
+
+        session.add_all(stars)
+        session.add_all(all_visits)
+        session.commit()
+    log.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))
 
     # Load the status table
     log.debug("Populating Status table...")
@@ -89,28 +101,8 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
     statuses.append(Status(id=5, message='completed'))
 
     session.add_all(statuses)
-    session.flush()
-    log.debug("...done")
-
-    # Loop through and match up allstar to allvisit (many-to-many)
-    batch_stride = 1000
-    n_batches = len(allstar_tbl) // batch_stride
-
-    log.debug("Matching star-visit...")
-    with Timer() as t:
-        for i,star in enumerate(session.query(AllStar).all()):
-            visits = session.query(AllVisit).filter(AllVisit.apogee_id == star.apogee_id).all()
-            star.visits = visits
-
-            if i % batch_stride == 0 and i != 0:
-                log.debug("Committing batch {}/{} to database [{:.2f} sec]".format(i//batch_stride,
-                                                                                   n_batches,
-                                                                                   t.elapsed()))
-                session.commit()
-                t.reset()
-
-    log.debug("Committing final batch to database [{:.2f} sec]".format(t.elapsed()))
     session.commit()
+    log.debug("...done")
 
     session.close()
 
