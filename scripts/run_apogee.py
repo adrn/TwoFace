@@ -83,10 +83,10 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         #   observations based on the number of linear parameters
         # TODO: need some way of specifying a constraint on the stars that are to be processed
         stars = session.query(AllStar).join(AllVisitToAllStar, AllVisit)\
-                                      .group_by(AllStar)\
-                                      .distinct(AllStar.apogee_id)\
+                                      .group_by(AllStar.apogee_id)\
                                       .having(func.count(AllVisit.id) >= 3)\
                                       .all()
+
         run.stars = stars
         session.add(run)
         session.commit()
