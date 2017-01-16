@@ -20,13 +20,13 @@ class TestDB(object):
         with open(get_pkg_data_filename('travis_db.yml')) as f:
             config = yaml.load(f)
 
-        path = os.path.join(TWOFACE_CACHE_PATH, config['database_file'])
-        if not os.path.exists(path):
+        self.db_path = os.path.join(TWOFACE_CACHE_PATH, config['database_file'])
+        if not os.path.exists(self.db_path):
             cmd = "python scripts/initdb.py --test -v"
             raise IOError("Test database file doest not exist! Before running the tests, you "
                           "should run: \n {}".format(cmd))
 
-        self.engine = db_connect(path)
+        self.engine = db_connect(self.db_path)
 
     def test_one(self):
         # a target in both test FITS files included in the repo
@@ -45,6 +45,5 @@ class TestDB(object):
         session.close()
 
     def teardown(self):
-        # delete_db = conf['testing']['delete_test_db']
-        pass
-        # TODO: teardown should delete the test database!?
+        # TODO: should I delete the test database?
+        self.db_path
