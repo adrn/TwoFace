@@ -10,6 +10,7 @@ dependencies:
   - matplotlib
   - sqlalchemy
   - pyyaml
+  - cython
   - h5py
   - pip
   - pip:
