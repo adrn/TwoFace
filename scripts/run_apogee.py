@@ -182,11 +182,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             n_process *= 2
 
             if n_process > run.max_prior_samples:
-                if n_process == run.max_prior_samples:
-                    break
-
-                else:
-                    n_process = run.max_prior_samples
+                break
 
         else: # hit maxiter
             # TODO: error, should never get here
@@ -208,8 +204,12 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         if all_samples.shape[0] >= run.requested_samples_per_star:
             result.status_id = 5 # completed
 
-        else:
+        elif all_samples.shape[0] == 1:
             result.status_id = 3 # needs mcmc
+
+        else:
+            result.status_id = 2 # needs more samples
+
         session.add(result)
         session.commit()
 
