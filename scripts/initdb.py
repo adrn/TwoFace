@@ -58,7 +58,7 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
     i = allvisit_colnames.index('ID')
     allvisit_colnames.pop(i)
 
-    batch_size = 10000
+    batch_size = 4000
     stars = []
     all_visits = dict()
     with Timer() as t:
@@ -83,6 +83,8 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
                 session.add_all(stars)
                 session.add_all([item for sublist in all_visits.values() for item in sublist])
                 session.commit()
+                logger.debug("Loaded batch {} ({:.2f} seconds)".format(i%batch_size, t.elapsed()))
+                t.reset()
 
                 all_visits = dict()
                 stars = []
