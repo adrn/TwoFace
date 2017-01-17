@@ -134,13 +134,20 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
     # TODO: what should structure be? currently thinking /APOGEE_ID/key, e.g.,
     #       /2M00000222+5625359/P for period, etc.
-    # TODO: deal with existing file
-    with h5py.File(results_filename, 'w') as f:
-        pass
+    if not os.path.exists(results_filename):
+        with h5py.File(results_filename, 'w') as f:
+            pass
+
+    else:
+        with h5py.File(results_filename, 'r') as f:
+            already_done = list(f.keys())
 
     # TODO: grab a batch of targets to process
-    # star = star_query.limit(1).one() # get a single untouched star
-    for star in star_query.all():
+    for star in star_query.limit(1000).all():
+        if star.apogee_id in already_done:
+            logger.debug("Star {} already done".format(star.apogee_id))
+            continue
+
         logger.debug("Starting star {}".format(star.apogee_id))
         t0 = time.time()
 
@@ -192,6 +199,18 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             g = f.create_group(star.apogee_id)
             for key in samples_dict.keys():
                 quantity_to_hdf5(g, key, samples_dict[key])
+
+        result = StarResult()
+        result.star = star
+        result.jokerrun = run
+
+        if all_samples.shape[0] >= run.requested_samples_per_star:
+            result.status_id = 5 # completed
+
+        else:
+            result.status_id = 3 # needs mcmc
+        session.add(result)
+        session.commit()
 
         logger.debug("...done with star {} - {:.2f} seconds".format(star.apogee_id,
                                                                     time.time()-t0))
