@@ -135,6 +135,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     # TODO: what should structure be? currently thinking /APOGEE_ID/key, e.g.,
     #       /2M00000222+5625359/P for period, etc.
     if not os.path.exists(results_filename):
+        already_done = []
         with h5py.File(results_filename, 'w') as f:
             pass
 
