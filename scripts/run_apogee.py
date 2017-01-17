@@ -183,6 +183,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
             if n_process > run.max_prior_samples:
                 logger.debug("Hit max prior samples limit!!")
+                break
 
         else: # hit maxiter
             # TODO: error, should never get here
