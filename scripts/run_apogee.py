@@ -153,6 +153,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         t0 = time.time()
 
         data = APOGEERVData.from_visits(star.visits)
+        logger.debug("\t visits loaded ({:.2f} seconds)".format(time.time()-t0))
 
         # adaptive scheme for the rejection sampling:
         n_process = 64 * run.requested_samples_per_star
@@ -160,7 +161,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         start_idx = 0
         all_samples = None
         for n in range(128): # magic number we should never hit
-            logger.debug("Iteration {}, using {} prior samples".format(n, n_process))
+            logger.debug("\t Iteration {}, using {} prior samples".format(n, n_process))
 
             # process n_process samples from prior cache
             samples = joker._rejection_sample_from_cache(data, n_process,
@@ -182,12 +183,14 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             n_process *= 2
 
             if n_process > run.max_prior_samples:
-                logger.debug("Hit max prior samples limit!!")
+                logger.debug("\t Hit max prior samples limit!!")
                 break
 
         else: # hit maxiter
             # TODO: error, should never get here
             pass
+
+        logger.debug("\t done sampling ({:.2f} seconds)".format(time.time()-t0))
 
         # for now, it's sufficient to write the run results to an HDF5 file
         n = run.requested_samples_per_star
@@ -197,6 +200,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             g = f.create_group(star.apogee_id)
             for key in samples_dict.keys():
                 quantity_to_hdf5(g, key, samples_dict[key])
+
+        logger.debug("\t saved samples ({:.2f} seconds)".format(time.time()-t0))
 
         result = StarResult()
         result.star = star
@@ -214,7 +219,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         session.add(result)
         session.commit()
 
-        logger.debug("...done with star {} - {:.2f} seconds".format(star.apogee_id,
+        logger.debug("...done with star {} ({:.2f} seconds)".format(star.apogee_id,
                                                                     time.time()-t0))
 
     pool.close()
@@ -256,22 +261,25 @@ if __name__ == "__main__":
 
     loggers = [joker_logger, logger]
 
-    for _logger in loggers:
-        # Set logger level based on verbose flags
-        if args.verbosity != 0:
-            if args.verbosity == 1:
-                _logger.setLevel(logging.DEBUG)
-            else: # anything >= 2
-                _logger.setLevel(1)
+    # Set logger level based on verbose flags
+    if args.verbosity != 0:
+        if args.verbosity == 1:
+            logger.setLevel(logging.DEBUG)
+        else: # anything >= 2
+            logger.setLevel(1)
+            joker_logger.setLevel(1)
 
-        elif args.quietness != 0:
-            if args.quietness == 1:
-                _logger.setLevel(logging.WARNING)
-            else: # anything >= 2
-                _logger.setLevel(logging.ERROR)
+    elif args.quietness != 0:
+        if args.quietness == 1:
+            logger.setLevel(logging.WARNING)
+            joker_logger.setLevel(logging.WARNING)
+        else: # anything >= 2
+            logger.setLevel(logging.ERROR)
+            joker_logger.setLevel(logging.ERROR)
 
-        else: # default
-            _logger.setLevel(logging.INFO)
+    else: # default
+        logger.setLevel(logging.INFO)
+        joker_logger.setLevel(logging.INFO)
 
     pool_kwargs = dict(mpi=args.mpi, processes=args.n_procs)
     pool = choose_pool(**pool_kwargs)
