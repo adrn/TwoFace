@@ -79,11 +79,11 @@ matrix:
 install:
     - git clone git://github.com/astropy/ci-helpers.git
     - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
-    - if [[ $SETUP_CMD != *"egg_info"* ]]; python setup.py install; fi
+    - if [[ $SETUP_CMD != *"egg_info"* ]]; then python setup.py install; fi
 
 before_script:
-   - export TWOFACE_CACHE_PATH=~/twoface_test/
-   - if [[ $SETUP_CMD != *"egg_info"* ]]; then python scripts/initdb.py --test -v; fi
+    - export TWOFACE_CACHE_PATH=~/twoface_test/
+    - if [[ $SETUP_CMD != *"egg_info"* ]]; then python scripts/initdb.py --test -v; fi
 
 script:
    - $MAIN_CMD $SETUP_CMD
