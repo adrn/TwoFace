@@ -155,7 +155,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         data = APOGEERVData.from_visits(star.visits)
 
         # adaptive scheme for the rejection sampling:
-        n_process = 256 * run.requested_samples_per_star
+        n_process = 64 * run.requested_samples_per_star
         n_samples = 0 # running total of good samples returned
         start_idx = 0
         all_samples = None
@@ -182,7 +182,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             n_process *= 2
 
             if n_process > run.max_prior_samples:
-                break
+                logger.debug("Hit max prior samples limit!!")
 
         else: # hit maxiter
             # TODO: error, should never get here
