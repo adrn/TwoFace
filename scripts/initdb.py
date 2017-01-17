@@ -58,6 +58,7 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
     i = allvisit_colnames.index('ID')
     allvisit_colnames.pop(i)
 
+    batch_size = 10000
     stars = []
     all_visits = dict()
     with Timer() as t:
@@ -78,9 +79,19 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
 
             star.visits = visits
 
+            if i % batch_size == 0 and i > 0:
+                session.add_all(stars)
+                session.add_all([item for sublist in all_visits.values() for item in sublist])
+                session.commit()
+
+                all_visits = dict()
+                stars = []
+
+    if len(stars) > 0:
         session.add_all(stars)
         session.add_all([item for sublist in all_visits.values() for item in sublist])
         session.commit()
+
     logger.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))
 
     # Load the status table
