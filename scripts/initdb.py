@@ -6,6 +6,7 @@ from os.path import abspath, expanduser, join, dirname
 
 # Third-party
 from astropy.table import Table
+import numpy as np
 
 # Project
 import twoface
@@ -44,7 +45,7 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
     Base.metadata.create_all()
 
     # load allVisit and allStar files
-    # allvisit_tbl
+    allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO'])]
 
     session = Session()
 
@@ -100,7 +101,7 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
     logger.debug("Populating Status table...")
     statuses = list()
     statuses.append(Status(id=0, message='untouched'))
-    statuses.append(Status(id=1, message='pending'))
+    statuses.append(Status(id=1, message='pending')) # OLD - don't use
     statuses.append(Status(id=2, message='needs more prior samples'))
     statuses.append(Status(id=3, message='needs mcmc'))
     statuses.append(Status(id=4, message='error'))
