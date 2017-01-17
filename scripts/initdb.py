@@ -34,6 +34,8 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
 
     norm = lambda x: abspath(expanduser(x))
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
+    allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO'])]
+
     allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
 
     engine = db_connect(database_path)
@@ -43,9 +45,6 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
     # this is the magic that creates the tables based on the definitions in twoface/db/model.py
     Base.metadata.drop_all()
     Base.metadata.create_all()
-
-    # load allVisit and allStar files
-    allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO'])]
 
     session = Session()
 
