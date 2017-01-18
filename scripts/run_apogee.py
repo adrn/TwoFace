@@ -195,7 +195,11 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         samples_dict = joker.unpack_full_samples(all_samples[:n], data.t_offset, prior_units)
 
         with h5py.File(results_filename, 'r+') as f:
-            g = f.create_group(star.apogee_id)
+            if star.apogee_id not in f:
+                g = f.create_group(star.apogee_id)
+            else:
+                g = f[star.apogee_id]
+
             for key in samples_dict.keys():
                 quantity_to_hdf5(g, key, samples_dict[key])
 
