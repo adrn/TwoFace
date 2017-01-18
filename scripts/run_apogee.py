@@ -172,15 +172,15 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                     all_samples = np.vstack((all_samples, samples))
 
             if n_samples >= run.requested_samples_per_star:
-                if all_samples is None:
-                    all_samples = samples
-
                 break
 
             start_idx += n_process
             n_process *= 2
 
             if n_process > run.max_prior_samples:
+                if all_samples is None:
+                    all_samples = samples
+
                 logger.debug("\t Hit max prior samples limit!!")
                 break
 
