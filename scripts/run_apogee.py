@@ -46,11 +46,6 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     session = Session()
     logger.debug("...connected!")
 
-    # HACK: for testing
-    session.query(StarResult).delete()
-    session.query(JokerRun).delete()
-    session.commit()
-
     # see if this run (by name) is in db already, if so, just grab
     _run = session.query(JokerRun).filter(JokerRun.name == config['name']).all()
     if len(_run) == 0:
@@ -140,21 +135,12 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     # TODO: what should structure be? currently thinking /APOGEE_ID/key, e.g.,
     #       /2M00000222+5625359/P for period, etc.
     if not os.path.exists(results_filename):
-        already_done = []
         with h5py.File(results_filename, 'w') as f:
             pass
 
-    else:
-        with h5py.File(results_filename, 'r') as f:
-            already_done = list(f.keys())
-
     count = 0
     batch_size = 128
-    for star in star_query.limit(16).all(): # TODO: grab a batch of targets to process
-        if star.apogee_id in already_done:
-            logger.debug("Star {} already done".format(star.apogee_id))
-            continue
-
+    for star in star_query.limit(5000).all(): # TODO: grab a batch of targets to process
         # retrieve result from database
         result = result_query.filter(AllStar.apogee_id == star.apogee_id).one()
 
