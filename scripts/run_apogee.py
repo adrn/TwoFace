@@ -228,13 +228,13 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                                                                     time.time()-t0))
 
         if count % batch_size == 0:
-            session.flush()
+            session.commit()
 
         count += 1
 
     pool.close()
 
-    session.flush()
+    session.commit()
     session.close()
 
 if __name__ == "__main__":
