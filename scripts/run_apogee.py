@@ -148,6 +148,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         with h5py.File(results_filename, 'r') as f:
             already_done = list(f.keys())
 
+    count = 0
+    batch_size = 128
     for star in star_query.limit(16).all(): # TODO: grab a batch of targets to process
         if star.apogee_id in already_done:
             logger.debug("Star {} already done".format(star.apogee_id))
@@ -225,7 +227,14 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         logger.debug("...done with star {} ({:.2f} seconds)".format(star.apogee_id,
                                                                     time.time()-t0))
 
+        if count % batch_size == 0:
+            session.flush()
+
+        count += 1
+
     pool.close()
+
+    session.flush()
     session.close()
 
 if __name__ == "__main__":
