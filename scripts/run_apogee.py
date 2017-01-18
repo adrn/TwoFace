@@ -201,6 +201,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                 g = f[star.apogee_id]
 
             for key in samples_dict.keys():
+                if key in g:
+                    del g[key]
                 quantity_to_hdf5(g, key, samples_dict[key])
 
         logger.debug("\t saved samples ({:.2f} seconds)".format(time.time()-t0))
