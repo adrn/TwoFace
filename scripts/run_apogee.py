@@ -109,6 +109,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     if not os.path.exists(run.prior_samples_file):
         logger.debug("Prior samples file not found - generating now...")
 
+        # TODO: also need to get value of the prior pdf and save
         prior_samples = joker.sample_prior(config['prior']['num_cache'])
         prior_units = save_prior_samples(run.prior_samples_file, prior_samples, u.km/u.s) # data in km/s
         del prior_samples
@@ -125,6 +126,10 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
                                        .filter(JokerRun.name == run.name)\
                                        .filter(Status.id == 0)
+
+    result_query = session.query(StarResult).join(AllStar, JokerRun)\
+                                            .filter(JokerRun.name == run.name)\
+                                            .filter(Status.id == 0)
 
     # create a file to cache the results
     n_stars = star_query.count()
@@ -143,11 +148,13 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         with h5py.File(results_filename, 'r') as f:
             already_done = list(f.keys())
 
-    # TODO: grab a batch of targets to process
-    for star in star_query.limit(1000).all():
+    for star in star_query.limit(16).all(): # TODO: grab a batch of targets to process
         if star.apogee_id in already_done:
             logger.debug("Star {} already done".format(star.apogee_id))
             continue
+
+        # retrieve result from database
+        result = result_query.filter(AllStar.apogee_id == star.apogee_id).one()
 
         logger.debug("Starting star {}".format(star.apogee_id))
         t0 = time.time()
@@ -156,7 +163,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         logger.debug("\t visits loaded ({:.2f} seconds)".format(time.time()-t0))
 
         # adaptive scheme for the rejection sampling:
-        n_process = 64 * run.requested_samples_per_star
+        n_process = 64 * run.requested_samples_per_star # MAGIC NUMBER
         n_samples = 0 # running total of good samples returned
         start_idx = 0
         all_samples = None
@@ -177,6 +184,9 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                     all_samples = np.vstack((all_samples, samples))
 
             if n_samples >= run.requested_samples_per_star:
+                if all_samples is None:
+                    all_samples = samples
+
                 break
 
             start_idx += n_process
@@ -203,10 +213,6 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
         logger.debug("\t saved samples ({:.2f} seconds)".format(time.time()-t0))
 
-        result = StarResult()
-        result.star = star
-        result.jokerrun = run
-
         if all_samples.shape[0] >= run.requested_samples_per_star:
             result.status_id = 5 # completed
 
@@ -215,9 +221,6 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
         else:
             result.status_id = 2 # needs more samples
-
-        session.add(result)
-        session.commit()
 
         logger.debug("...done with star {} ({:.2f} seconds)".format(star.apogee_id,
                                                                     time.time()-t0))
