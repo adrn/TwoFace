@@ -139,7 +139,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             pass
 
     count = 0
-    batch_size = 128
+    batch_size = 16
     for star in star_query.limit(5000).all(): # TODO: grab a batch of targets to process
         # retrieve result from database
         result = result_query.filter(AllStar.apogee_id == star.apogee_id).one()
