@@ -122,6 +122,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                                        .filter(JokerRun.name == run.name)\
                                        .filter(Status.id == 0)
 
+    # TODO: order by func.count(AllVisit.id) >= 3 ??
+
     result_query = session.query(StarResult).join(AllStar, JokerRun)\
                                             .filter(JokerRun.name == run.name)\
                                             .filter(Status.id == 0)
