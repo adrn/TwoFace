@@ -67,47 +67,55 @@ def main(allVisit_file=None, allStar_file=None, rc_file=None, test=False, **kwar
         rc_colnames.pop(i)
 
     batch_size = 4000
-    stars = []
-    all_visits = dict()
-    with Timer() as t:
-        for i,row in enumerate(allstar_tbl):
-            row_data = dict([(k.lower(), row[k]) for k in allstar_colnames])
-            star = AllStar(**row_data)
-            stars.append(star)
+    # stars = []
+    # all_visits = dict()
+    # with Timer() as t:
+    #     for i,row in enumerate(allstar_tbl):
+    #         row_data = dict([(k.lower(), row[k]) for k in allstar_colnames])
+    #         star = AllStar(**row_data)
+    #         stars.append(star)
 
-            if star.apogee_id not in all_visits:
-                visits = []
-                for j,visit_row in enumerate(allvisit_tbl[allvisit_tbl['APOGEE_ID'] == row['APOGEE_ID']]):
-                    _data = dict([(k.lower(), visit_row[k]) for k in allvisit_colnames])
-                    visits.append(AllVisit(**_data))
-                all_visits[star.apogee_id] = visits
+    #         if star.apogee_id not in all_visits:
+    #             visits = []
+    #             for j,visit_row in enumerate(allvisit_tbl[allvisit_tbl['APOGEE_ID'] == row['APOGEE_ID']]):
+    #                 _data = dict([(k.lower(), visit_row[k]) for k in allvisit_colnames])
+    #                 visits.append(AllVisit(**_data))
+    #             all_visits[star.apogee_id] = visits
 
-            else:
-                visits = all_visits[star.apogee_id]
+    #         else:
+    #             visits = all_visits[star.apogee_id]
 
-            star.visits = visits
+    #         star.visits = visits
 
-            if i % batch_size == 0 and i > 0:
-                session.add_all(stars)
-                session.add_all([item for sublist in all_visits.values() for item in sublist])
-                session.commit()
-                logger.debug("Loaded batch {} ({:.2f} seconds)".format(i*batch_size, t.elapsed()))
-                t.reset()
+    #         if i % batch_size == 0 and i > 0:
+    #             session.add_all(stars)
+    #             session.add_all([item for sublist in all_visits.values() for item in sublist])
+    #             session.commit()
+    #             logger.debug("Loaded batch {} ({:.2f} seconds)".format(i*batch_size, t.elapsed()))
+    #             t.reset()
 
-                all_visits = dict()
-                stars = []
+    #             all_visits = dict()
+    #             stars = []
 
-    if len(stars) > 0:
-        session.add_all(stars)
-        session.add_all([item for sublist in all_visits.values() for item in sublist])
-        session.commit()
+    # if len(stars) > 0:
+    #     session.add_all(stars)
+    #     session.add_all([item for sublist in all_visits.values() for item in sublist])
+    #     session.commit()
 
     rcstars = []
     with Timer() as t:
         for i,row in enumerate(rc_tbl):
             row_data = dict([(k.lower(), row[k]) for k in rc_colnames])
+
+            if session.query(RedClump).filter(RedClump.apstar_id == row_data['apstar_id']).count() > 0:
+                continue
+
             rc = RedClump(**row_data)
-            rc.star = session.query(AllStar).filter(AllStar.apstar_id == row_data['apstar_id']).one()
+            try:
+                rc.star = session.query(AllStar).filter(AllStar.apstar_id == row_data['apstar_id']).one()
+            except:
+                continue
+
             rcstars.append(rc)
 
             if i % batch_size == 0 and i > 0:
