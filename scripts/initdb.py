@@ -12,23 +12,25 @@ import numpy as np
 import twoface
 from twoface.util import Timer
 from twoface.log import log as logger
-from twoface.db import Session, db_connect, AllStar, AllVisit, Status
+from twoface.db import Session, db_connect, AllStar, AllVisit, Status, RedClump
 from twoface.db.core import Base
 from twoface.config import TWOFACE_CACHE_PATH
 
-def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
+def main(allVisit_file=None, allStar_file=None, rc_file=None, test=False, **kwargs):
 
     # if running in test mode, get test files
     if test:
         base_path = abspath(dirname(twoface.__file__))
         allVisit_file = os.path.join(base_path, 'db', 'tests', 'test-allVisit.fits')
         allStar_file = os.path.join(base_path, 'db', 'tests', 'test-allStar.fits')
+        rc_file = os.path.join(base_path, 'db', 'tests', 'test-rc.fits')
 
         database_path = join(TWOFACE_CACHE_PATH, 'test.sqlite')
 
     else:
         assert allVisit_file is not None
         assert allStar_file is not None
+        assert rc_file is not None
 
         database_path = join(TWOFACE_CACHE_PATH, 'apogee.sqlite')
 
@@ -37,6 +39,7 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
     allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO'])]
 
     allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
+    rc_tbl = Table.read(norm(rc_file), format='fits', hdu=1)
 
     engine = db_connect(database_path)
     # engine.echo = True
@@ -57,6 +60,11 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
     allvisit_colnames = [str(x).split('.')[1].upper() for x in AllVisit.__table__.columns]
     i = allvisit_colnames.index('ID')
     allvisit_colnames.pop(i)
+
+    rc_colnames = [str(x).split('.')[1].upper() for x in RedClump.__table__.columns]
+    for name in ['ID', 'ALLSTAR_ID']:
+        i = rc_colnames.index(name)
+        rc_colnames.pop(i)
 
     batch_size = 4000
     stars = []
@@ -94,6 +102,25 @@ def main(allVisit_file=None, allStar_file=None, test=False, **kwargs):
         session.add_all([item for sublist in all_visits.values() for item in sublist])
         session.commit()
 
+    rcstars = []
+    with Timer() as t:
+        for i,row in enumerate(rc_tbl):
+            row_data = dict([(k.lower(), row[k]) for k in rc_colnames])
+            rc = RedClump(**row_data)
+            rc.star = session.query(AllStar).filter(AllStar.apstar_id == row_data['apstar_id']).one()
+            rcstars.append(rc)
+
+            if i % batch_size == 0 and i > 0:
+                session.add_all(rcstars)
+                session.commit()
+                logger.debug("Loaded rc batch {} ({:.2f} seconds)".format(i*batch_size, t.elapsed()))
+                t.reset()
+                rcstars = []
+
+    if len(rcstars) > 0:
+        session.add_all(rcstars)
+        session.commit()
+
     logger.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))
 
     # Load the status table
@@ -129,6 +156,8 @@ if __name__ == "__main__":
                         type=str, help="Path to APOGEE allStar FITS file.")
     parser.add_argument("--allvisit", dest="allVisit_file", default=None,
                         type=str, help="Path to APOGEE allVisit FITS file.")
+    parser.add_argument("--redclump", dest="rc_file", default=None,
+                        type=str, help="Path to APOGEE Red Clump catalog FITS file.")
 
     parser.add_argument("--test", dest="test", action="store_true", default=False,
                         help="Setup test database.")
@@ -136,8 +165,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.test:
-        if args.allStar_file is None or args.allVisit_file is None:
-            raise ValueError("--allstar and --allvisit are required if not running in "
+        if args.allStar_file is None or args.allVisit_file is None or args.rc_file is None:
+            raise ValueError("--allstar, --allvisit, --redclump are required if not running in "
                              "test mode (--test)!")
 
     # Set logger level based on verbose flags

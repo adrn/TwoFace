@@ -43,14 +43,16 @@ def table_to_column_code(table, skip=None):
 
     return col_map
 
-def main(allVisit_file, allStar_file, **kwargs):
+def main(allVisit_file, allStar_file, rc_file, **kwargs):
     norm = lambda x: os.path.abspath(os.path.expanduser(x))
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
     allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
+    rc_tbl = Table.read(norm(rc_file), format='fits', hdu=1)
 
     # Columns to skip
     allstar_skip = ['VISITS', 'ALL_VISITS', 'ALL_VISIT_PK', 'VISIT_PK']
     allvisit_skip = []
+    rc_skip = ['VISITS', 'ALL_VISITS', 'ALL_VISIT_PK', 'VISIT_PK']
 
     # populate columns of the tables
     print("-------- AllStar --------")
@@ -65,18 +67,26 @@ def main(allVisit_file, allStar_file, **kwargs):
     for name,col in table_to_column_code(allvisit_tbl, skip=allvisit_skip).items():
         print(col)
 
+    print("\n"*4)
+    print("--------------------------------------------------------------------")
+    print("\n"*4)
+
+    print("-------- Red Clump --------")
+    for name,col in table_to_column_code(rc_tbl, skip=rc_skip).items():
+        print(col)
+
 if __name__ == "__main__":
     from argparse import ArgumentParser
 
     # Define parser object
     parser = ArgumentParser(description="Initialize the TwoFace project database.")
 
-    vq_group = parser.add_mutually_exclusive_group()
-
     parser.add_argument("--allstar", dest="allStar_file", required=True,
                         type=str, help="Path to APOGEE allStar FITS file.")
     parser.add_argument("--allvisit", dest="allVisit_file", required=True,
                         type=str, help="Path to APOGEE allVisit FITS file.")
+    parser.add_argument("--redclump", dest="rc_file", required=True,
+                        type=str, help="Path to APOGEE Red Clump catalog FITS file.")
 
     args = parser.parse_args()
 
