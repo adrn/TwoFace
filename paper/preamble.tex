@@ -1,0 +1,65 @@
+% Load common packages
+% \usepackage{microtype}  % ALWAYS!
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{booktabs}
+
+\usepackage{graphicx}
+\usepackage{color}
+
+\definecolor{cbblue}{HTML}{3182bd}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=cbblue,citecolor=black,
+            filecolor=cbblue,urlcolor=cbblue}
+\hypersetup{pageanchor=true}
+
+\newcommand{\documentname}{\textsl{Article}}
+\newcommand{\sectionname}{Section}
+\renewcommand{\figurename}{Figure}
+\newcommand{\eqname}{Equation}
+\renewcommand{\tablename}{Table}
+
+% Packages / projects / programming
+\newcommand{\package}[1]{\textsl{#1}}
+\newcommand{\acronym}[1]{{\small{#1}}}
+\newcommand{\github}{\package{GitHub}}
+\newcommand{\python}{\package{Python}}
+\newcommand{\emcee}{\project{emcee}}
+
+% Missions
+\newcommand{\project}[1]{\textsl{#1}}
+
+% For referee
+\newcommand{\changes}[1]{{\color{red} #1}}
+
+% Stats / probability
+\newcommand{\given}{\,|\,}
+\newcommand{\norm}{\mathcal{N}}
+
+% Maths
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\transpose}[1]{{#1}^{\mathsf{T}}}
+\newcommand{\inverse}[1]{{#1}^{-1}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\mean}[1]{\left< #1 \right>}
+
+% Unit shortcuts
+\newcommand{\msun}{\ensuremath{\mathrm{M}_\odot}}
+\newcommand{\kms}{\ensuremath{\mathrm{km}~\mathrm{s}^{-1}}}
+\newcommand{\pc}{\ensuremath{\mathrm{pc}}}
+\newcommand{\kpc}{\ensuremath{\mathrm{kpc}}}
+\newcommand{\kmskpc}{\ensuremath{\mathrm{km}~\mathrm{s}^{-1}~\mathrm{kpc}^{-1}}}
+
+% Misc.
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+\definecolor{mahogany}{RGB}{165,15,21}
+\newcommand{\resp}[1]{{\color{mahogany}#1}}
+
+% Astronomy
+\newcommand{\DM}{{\rm DM}}
+\newcommand{\feh}{\ensuremath{{[{\rm Fe}/{\rm H}]}}}
+\newcommand{\df}{\acronym{DF}}
+
+% TO DO
+\newcommand{\todo}[1]{{\color{red} TODO: #1}}
