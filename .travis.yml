@@ -56,6 +56,7 @@ matrix:
         # compile the latex to make a PDF of the paper
         - os: linux
           env: BUILD_PAPER='true'
+          python: 3.5
 
         # Do a coverage test in Python 2.
         # - python: 2.7
