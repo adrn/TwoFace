@@ -82,33 +82,33 @@ matrix:
     #     - python: 3.5
     #       env: MAIN_CMD='pycodestyle packagename --count' SETUP_CMD=''
 
-install: |
-    if [[ $BUILD_PAPER == true ]]; then
-        source ci/setup-paper.sh
-    else
-        git clone git://github.com/astropy/ci-helpers.git
-        source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
-        if [[ $SETUP_CMD != *"egg_info"* ]]; then python setup.py install; fi
-    fi
+install:
+    - 'if [[ $BUILD_PAPER == true ]]; then
+           source ci/setup-paper.sh
+       else
+           git clone git://github.com/astropy/ci-helpers.git
+           source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
+           if [[ $SETUP_CMD != *"egg_info"* ]]; then python setup.py install; fi
+       fi'
 
-before_script: |
-    if [[ $BUILD_PAPER != true ]]; then
-        export TWOFACE_CACHE_PATH=~/twoface_test/
+before_script:
+    - 'if [[ $BUILD_PAPER != true ]]; then
+           export TWOFACE_CACHE_PATH=~/twoface_test/
 
-        if [[ $SETUP_CMD != *"egg_info"* ]]; then
-            python scripts/initdb.py --test -v
-        fi
-    fi
+           if [[ $SETUP_CMD != *"egg_info"* ]]; then
+               python scripts/initdb.py --test -v
+           fi
+       fi'
 
-script: |
-    echo $BUILDING_PAPER
-    if [[ $BUILD_PAPER == true ]]; then
-        source ci/build-paper.sh
-        echo "YES3"
-    else
-        $MAIN_CMD $SETUP_CMD
-        echo "NO3"
-    fi
+script:
+    - 'echo $BUILDING_PAPER
+       if [[ $BUILD_PAPER == true ]]; then
+           source ci/build-paper.sh
+           echo "YES3"
+       else
+           $MAIN_CMD $SETUP_CMD
+           echo "NO3"
+       fi'
 
 after_success:
     # If coveralls.io is set up for this package, uncomment the line
