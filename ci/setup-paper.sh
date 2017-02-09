@@ -6,4 +6,5 @@ then
   source "$( dirname "${BASH_SOURCE[0]}" )"/setup-texlive.sh
   return
 fi
+export BUILD_PAPER='true'
 return
