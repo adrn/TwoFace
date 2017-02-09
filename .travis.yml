@@ -81,22 +81,28 @@ matrix:
     #     - python: 3.5
     #       env: MAIN_CMD='pycodestyle packagename --count' SETUP_CMD=''
 
-install:
-    - git clone git://github.com/astropy/ci-helpers.git
-    - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
-    - if [[ $SETUP_CMD != *"egg_info"* ]]; then python setup.py install; fi
+install: |
+    if [[ $BUILD_PAPER != true ]]; then
+        git clone git://github.com/astropy/ci-helpers.git
+        source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
+        if [[ $SETUP_CMD != *"egg_info"* ]]; then python setup.py install; fi
+    fi
 
-before_script:
-    - export TWOFACE_CACHE_PATH=~/twoface_test/
-    - if [[ $SETUP_CMD != *"egg_info"* ]]; then python scripts/initdb.py --test -v; fi
+before_script: |
+    if [[ $BUILD_PAPER != true ]]; then
+        export TWOFACE_CACHE_PATH=~/twoface_test/
 
-script:
-   - if [[ $BUILD_PAPER == true ]]
-   - then
-   -   source ci/build-paper.sh
-   - else
-   -   $MAIN_CMD $SETUP_CMD
-   - fi
+        if [[ $SETUP_CMD != *"egg_info"* ]]; then
+            python scripts/initdb.py --test -v
+        fi
+    fi
+
+script: |
+    if [[ $BUILD_PAPER == true ]]; then
+        source ci/build-paper.sh
+    else
+        $MAIN_CMD $SETUP_CMD
+    fi
 
 after_success:
     # If coveralls.io is set up for this package, uncomment the line
