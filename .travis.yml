@@ -85,10 +85,12 @@ matrix:
 install: |
     if [[ $BUILD_PAPER == true ]]; then
         source ci/setup-paper.sh
+        echo "YES1"
     else
         git clone git://github.com/astropy/ci-helpers.git
         source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
         if [[ $SETUP_CMD != *"egg_info"* ]]; then python setup.py install; fi
+        echo "NO1"
     fi
 
 before_script: |
@@ -98,13 +100,17 @@ before_script: |
         if [[ $SETUP_CMD != *"egg_info"* ]]; then
             python scripts/initdb.py --test -v
         fi
+
+        echo "NO2"
     fi
 
 script: |
     if [[ $BUILD_PAPER == true ]]; then
         source ci/build-paper.sh
+        echo "YES3"
     else
         $MAIN_CMD $SETUP_CMD
+        echo "NO3"
     fi
 
 after_success:
