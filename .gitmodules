@@ -1,6 +1,0 @@
-[submodule "astropy_helpers"]
-	path = astropy_helpers
-	url = https://github.com/astropy/astropy-helpers.git
-[submodule "paper"]
-	path = paper
-	url = https://git.overleaf.com/8106196mdjyxfjdbctr
