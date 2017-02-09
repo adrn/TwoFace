@@ -74,10 +74,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
         # TODO: need a way to pass in velocity trend info
 
-        # TODO: get all stars we're going to process - some filter on number of
-        #   observations based on the number of linear parameters?
         stars = session.query(AllStar).join(AllVisitToAllStar, AllVisit, RedClump)\
-                                      .group_by(AllStar.apogee_id)\
+                                      .group_by(AllStar.apstar_id)\
                                       .having(func.count(AllVisit.id) >= 3)\
                                       .all()
 
@@ -141,7 +139,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
     count = 0
     batch_size = 16
-    for star in star_query.limit(16).all(): # TODO: grab a subsample of targets to process
+    for star in star_query.all():
         # retrieve result from database
         result = result_query.filter(AllStar.apogee_id == star.apogee_id).one()
 
