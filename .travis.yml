@@ -49,7 +49,7 @@ env:
 matrix:
 
     # Don't wait for allowed failures
-    fast_finish: true
+    # fast_finish: true
 
     include:
 
