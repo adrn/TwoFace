@@ -1,5 +1,9 @@
 #!/bin/bash -x
 
+if [[ $BUILDING_PAPER != true ]]; then
+  return
+fi
+
 # Build the paper
 cd paper
 make
