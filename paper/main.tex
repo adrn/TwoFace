@@ -21,7 +21,9 @@
 \newcommand{\apogee}{\project{\acronym{APOGEE}}}
 \newcommand{\sdssiii}{\project{\acronym{SDSS-III}}}
 \newcommand{\thejoker}{\project{The~Joker}}
+\newcommand{\thecannon}{\project{The~Cannon}}
 \newcommand{\DR}{\acronym{DR13}}
+\newcommand{\RC}{\acronym{RC}}
 
 % for response to referee
 % \renewcommand{\resp}[1]{#1}
@@ -56,9 +58,38 @@
 
 \begin{abstract}
 % Context
+Radial-velocity measurements can be used to find stellar, sub-stellar,
+and planetary companions of stars.
+In the \apogee\ survey, we have multi-epoch radial-velocity measurements
+for many red-giant stars, including many red-clump (\RC) stars.
+Spectral analysis of these stars can be used to deliver masses (with
+XXX precision) and 20-ish chemical abundance measurements (with YYY
+precision).
 % Aims
+Here we perform a search for secondary companions of [number] \RC\ stars.
+Because the primary-star masses are known, the mass-function degeneracy
+is broken and the secondary-companion $m\,\sin i$ values can be inferred.
+Also, if the primary and companion are assumed to be co-eval, the
+abundances of the \RC\ star can be assumed to represent accurately the
+abundances of the secondary.
 % Methods
+We use a data-driven model (\thecannon) of stellar spectra to deliver
+each \RC\ mass and chemical abundances, and a custom-built Monte Carlo
+sampler (\thejoker) to deliver (often highly multi-modal) posterior
+beliefs about companion $m\,\sin i$, period, and other orbital parameters.
+Our sampler permits us to accurately sample even the badly behaved
+posterior pdfs obtained when there are as few an NNN observation
+epochs per star.
+We put these posterior samples---made under an interim prior---into a
+hierarchical inference to obtain individual-companion-marginalized
+posterior beliefs about the properties of the full secondary-companion
+distribution in mass and period.
 % Results
+We deliver a catalog of QQQ companions [that meet some criteria], and
+posterior samplings for all [number] stars in the parent sample.
+We find that the period and mass distributions [have some properties].
+We look for trends with chemical abundances, and we find tentative evidence
+for ZZZ and WWW.
 \end{abstract}
 
 \keywords{
