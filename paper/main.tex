@@ -117,7 +117,7 @@ binary-star population---that is, if we want to get (say) the mass,
 mass ratio, and period distribution of binary star systems---we face
 (at least) two challenges.
 The first is how, given a small number of observations of a primary
-star (in the case, say, of SB1 stars), do we reliably obtain posterior
+star (a single-lined spectroscopic binary star), do we reliably obtain posterior
 information about the binary-system properties?
 After all, if there are only a few radial-velocity measurements made
 per star, any observed radial-velocity values will be consistent with
@@ -130,13 +130,13 @@ probability density.
 We have solved this problem previously, though with limitations (to be
 discussed more below), with \thejoker\ (CITE).
 \thejoker\ is a Simple Monte Carlo rejection sampler that is
-computationally expensive but probabilistically righeous: It delivers
+computationally expensive but probabilistically righteous: It delivers
 independent (zero-auto-correlations) posterior pdf samples for
 single-companion binary model parameters, given any number of
 radial-velocity measurements.
 
 The second challenge is how, given all these noisy, multi-modal
-posterior pdfs overy binary-system properties, many of which will
+posterior pdfs over binary-system properties, many of which will
 permit a wide range of qualitatively different system properties, and
 many of which will be consistent with no companion at all, can we
 constrain parameters of a model of the full binary-system population?
@@ -154,7 +154,11 @@ used in the individual-system inferences are themselves accurate.
 
 Here we mash up these two solutions to these two challenges.
 We deliver a catalog of binary-star systems with \RC\ primaries, and also
-posterior information about the full population statistics.
+posterior information about the full population statistics, for at least
+a toy model of that full population.
+We use all the data---even the non-detections, marginal detections, and
+badly multi-modal posterior pdfs---when we infer the population model;
+that is, we don't arbitrarily cut to a catalog of ``clean'' binaries.
 
 HOGG: Why are \RC\ or \RGB\ stars ideal candidates? It has to do with the
 unlikelihood that they will be SB2. Also: abundances! Also: masses!
