@@ -24,6 +24,7 @@
 \newcommand{\thecannon}{\project{The~Cannon}}
 \newcommand{\DR}{\acronym{DR13}}
 \newcommand{\RC}{\acronym{RC}}
+\newcommand{\RGB}{\acronym{RGB}}
 
 % for response to referee
 % \renewcommand{\resp}[1]{#1}
@@ -111,6 +112,56 @@ for ZZZ and WWW.
 
 \section{Introduction} \label{sec:intro}
 
-Foo.
+If we want to use a spectroscopic survey to responsibly measure the
+binary-star population---that is, if we want to get (say) the mass,
+mass ratio, and period distribution of binary star systems---we face
+(at least) two challenges.
+The first is how, given a small number of observations of a primary
+star (in the case, say, of SB1 stars), do we reliably obtain posterior
+information about the binary-system properties?
+After all, if there are only a few radial-velocity measurements made
+per star, any observed radial-velocity values will be consistent with
+many different combinations of period and amplitude (not to mention
+eccentricity and argument of perihelion) for the primary orbit.
+In general, the likelihood function, and the posterior pdf under any
+reasonable prior pdf, will be highly multimodal in these kinds of
+problems, and many of the modes will have comparable integrated
+probability density.
+We have solved this problem previously, though with limitations (to be
+discussed more below), with \thejoker\ (CITE).
+\thejoker\ is a Simple Monte Carlo rejection sampler that is
+computationally expensive but probabilistically righeous: It delivers
+independent (zero-auto-correlations) posterior pdf samples for
+single-companion binary model parameters, given any number of
+radial-velocity measurements.
+
+The second challenge is how, given all these noisy, multi-modal
+posterior pdfs overy binary-system properties, many of which will
+permit a wide range of qualitatively different system properties, and
+many of which will be consistent with no companion at all, can we
+constrain parameters of a model of the full binary-system population?
+No histogram of best-fit values, nor stack of multi-modal posteriors,
+would be anything like a good estimate of the true population
+distribution.
+We have also solved this problem previously, though in the exoplanet
+domain, with hierarchical probabilistic models based on importance
+sampling (CITE DFM, and also HOGG).
+These hierarchical models derive posterior estimates of the population
+parameters that accurately describe the population, given the noisy
+information about the individual systems, provided that the noise
+model is accurate---that is, provided that the likelihood functions
+used in the individual-system inferences are themselves accurate.
+
+Here we mash up these two solutions to these two challenges.
+We deliver a catalog of binary-star systems with \RC\ primaries, and also
+posterior information about the full population statistics.
+
+HOGG: Why are \RC\ or \RGB\ stars ideal candidates? It has to do with the
+unlikelihood that they will be SB2. Also: abundances! Also: masses!
+Also: distances! and so on.!
+
+HOGG: Why and how does \apogee\ rock it?
+
+HOGG: What is up with delivering a catalog (it requires decision-making).
 
 \end{document}
