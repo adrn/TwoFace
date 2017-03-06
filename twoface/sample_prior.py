@@ -36,8 +36,9 @@ def make_prior_cache(filename, joker, N, max_batch_size=2**24):
         if (num_added + batch_size) > N:
             packed_samples = packed_samples[:N - (num_added + batch_size)]
             batch_size,K = packed_samples.shape
-            if batch_size <= 0:
-                break
+
+        if batch_size <= 0:
+            break
 
         with h5py.File(filename, 'r+') as f:
             if 'samples' not in f:
@@ -47,10 +48,10 @@ def make_prior_cache(filename, joker, N, max_batch_size=2**24):
                 f.attrs['units'] = np.array([str(x) for x in units]).astype('|S6')
 
             i1 = num_added
-            i2 = num_added+batch_size
+            i2 = num_added + batch_size
 
-            f['samples'][i1:i2,:] = packed_samples[i1:i2]
-            f['ln_prior_probs'][i1:i2] = ln_probs[i1:i2]
+            f['samples'][i1:i2,:] = packed_samples[:batch_size]
+            f['ln_prior_probs'][i1:i2] = ln_probs[:batch_size]
 
         num_added += batch_size
 
