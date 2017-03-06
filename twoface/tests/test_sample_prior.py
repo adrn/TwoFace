@@ -7,7 +7,7 @@ from thejoker.sampler import TheJoker, JokerParams
 from ..sample_prior import make_prior_cache
 
 def test_make_prior_cache(tmpdir):
-    N = 2**16
+    N = 2**18
 
     filename = str(tmpdir / 'prior_samples.h5')
     params = JokerParams(P_min=8*u.day, P_max=8192*u.day)

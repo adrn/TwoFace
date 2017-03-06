@@ -20,6 +20,7 @@ from twoface.log import log as logger
 from twoface.db import Session, db_connect
 from twoface.db import JokerRun, AllStar, AllVisit, StarResult, Status, AllVisitToAllStar, RedClump
 from twoface.config import TWOFACE_CACHE_PATH
+from twoface.sample_prior import make_prior_cache
 
 def main(config_file, pool, seed, overwrite=False, _continue=False):
     config_file = abspath(expanduser(config_file))
@@ -100,11 +101,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     # create prior samples cache, store to file and store filename in DB
     if not os.path.exists(run.prior_samples_file):
         logger.debug("Prior samples file not found - generating now...")
-
-        # TODO: prior samples
-        # TODO: for large prior samples libraries, may want a way to write
-        #   without storing all samples in memory
-
+        make_prior_cache(run.prior_samples_file, joker, N=run.max_prior_samples,
+                         max_batch_size=2**22)
         logger.debug("...done")
 
     else:
