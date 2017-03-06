@@ -10,7 +10,7 @@ import numpy as np
 from schwimmbad import choose_pool
 from sqlalchemy import func
 from thejoker.log import log as joker_logger
-from thejoker.sampler import JokerParams, TheJoker, save_prior_samples
+from thejoker.sampler import JokerParams, TheJoker
 from thejoker.utils import quantity_to_hdf5
 import yaml
 
@@ -70,7 +70,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
         else:
             # no jitter specified, set to extra suggested systemic velocity
-            run.jitter = 130 * u.m/u.s
+            run.jitter = 130. * u.m/u.s
 
         # TODO: need a way to pass in velocity trend info
 
@@ -101,10 +101,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     if not os.path.exists(run.prior_samples_file):
         logger.debug("Prior samples file not found - generating now...")
 
-        # TODO: also need to get value of the prior pdf and save
-        prior_samples = joker.sample_prior(config['prior']['num_cache'])
-        prior_units = save_prior_samples(run.prior_samples_file, prior_samples, u.km/u.s) # data in km/s
-        del prior_samples
+        # TODO: prior samples
         # TODO: for large prior samples libraries, may want a way to write
         #   without storing all samples in memory
 
