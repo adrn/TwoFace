@@ -6,6 +6,17 @@ from thejoker.sampler import pack_prior_samples
 def make_prior_cache(filename, joker, N, max_batch_size=2**24):
     """
 
+    Parameters
+    ----------
+    filename : str
+        The HDF5 file name to cache to.
+    joker : `~thejoker.sampler.TheJoker`
+        An instance of ``TheJoker``.
+    N : int
+        Number of samples to generate in the cache.
+    max_batch_size : int (optional)
+        The batch size to generate each iteration.
+
     """
 
     max_batch_size = int(max_batch_size)
