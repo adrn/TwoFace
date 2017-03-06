@@ -7,7 +7,7 @@ import datetime
 import astropy.units as u
 from sqlalchemy import Table, Column, types
 from sqlalchemy.schema import ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 # Project
 from .core import Base
@@ -33,7 +33,8 @@ class StarResult(Base):
                        default=0)
 
     star = relationship("AllStar")
-    jokerrun = relationship("JokerRun")
+    jokerrun = relationship("JokerRun",
+                            backref=backref("results", cascade="all, delete-orphan"))
     status = relationship("Status")
 
     def __repr__(self):
@@ -561,6 +562,9 @@ class JokerRun(Base):
 
     # The Joker parameters:
     jitter = Column('jitter', JitterType, default=float('nan')) # nan = not fixed
+    jitter_mean = Column('jitter_mean', types.Numeric, default=float('nan'))
+    jitter_stddev = Column('jitter_stddev', types.Numeric, default=float('nan'))
+    jitter_unit = Column('jitter_unit', types.String, default="")
 
     P_min = Column('P_min', PeriodType, nullable=False)
     P_max = Column('P_max', PeriodType, nullable=False)

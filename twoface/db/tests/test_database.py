@@ -1,9 +1,8 @@
-from __future__ import division, print_function
-
 # Standard library
 import os
 
 # Third-party
+import astropy.units as u
 from astropy.utils.data import get_pkg_data_filename
 import pytest
 import yaml
@@ -41,6 +40,40 @@ class TestDB(object):
         # get a visit and check that it has one star
         visit = session.query(AllVisit).filter(AllVisit.target_id == test_target_ID).limit(1).one()
         assert len(visit.stars) == 2
+
+        session.close()
+
+    def test_jokerrun_cascade(self):
+        # make sure the Results and Statuses are deleted when a JokerRun is deleted
+
+        NAME = 'test-cascade'
+        session = Session()
+
+        # first set up:
+        stars = session.query(AllStar).all()
+
+        run = JokerRun()
+        run.config_file = ''
+        run.name = NAME
+        run.P_min = 1.*u.day
+        run.P_max = 100.*u.day
+        run.requested_samples_per_star = 128
+        run.max_prior_samples = 1024
+        run.prior_samples_file = ''
+        run.stars = stars
+        session.add(run)
+        session.commit()
+
+        assert session.query(JokerRun).count() == 1
+        assert session.query(AllStar).count() == session.query(StarResult).count()
+
+        for run in session.query(JokerRun).filter(JokerRun.name == NAME).all():
+            session.delete(run)
+        session.commit()
+
+        assert session.query(JokerRun).count() == 0
+        assert session.query(StarResult).count() == 0
+        assert session.query(Status).count() > 0 # just to be safe
 
         session.close()
 
