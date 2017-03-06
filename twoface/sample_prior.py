@@ -28,13 +28,13 @@ def make_prior_cache(filename, joker, N, max_batch_size=2**24):
 
     num_added = 0
     for i in range(10000): # HACK: magic number, maximum num. iterations
-        samples, ln_probs = joker.sample_prior(max_batch_size, return_logprobs=True)
+        samples, ln_probs = joker.sample_prior(min(max_batch_size, N), return_logprobs=True)
         packed_samples, units = pack_prior_samples(samples, u.km/u.s) # TODO: make rv_unit configurable?
 
         batch_size,K = packed_samples.shape
 
         if (num_added + batch_size) > N:
-            packed_samples = packed_samples[:N - (num_added + batch_size)+1]
+            packed_samples = packed_samples[:N - (num_added + batch_size)]
             batch_size,K = packed_samples.shape
             if batch_size <= 0:
                 break
@@ -49,7 +49,10 @@ def make_prior_cache(filename, joker, N, max_batch_size=2**24):
             i1 = num_added
             i2 = num_added+batch_size
 
-            f['samples'][i1:i2,:] = packed_samples
-            f['ln_prior_probs'][i1:i2] = ln_probs
+            f['samples'][i1:i2,:] = packed_samples[i1:i2]
+            f['ln_prior_probs'][i1:i2] = ln_probs[i1:i2]
 
         num_added += batch_size
+
+        if num_added >= N:
+            break
