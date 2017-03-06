@@ -67,13 +67,15 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             run.jitter = u.Quantity(*config['hyperparams']['jitter'].split())
 
         elif 'jitter_prior_mean' in config['hyperparams']:
-            raise NotImplementedError("NOT YET SORRY")
+            run.jitter_mean = config['hyperparams']['jitter_prior_mean']
+            run.jitter_stddev = config['hyperparams']['jitter_prior_stddev']
+            run.jitter_unit = config['hyperparams']['jitter_prior_unit']
 
         else:
-            # no jitter specified, set to extra suggested systemic velocity
-            run.jitter = 130. * u.m/u.s
+            # no jitter specified
+            run.jitter = 0. * u.m/u.s
 
-        # TODO: need a way to pass in velocity trend info
+        # TODO: need a way to pass in velocity trend specification - right now, assumed flat
 
         stars = session.query(AllStar).join(AllVisitToAllStar, AllVisit, RedClump)\
                                       .group_by(AllStar.apstar_id)\
@@ -91,23 +93,30 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     else:
         raise ValueError("Multiple JokerRun rows found for name '{}'".format(config['name']))
 
+    if run.jitter is None or np.isnan(run.jitter):
+        jitter_kwargs = dict(jitter=(float(run.jitter_mean), float(run.jitter_stddev)),
+                             jitter_unit=u.Unit(run.jitter_unit))
+
+    else:
+        jitter_kwargs = dict(jitter=run.jitter)
+
     # create TheJoker sampler instance
     rnd = np.random.RandomState(seed=seed)
     logger.debug("Creating TheJoker instance with {}, {}".format(rnd, pool))
-    params = JokerParams(P_min=run.P_min, P_max=run.P_max, jitter=run.jitter,
-                         anomaly_tol=1E-11)
+    params = JokerParams(P_min=run.P_min, P_max=run.P_max, anomaly_tol=1E-11,
+                         **jitter_kwargs)
     joker = TheJoker(params, random_state=rnd, pool=pool)
 
     # create prior samples cache, store to file and store filename in DB
     if not os.path.exists(run.prior_samples_file):
         logger.debug("Prior samples file not found - generating now...")
-        make_prior_cache(run.prior_samples_file, joker, N=run.max_prior_samples,
+        make_prior_cache(run.prior_samples_file, joker, N=config['prior']['num_cache'],
                          max_batch_size=2**22)
         logger.debug("...done")
 
-    else:
-        with h5py.File(run.prior_samples_file, 'r') as f:
-            prior_units = [u.Unit(uu) for uu in f.attrs['units']]
+    # read units from prior samples file
+    with h5py.File(run.prior_samples_file, 'r') as f:
+        prior_units = [u.Unit(uu) for uu in f.attrs['units']]
 
     # build a query to get all stars associated with this JokerRun that need processing
     star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
