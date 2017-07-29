@@ -27,7 +27,7 @@ def make_prior_cache(filename, joker, N, max_batch_size=2**24):
         pass
 
     num_added = 0
-    for i in range(10000): # HACK: magic number, maximum num. iterations
+    for i in range(2**16): # HACK: magic number, maximum num. iterations
         samples, ln_probs = joker.sample_prior(min(max_batch_size, N), return_logprobs=True)
         packed_samples, units = pack_prior_samples(samples, u.km/u.s) # TODO: make rv_unit configurable?
 

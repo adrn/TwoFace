@@ -18,7 +18,8 @@ import yaml
 from twoface.data import APOGEERVData
 from twoface.log import log as logger
 from twoface.db import Session, db_connect
-from twoface.db import JokerRun, AllStar, AllVisit, StarResult, Status, AllVisitToAllStar, RedClump
+from twoface.db import (JokerRun, AllStar, AllVisit, StarResult, Status,
+                        AllVisitToAllStar, RedClump)
 from twoface.config import TWOFACE_CACHE_PATH
 from twoface.sample_prior import make_prior_cache
 
@@ -39,8 +40,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     db_path = join(TWOFACE_CACHE_PATH, database_file)
 
     if not os.path.exists(db_path):
-        raise IOError("sqlite database not found at '{}'\n Did you run scripts/initdb.py yet?"
-                      .format(db_path))
+        raise IOError("sqlite database not found at '{}'\n Did you run "
+                      "scripts/initdb.py yet?".format(db_path))
 
     logger.debug("Connecting to sqlite database at '{}'".format(db_path))
     engine = db_connect(database_path=db_path, ensure_db_exists=False)
@@ -50,7 +51,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     # see if this run (by name) is in db already, if so, just grab
     _run = session.query(JokerRun).filter(JokerRun.name == config['name']).all()
     if len(_run) == 0:
-        logger.info("JokerRun '{}' not found in database - creating new entry..."
+        logger.info("JokerRun '{}' not found in database, creating new entry..."
                     .format(config['name']))
 
         # create a JokerRun for this run
@@ -59,9 +60,11 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         run.name = config['name']
         run.P_min = u.Quantity(*config['hyperparams']['P_min'].split())
         run.P_max = u.Quantity(*config['hyperparams']['P_max'].split())
-        run.requested_samples_per_star = int(config['hyperparams']['requested_samples_per_star'])
+        run.requested_samples_per_star = int(
+            config['hyperparams']['requested_samples_per_star'])
         run.max_prior_samples = int(config['prior']['max_samples'])
-        run.prior_samples_file = join(TWOFACE_CACHE_PATH, config['prior']['samples_file'])
+        run.prior_samples_file = join(TWOFACE_CACHE_PATH,
+                                      config['prior']['samples_file'])
 
         if 'jitter' in config['hyperparams']:
             run.jitter = u.Quantity(*config['hyperparams']['jitter'].split())
@@ -75,9 +78,11 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             # no jitter specified
             run.jitter = 0. * u.m/u.s
 
-        # TODO: need a way to pass in velocity trend specification - right now, assumed flat
+        # TODO: need a way to pass in velocity trend specification - right now,
+        # assumed flat
 
-        stars = session.query(AllStar).join(AllVisitToAllStar, AllVisit, RedClump)\
+        stars = session.query(AllStar).join(AllVisitToAllStar, AllVisit,
+                                            RedClump)\
                                       .group_by(AllStar.apstar_id)\
                                       .having(func.count(AllVisit.id) >= 3)\
                                       .all()
@@ -87,14 +92,17 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         session.commit()
 
     elif len(_run) == 1:
-        logger.info("JokerRun '{}' already found in database - retrieving".format(config['name']))
+        logger.info("JokerRun '{}' already found in database - retrieving"
+                    .format(config['name']))
         run = _run[0]
 
     else:
-        raise ValueError("Multiple JokerRun rows found for name '{}'".format(config['name']))
+        raise ValueError("Multiple JokerRun rows found for name '{}'"
+                         .format(config['name']))
 
     if run.jitter is None or np.isnan(run.jitter):
-        jitter_kwargs = dict(jitter=(float(run.jitter_mean), float(run.jitter_stddev)),
+        jitter_kwargs = dict(jitter=(float(run.jitter_mean),
+                                     float(run.jitter_stddev)),
                              jitter_unit=u.Unit(run.jitter_unit))
 
     else:
@@ -110,7 +118,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     # create prior samples cache, store to file and store filename in DB
     if not os.path.exists(run.prior_samples_file):
         logger.debug("Prior samples file not found - generating now...")
-        make_prior_cache(run.prior_samples_file, joker, N=config['prior']['num_cache'],
+        make_prior_cache(run.prior_samples_file, joker,
+                         N=config['prior']['num_cache'],
                          max_batch_size=2**22)
         logger.debug("...done")
 
@@ -118,7 +127,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     with h5py.File(run.prior_samples_file, 'r') as f:
         prior_units = [u.Unit(uu) for uu in f.attrs['units']]
 
-    # build a query to get all stars associated with this JokerRun that need processing
+    # query to get all stars associated with this run that need processing
     star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
                                        .filter(JokerRun.name == run.name)\
                                        .filter(Status.id == 0)
