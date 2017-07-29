@@ -213,17 +213,43 @@ we made in \sectionname~\ref{sec:fitting} and, from these, produce
 an inference of the properties of the whole \RC\ binary-star population.
 Important necessary properties of this inference are the following:
 \begin{description}
-\item[foo] whatevs
-\item[bar] and other
+\item[utilize non-detections] Even stars which are consistent with
+  zero radial-velocity variation (no binary companion) are relevant to
+  a populations inference. This is for two reasons: The first is that
+  the small-mass and long-period ends of the binary population will
+  imprint only low-amplitude signals in the data. These signals are
+  present at low signal-to-noise, but not if we remove them because
+  they don't make some catalog or threshold cut. The second reason
+  these stars are important is that they constrain the fraction of
+  stars with no companions. Any populations-inference method we employ
+  must responsibly harvest the information in these non-detection
+  stars.
+\item[marginalize out individual-star parameters] Every star---even
+  any star with a high-confidence companion detection---will have a
+  highly multi-modal likelihood function, with many qualitatively
+  different companion models that are nonetheless locally
+  optimal. This means that most posterior samplings (created in
+  \sectionname~\ref{sec:fitting}) under our interim prior will show
+  multiple, qualitatively distinct modes in binary-system parameter
+  space.  Any correct population inference will marginalize out these
+  extremely non-trivial distributions over individual-star
+  binary-system parameters.
 \end{description}
-We can meet these requirements with a hierarchical Bayesian inference
-(hierarchical probablistic model) of the binary-star population.
+We can meet these requirements---at least in principle---with a
+hierarchical Bayesian inference (hierarchical probablistic model) of
+the binary-star population.
 
 In addition to the above requirements, we make the following assumptions
 that restrict our attention to a well-defined model space:
 \begin{description}
-\item[foo] whatevs
-\item[bar] and other
+\item[correct samplings] accurate representations of posterior pdf
+  given prior and likelihood; correct likelihood function.
+\item[no trinaries] related to the above: no trinaries, quads, or anything
+  crazier.
+\item[sufficent samplings] density and support of samplings
+\item[independent stars] no relation between one star and another; each
+  drawn from the same population; no multiple populations.
+\item[population parameterization] whatevs
 \end{description}
 
 The binary-system parameters for each individual \RC\ star were
