@@ -8,9 +8,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 
-# Project
-from ..log import log as logger
-
 Session = scoped_session(sessionmaker(autoflush=True, autocommit=False))
 Base = declarative_base()
 
@@ -34,5 +31,8 @@ def db_connect(database_path, ensure_db_exists=True):
     engine = create_engine("sqlite:///{}".format(os.path.abspath(database_path)))
     Session.configure(bind=engine)
     Base.metadata.bind = engine
+
+    if ensure_db_exists:
+        Base.metadata.create_all(engine)
 
     return engine
