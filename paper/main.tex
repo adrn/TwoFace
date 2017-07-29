@@ -15,6 +15,7 @@
 % - Reserve () for function arguments; use [] or {} for outer shit.
 % - Always prior pdf or posterior pdf, never prior or posterior (that's your arse).
 % - Use \sectionname not Section, \figname not Figure, \documentname not Article or Paper or paper.
+% - Hyphenate binary-star when it is an adjective, not when it is a noun!
 
 \include{gitstuff}
 \include{preamble}
@@ -119,7 +120,7 @@ for ZZZ and WWW.
 
 If we want to use a spectroscopic survey to responsibly measure the
 binary-star population---that is, if we want to get (say) the mass,
-mass ratio, and period distribution of binary star systems---we face
+mass ratio, and period distribution of binary-star systems---we face
 (at least) two challenges.
 The first is how, given a small number of observations of a primary
 star (a single-lined spectroscopic binary star), do we reliably obtain posterior
@@ -184,13 +185,59 @@ visible here.
 
 HOGG: Why and how does \apogee\ rock it?
 
-HOGG: What is up with delivering a catalog (it requires decision-making).
+HOGG: What is up with delivering a catalog (it requires decision-making)?
 
-\section{Method: Detection and orbit fitting}
+\section{Data}
+
+Overview of what \apogee\ is, and what data we are using.
+
+How we updated the individual-visit radial velocity measurements.
+
+What we did (if anything) with the missing visits.
+
+\section{Method: Detection and orbit fitting}\label{sec:fitting}
+
+APW: Should we start this section with a set of named assumptions, as we
+did in Anderson et al?
+
+Summary of \thejoker\ and what it does.
+
+Any modifications or knob-settings for \thejoker?
 
 \section{A catalog of red-clump binary systems}
 
-\section{Method: Population inferences}
+\section{Method: Population inferences}\label{sec:popinference}
+
+Now we want to take the individual-star fits---or samplings---that
+we made in \sectionname~\ref{sec:fitting} and, from these, produce
+an inference of the properties of the whole \RC\ binary-star population.
+Important necessary properties of this inference are the following:
+\begin{description}
+\item[foo] whatevs
+\item[bar] and other
+\end{description}
+We can meet these requirements with a hierarchical Bayesian inference
+(hierarchical probablistic model) of the binary-star population.
+
+In addition to the above requirements, we make the following assumptions
+that restrict our attention to a well-defined model space:
+\begin{description}
+\item[foo] whatevs
+\item[bar] and other
+\end{description}
+
+The binary-system parameters for each individual \RC\ star were
+inferred (in \sectionname~\ref{sec:fitting}) with an interim prior that
+is very simple and doesn't represent our true beliefs about the
+binary-star population...
+
+In a hierarchical Bayesian inference, we replace the binary-star
+system priors used in \sectionname~\ref{sec:fitting} with a parameterized
+model for the binary-star population...
+
+Because all we have is a sampling of each system under the interim prior,
+we have to re-weight or importance-sample the individual-star samplings
+in this hierarchical inference... Cite Hogg et al; Cite DFM et al.
 
 \section{The population of red-clump binary companions}
 
