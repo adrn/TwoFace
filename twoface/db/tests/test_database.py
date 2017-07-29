@@ -4,7 +4,6 @@ import os
 # Third-party
 import astropy.units as u
 from astropy.utils.data import get_pkg_data_filename
-import pytest
 import yaml
 
 # Project
