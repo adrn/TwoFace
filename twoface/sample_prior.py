@@ -3,14 +3,14 @@ import h5py
 import numpy as np
 from thejoker.sampler import pack_prior_samples
 
-def make_prior_cache(filename, joker, N, max_batch_size=2**24):
+def make_prior_cache(filename, thejoker, N, max_batch_size=2**24):
     """
 
     Parameters
     ----------
     filename : str
         The HDF5 file name to cache to.
-    joker : `~thejoker.sampler.TheJoker`
+    thejoker : `~thejoker.sampler.TheJoker`
         An instance of ``TheJoker``.
     N : int
         Number of samples to generate in the cache.
@@ -28,8 +28,11 @@ def make_prior_cache(filename, joker, N, max_batch_size=2**24):
 
     num_added = 0
     for i in range(2**16): # HACK: magic number, maximum num. iterations
-        samples, ln_probs = joker.sample_prior(min(max_batch_size, N), return_logprobs=True)
-        packed_samples, units = pack_prior_samples(samples, u.km/u.s) # TODO: make rv_unit configurable?
+        samples, ln_probs = thejoker.sample_prior(min(max_batch_size, N),
+                                                  return_logprobs=True)
+
+        # TODO: make rv_unit configurable?
+        packed_samples, units = pack_prior_samples(samples, u.km/u.s)
 
         batch_size,K = packed_samples.shape
 
@@ -45,7 +48,8 @@ def make_prior_cache(filename, joker, N, max_batch_size=2**24):
                 # make the HDF5 file with placeholder datasets
                 f.create_dataset('samples', shape=(N, K), dtype=np.float32)
                 f.create_dataset('ln_prior_probs', shape=(N,), dtype=np.float32)
-                f.attrs['units'] = np.array([str(x) for x in units]).astype('|S6')
+                f.attrs['units'] = np.array([str(x)
+                                             for x in units]).astype('|S6')
 
             i1 = num_added
             i2 = num_added + batch_size
