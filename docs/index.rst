@@ -3,9 +3,11 @@ Two Face
 ********
 
 .. toctree::
-   :maxdepth: 1
+    :maxdepth: 1
 
-   Running the tests locally <run-tests>
+    install
+    run-tests
+    getting-started
 
 
 Info on APOGEE radial velocities: http://www.sdss.org/dr13/irspec/radialvelocities/
