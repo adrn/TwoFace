@@ -10,7 +10,7 @@ from ..config import TWOFACE_CACHE_PATH
 from ..util import Timer
 from ..log import log as logger
 from .connect import db_connect, Base
-from .model import AllStar, AllVisit, Status, RedClump
+from .model import AllStar, AllVisit, AllVisitToAllStar, Status, RedClump
 
 __all__ = ['initialize_db', 'load_red_clump']
 
@@ -67,22 +67,33 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     allvisit_colnames.pop(i)
 
     # What APOGEE IDs are already loaded?
-    apogee_ids = [x[0] for x in session.query(AllStar.apstar_id).all()]
+    ap_ids = [x[0] for x in session.query(AllStar.apstar_id).all()]
+    logger.debug("{0} stars already loaded".format(len(ap_ids)))
 
     stars = []
     all_visits = dict()
     with Timer() as t:
         for i,row in enumerate(allstar_tbl): # Load every star
+            logger.log(1, 'Dude '+str(i))
             row_data = dict([(k.lower(), row[k]) for k in allstar_colnames])
 
             # If this APOGEE ID is already in the database and we are
             # overwriting data, delete that row
-            if row_data['apogee_id'] in apogee_ids:
+            if row_data['apstar_id'] in ap_ids:
                 q = session.query(AllStar).filter(
-                    AllStar.apogee_id == row_data['apogee_id'])
+                    AllStar.apstar_id == row_data['apstar_id'])
+                star = q.one()
 
                 if overwrite:
-                    q.delete()
+                    logger.log(1, 'Overwriting star {0}'
+                               .format(row_data['apstar_id']))
+
+                    visits = session.query(AllVisit).join(AllVisitToAllStar,
+                                                          AllStar)\
+                        .filter(AllStar.apstar_id == star.apstar_id).all()
+                    session.delete(star)
+                    for v in visits:
+                        session.delete(v)
                     session.commit()
 
                     star = AllStar(**row_data)
@@ -92,7 +103,6 @@ def initialize_db(allVisit_file, allStar_file, database_file,
                                   .format(star))
 
                 else:
-                    star = q.one()
                     logger.log(0, 'Loaded star {0} from database'.format(star))
 
             else:
@@ -134,17 +144,18 @@ def initialize_db(allVisit_file, allStar_file, database_file,
         session.commit()
 
     # Load the status table
-    logger.debug("Populating Status table...")
-    statuses = list()
-    statuses.append(Status(id=0, message='untouched'))
-    statuses.append(Status(id=1, message='needs more prior samples'))
-    statuses.append(Status(id=2, message='needs mcmc'))
-    statuses.append(Status(id=3, message='error'))
-    statuses.append(Status(id=4, message='completed'))
+    if session.query(Status).count() == 0:
+        logger.debug("Populating Status table...")
+        statuses = list()
+        statuses.append(Status(id=0, message='untouched'))
+        statuses.append(Status(id=1, message='needs more prior samples'))
+        statuses.append(Status(id=2, message='needs mcmc'))
+        statuses.append(Status(id=3, message='error'))
+        statuses.append(Status(id=4, message='completed'))
 
-    session.add_all(statuses)
-    session.commit()
-    logger.debug("...done")
+        session.add_all(statuses)
+        session.commit()
+        logger.debug("...done")
 
     session.close()
 
@@ -183,8 +194,8 @@ def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
         rc_colnames.pop(i)
 
     # What APOGEE IDs are already loaded as RC stars?
-    rc_apogee_ids = session.query(AllStar.apstar_id).join(RedClump).all()
-    rc_apogee_ids = [x[0] for x in rc_apogee_ids]
+    rc_ap_ids = session.query(AllStar.apstar_id).join(RedClump).all()
+    rc_ap_ids = [x[0] for x in rc_ap_ids]
 
     rcstars = []
     with Timer() as t:
@@ -199,9 +210,9 @@ def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
             except:
                 continue
 
-            if row['apogee_id'] in rc_apogee_ids:
+            if row['apstar_id'] in rc_ap_ids:
                 q = session.query(RedClump).join(AllStar).filter(
-                    AllStar.apogee_id == row['apogee_id'])
+                    AllStar.apstar_id == row['apstar_id'])
 
                 if overwrite:
                     q.delete()

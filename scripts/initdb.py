@@ -1,8 +1,8 @@
 # Project
 from twoface.log import log as logger
-from TwoFace.db.init import initialize_db, load_red_clump
+from twoface.db.init import initialize_db, load_red_clump
 
-def main(allVisit_file, allStar_file, rc_file, overwrite=False):
+def main(allVisit_file, allStar_file, rc_file, overwrite=False, **_):
     database_name = 'apogee.sqlite' # TODO: should this be enforced?
 
     initialize_db(allVisit_file, allStar_file, database_name,
