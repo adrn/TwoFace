@@ -85,8 +85,8 @@ matrix:
 install:
     - source ci/install.sh
 
-before_script:
-    - source ci/before_script.sh
+# before_script:
+#     - source ci/before_script.sh
 
 script:
     - source ci/script.sh
