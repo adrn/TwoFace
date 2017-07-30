@@ -74,7 +74,6 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     all_visits = dict()
     with Timer() as t:
         for i,row in enumerate(allstar_tbl): # Load every star
-            logger.log(1, 'Dude '+str(i))
             row_data = dict([(k.lower(), row[k]) for k in allstar_colnames])
 
             # If this APOGEE ID is already in the database and we are
@@ -85,9 +84,6 @@ def initialize_db(allVisit_file, allStar_file, database_file,
                 star = q.one()
 
                 if overwrite:
-                    logger.log(1, 'Overwriting star {0}'
-                               .format(row_data['apstar_id']))
-
                     visits = session.query(AllVisit).join(AllVisitToAllStar,
                                                           AllStar)\
                         .filter(AllStar.apstar_id == star.apstar_id).all()
@@ -99,18 +95,18 @@ def initialize_db(allVisit_file, allStar_file, database_file,
                     star = AllStar(**row_data)
                     stars.append(star)
 
-                    logger.log(0, 'Overwriting star {0} in database'
+                    logger.log(1, 'Overwriting star {0} in database'
                                   .format(star))
 
                 else:
-                    logger.log(0, 'Loaded star {0} from database'.format(star))
+                    logger.log(1, 'Loaded star {0} from database'.format(star))
 
             else:
                 star = AllStar(**row_data)
                 stars.append(star)
-                logger.log(0, 'Adding star {0} to database'.format(star))
+                logger.log(1, 'Adding star {0} to database'.format(star))
 
-            if (star.visits and overwrite) or not star.visits:
+            if not star.visits or (star.visits and overwrite):
                 if star.apogee_id not in all_visits:
                     visits = []
                     rows = allvisit_tbl[allvisit_tbl['APOGEE_ID']==row['APOGEE_ID']]
@@ -222,18 +218,18 @@ def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
                     rc.star = star
                     rcstars.append(rc)
 
-                    logger.log(0, 'Overwriting rc {0} in database'
+                    logger.log(1, 'Overwriting rc {0} in database'
                                   .format(rc))
 
                 else:
                     rc = q.one()
-                    logger.log(0, 'Loaded rc {0} from database'.format(rc))
+                    logger.log(1, 'Loaded rc {0} from database'.format(rc))
 
             else:
                 rc = RedClump(**row_data)
                 rc.star = star
                 rcstars.append(rc)
-                logger.log(0, 'Adding rc {0} to database'.format(rc))
+                logger.log(1, 'Adding rc {0} to database'.format(rc))
 
             if i % batch_size == 0 and i > 0:
                 session.add_all(rcstars)
