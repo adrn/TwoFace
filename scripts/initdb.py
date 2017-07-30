@@ -1,18 +1,22 @@
 # Project
 from twoface.log import log as logger
-from TwoFace.db.init import initialize_db
+from TwoFace.db.init import initialize_db, load_red_clump
 
 def main(allVisit_file, allStar_file, rc_file, overwrite=False):
     database_name = 'apogee.sqlite' # TODO: should this be enforced?
-    initialize_db(allVisit_file, allStar_file, rc_file, database_name,
+
+    initialize_db(allVisit_file, allStar_file, database_name,
                   overwrite=overwrite)
+
+    load_red_clump(rc_file, database_name, overwrite=overwrite)
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
     import logging
 
     # Define parser object
-    parser = ArgumentParser(description="Initialize the TwoFace project database.")
+    parser = ArgumentParser(description="Initialize the TwoFace project "
+                                        "database.")
 
     vq_group = parser.add_mutually_exclusive_group()
     vq_group.add_argument('-v', '--verbose', action='count', default=0,
