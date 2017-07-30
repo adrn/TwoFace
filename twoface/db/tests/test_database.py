@@ -8,9 +8,9 @@ import yaml
 
 # Project
 from ...config import TWOFACE_CACHE_PATH
-from ..core import db_connect, Session
+from ..connect import db_connect
 from ..model import AllStar, AllVisit, StarResult, Status, JokerRun
-from ..init import initialize_db
+from ..init import initialize_db, load_red_clump
 
 class TestDB(object):
 
@@ -22,13 +22,15 @@ class TestDB(object):
         self.db_path = path.join(TWOFACE_CACHE_PATH, config['database_file'])
 
         # initialize the database
+        Session, self.engine = db_connect(self.db_path)
+
         initialize_db(allVisit_file=get_pkg_data_filename('test-allVisit.fits'),
                       allStar_file=get_pkg_data_filename('test-allStar.fits'),
-                      rc_file=get_pkg_data_filename('test-rc.fits'),
                       database_file=self.db_path,
                       drop_all=True)
 
-        self.engine = db_connect(self.db_path)
+        load_red_clump(get_pkg_data_filename('test-rc.fits'), self.db_path)
+
         self.session = Session()
 
     def test_one(self):

@@ -9,26 +9,29 @@ import numpy as np
 from ..config import TWOFACE_CACHE_PATH
 from ..util import Timer
 from ..log import log as logger
-from .connect import Session, db_connect, Base
+from .connect import db_connect, Base
 from .model import AllStar, AllVisit, Status, RedClump
 
-__all__ = ['initialize_db']
+__all__ = ['initialize_db', 'load_red_clump']
 
-def initialize_db(allVisit_file, allStar_file, rc_file, database_file,
-                  drop_all=False, overwrite=False, session=None):
+def initialize_db(allVisit_file, allStar_file, database_file,
+                  drop_all=False, overwrite=False, batch_size=4096):
     """Initialize the database given FITS filenames for the APOGEE data.
 
     Parameters
     ----------
     allVisit_file : str
+        Full path to APOGEE allVisit file.
     allStar_file : str
-    rc_file : str
+        Full path to APOGEE allStar file.
     database_file : str
+        Filename (not path) of database file in cache path.
     drop_all : bool (optional)
         Drop all existing tables and re-create the database.
     overwrite : bool (optional)
         Overwrite any data already loaded into the database.
-
+    batch_size : int (optional)
+        How many rows to create before committing.
     """
 
     database_path = join(TWOFACE_CACHE_PATH, database_file)
@@ -36,21 +39,18 @@ def initialize_db(allVisit_file, allStar_file, rc_file, database_file,
     norm = lambda x: abspath(expanduser(x))
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
     allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO'])]
-
     allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
-    rc_tbl = Table.read(norm(rc_file), format='fits', hdu=1)
 
-    if session is None:
-        engine = db_connect(database_path)
-        logger.debug("Connected to database at '{}'".format(database_path))
+    Session, engine = db_connect(database_path)
+    logger.debug("Connected to database at '{}'".format(database_path))
 
-        if drop_all:
-            # this is the magic that creates the tables based on the definitions in
-            # twoface/db/model.py
-            Base.metadata.drop_all()
-            Base.metadata.create_all()
+    if drop_all:
+        # this is the magic that creates the tables based on the definitions in
+        # twoface/db/model.py
+        Base.metadata.drop_all()
+        Base.metadata.create_all()
 
-        session = Session()
+    session = Session()
 
     logger.debug("Loading allStar, allVisit tables...")
 
@@ -66,16 +66,9 @@ def initialize_db(allVisit_file, allStar_file, rc_file, database_file,
     i = allvisit_colnames.index('ID')
     allvisit_colnames.pop(i)
 
-    rc_colnames = [str(x).split('.')[1].upper()
-                   for x in RedClump.__table__.columns]
-    for name in ['ID', 'ALLSTAR_ID']:
-        i = rc_colnames.index(name)
-        rc_colnames.pop(i)
-
     # What APOGEE IDs are already loaded?
     apogee_ids = [x[0] for x in session.query(AllStar.apstar_id).all()]
 
-    batch_size = 4096 # MAGIC NUMBER
     stars = []
     all_visits = dict()
     with Timer() as t:
@@ -140,7 +133,54 @@ def initialize_db(allVisit_file, allStar_file, rc_file, database_file,
                          for item in sublist])
         session.commit()
 
-    # Now load the Red Clump table
+    # Load the status table
+    logger.debug("Populating Status table...")
+    statuses = list()
+    statuses.append(Status(id=0, message='untouched'))
+    statuses.append(Status(id=1, message='needs more prior samples'))
+    statuses.append(Status(id=2, message='needs mcmc'))
+    statuses.append(Status(id=3, message='error'))
+    statuses.append(Status(id=4, message='completed'))
+
+    session.add_all(statuses)
+    session.commit()
+    logger.debug("...done")
+
+    session.close()
+
+def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
+    """Load the red clump catalog stars into the database.
+
+    Information about this catalog can be found here:
+    http://www.sdss.org/dr13/data_access/vac/
+
+    Parameters
+    ----------
+    filename : str
+        Full path to APOGEE red clump FITS file.
+    database_file : str
+        Filename (not path) of database file in cache path.
+    overwrite : bool (optional)
+        Overwrite any data already loaded into the database.
+    batch_size : int (optional)
+        How many rows to create before committing.
+    """
+
+    database_path = join(TWOFACE_CACHE_PATH, database_file)
+
+    norm = lambda x: abspath(expanduser(x))
+    rc_tbl = Table.read(norm(filename), format='fits', hdu=1)
+
+    Session, engine = db_connect(database_path)
+    logger.debug("Connected to database at '{}'".format(database_path))
+    session = Session()
+
+    # What columns do we load?
+    rc_colnames = [str(x).split('.')[1].upper()
+                   for x in RedClump.__table__.columns]
+    for name in ['ID', 'ALLSTAR_ID']:
+        i = rc_colnames.index(name)
+        rc_colnames.pop(i)
 
     # What APOGEE IDs are already loaded as RC stars?
     rc_apogee_ids = session.query(AllStar.apstar_id).join(RedClump).all()
@@ -197,18 +237,5 @@ def initialize_db(allVisit_file, allStar_file, rc_file, database_file,
         session.commit()
 
     logger.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))
-
-    # Load the status table
-    logger.debug("Populating Status table...")
-    statuses = list()
-    statuses.append(Status(id=0, message='untouched'))
-    statuses.append(Status(id=1, message='needs more prior samples'))
-    statuses.append(Status(id=2, message='needs mcmc'))
-    statuses.append(Status(id=3, message='error'))
-    statuses.append(Status(id=4, message='completed'))
-
-    session.add_all(statuses)
-    session.commit()
-    logger.debug("...done")
 
     session.close()

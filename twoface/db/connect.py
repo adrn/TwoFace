@@ -8,7 +8,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 
-Session = scoped_session(sessionmaker(autoflush=True, autocommit=False))
 Base = declarative_base()
 
 def db_connect(database_path, ensure_db_exists=True):
@@ -28,11 +27,13 @@ def db_connect(database_path, ensure_db_exists=True):
         The sqlalchemy database engine.
     """
 
-    engine = create_engine("sqlite:///{}".format(os.path.abspath(database_path)))
-    Session.configure(bind=engine)
+    engine = create_engine("sqlite:///{}"
+                           .format(os.path.abspath(database_path)))
+    Session = scoped_session(sessionmaker(bind=engine, autoflush=True,
+                                          autocommit=False))
     Base.metadata.bind = engine
 
     if ensure_db_exists:
         Base.metadata.create_all(engine)
 
-    return engine
+    return Session, engine

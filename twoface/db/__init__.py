@@ -1,3 +1,3 @@
-from .connect import db_connect, Session
+from .connect import db_connect
 from .model import *
 from .init import initialize_db

@@ -353,13 +353,39 @@ class AllVisit(Base):
     def __repr__(self):
         return "<ApogeeVisit(APOGEE_ID='{}', MJD='{}')>".format(self.apogee_id, self.mjd)
 
+class CaoVelocity(Base):
+    __tablename__ = 'caovelocity'
+
+    id = Column(types.Integer, primary_key=True)
+
+    allstar_id = Column("allstar_id", types.Integer, ForeignKey('allstar.id'))
+    star = relationship("AllStar", backref="cao_velocities")
+
+    visit_name = Column("visit_name", types.REAL)
+    bjd = Column("bjd", types.REAL)
+    teff = Column("teff", types.REAL)
+    logg = Column("logg", types.REAL)
+    feh = Column("feh", types.REAL)
+    a = Column("a", types.REAL)
+    b = Column("b", types.REAL)
+    c = Column("c", types.REAL)
+    chiinf = Column("chiinf", types.REAL)
+    chimix = Column("chimix", types.REAL)
+    vhelio = Column("vhelio", types.REAL) # vbary fo' real
+    vshift = Column("vshift", types.REAL)
+    vsini = Column("vsini", types.REAL)
+    vmicro = Column("vmicro", types.REAL)
+    vmacro = Column("vmacro", types.REAL)
+    vrad = Column("vrad", types.REAL)
+    xshift = Column("xshift", types.REAL)
+
 class RedClump(Base):
     __tablename__ = 'redclump'
 
     id = Column(types.Integer, primary_key=True)
 
     allstar_id = Column("allstar_id", types.Integer, ForeignKey('allstar.id'))
-    star = relationship("AllStar")
+    star = relationship("AllStar", backref="red_clump")
 
     # These are in AllStar
     # apstar_id = Column("apstar_id", types.String)
