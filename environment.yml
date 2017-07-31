@@ -7,6 +7,7 @@ dependencies:
   - python=3
   - astropy
   - numpy
+  - scipy
   - matplotlib
   - sqlalchemy
   - pyyaml

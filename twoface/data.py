@@ -1,7 +1,6 @@
 # Third-party
 import astropy.units as u
 from astropy.time import Time
-import numpy as np
 from thejoker.data import RVData
 
 class APOGEERVData(RVData):

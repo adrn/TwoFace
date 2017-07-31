@@ -7,12 +7,16 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.engine import Engine
+from sqlalchemy import event
 
-# Project
-from ..log import log as logger
-
-Session = scoped_session(sessionmaker(autoflush=True, autocommit=False))
 Base = declarative_base()
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 def db_connect(database_path, ensure_db_exists=True):
     """
@@ -31,8 +35,13 @@ def db_connect(database_path, ensure_db_exists=True):
         The sqlalchemy database engine.
     """
 
-    engine = create_engine("sqlite:///{}".format(os.path.abspath(database_path)))
-    Session.configure(bind=engine)
+    engine = create_engine("sqlite:///{}"
+                           .format(os.path.abspath(database_path)))
+    Session = scoped_session(sessionmaker(bind=engine, autoflush=True,
+                                          autocommit=False))
     Base.metadata.bind = engine
 
-    return engine
+    if ensure_db_exists:
+        Base.metadata.create_all(engine)
+
+    return Session, engine

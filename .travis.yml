@@ -2,7 +2,7 @@ language: python
 
 python:
     # - 2.7
-    - 3.5
+    # - 3.5
     - 3.6
 
 # Setting sudo to false opts in to Travis-CI container-based builds.
@@ -30,12 +30,12 @@ env:
         - ASTROPY_VERSION=stable
         - MAIN_CMD='python setup.py'
         - SETUP_CMD='test'
-        - PIP_DEPENDENCIES='git+https://github.com/adrn/thejoker'
+        - PIP_DEPENDENCIES='git+https://github.com/adrn/thejoker git+https://github.com/adrn/schwimmbad emcee corner'
 
         # For this package-template, we include examples of Cython modules,
         # so Cython is required for testing. If your package does not include
         # Cython code, you can set CONDA_DEPENDENCIES=''
-        - CONDA_DEPENDENCIES='astropy pyyaml sqlalchemy h5py'
+        - CONDA_DEPENDENCIES='numpy scipy matplotlib pyyaml sqlalchemy cython h5py astropy'
         - CONDA_CHANNELS='astropy-ci-extras astropy'
 
         - BUILD_PAPER='false'
@@ -85,8 +85,8 @@ matrix:
 install:
     - source ci/install.sh
 
-before_script:
-    - source ci/before_script.sh
+# before_script:
+#     - source ci/before_script.sh
 
 script:
     - source ci/script.sh
