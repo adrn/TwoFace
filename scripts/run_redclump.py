@@ -225,7 +225,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             # starting from the index `start_idx`
             samples, ln_probs = joker._rejection_sample_from_cache(
                 data, n_process, run.prior_samples_file, start_idx,
-                return_logprobs=True)
+                seed=rnd.randint(100000), return_logprobs=True)
 
             # Number of samples that survive the rejection sampling step
             n_survive = samples.shape[0]

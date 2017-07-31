@@ -15,6 +15,15 @@ from .model import (AllStar, AllVisit, AllVisitToAllStar, Status, RedClump,
 
 __all__ = ['initialize_db', 'load_red_clump']
 
+def tblrow_to_dbrow(tblrow, colnames, varchar_cols=[]):
+    row_data = dict()
+    for k in colnames:
+        if k in varchar_cols:
+            row_data[k.lower()] = tblrow[k].strip()
+        else:
+            row_data[k.lower()] = tblrow[k]
+    return row_data
+
 def initialize_db(allVisit_file, allStar_file, database_file,
                   drop_all=False, overwrite=False, batch_size=4096):
     """Initialize the database given FITS filenames for the APOGEE data.
@@ -57,15 +66,31 @@ def initialize_db(allVisit_file, allStar_file, database_file,
 
     # Figure out what data we need to pull out of the FITS files based on what
     # columns exist in the (empty) database
-    allstar_colnames = [str(x).split('.')[1].upper()
-                        for x in AllStar.__table__.columns]
-    i = allstar_colnames.index('ID')
-    allstar_colnames.pop(i)
+    allstar_skip = ['ID']
+    allstar_colnames = []
+    allstar_varchar = []
+    for x in AllStar.__table__.columns:
+        col = str(x).split('.')[1].upper()
+        if col in allstar_skip:
+            continue
 
-    allvisit_colnames = [str(x).split('.')[1].upper()
-                         for x in AllVisit.__table__.columns]
-    i = allvisit_colnames.index('ID')
-    allvisit_colnames.pop(i)
+        if str(x.type) == 'VARCHAR':
+            allstar_varchar.append(col)
+
+        allstar_colnames.append(col)
+
+    allvisit_skip = ['ID']
+    allvisit_colnames = []
+    allvisit_varchar = []
+    for x in AllVisit.__table__.columns:
+        col = str(x).split('.')[1].upper()
+        if col in allvisit_skip:
+            continue
+
+        if str(x.type) == 'VARCHAR':
+            allvisit_varchar.append(col)
+
+        allvisit_colnames.append(col)
 
     # What APOGEE IDs are already loaded?
     ap_ids = [x[0] for x in session.query(AllStar.apstar_id).all()]
@@ -75,7 +100,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     all_visits = dict()
     with Timer() as t:
         for i,row in enumerate(allstar_tbl): # Load every star
-            row_data = dict([(k.lower(), row[k]) for k in allstar_colnames])
+            row_data = tblrow_to_dbrow(row, allstar_colnames, allstar_varchar)
 
             # If this APOGEE ID is already in the database and we are
             # overwriting data, delete that row
@@ -112,8 +137,8 @@ def initialize_db(allVisit_file, allStar_file, database_file,
                     visits = []
                     rows = allvisit_tbl[allvisit_tbl['APOGEE_ID']==row['APOGEE_ID']]
                     for j,visit_row in enumerate(rows):
-                        _data = dict([(k.lower(), visit_row[k])
-                                      for k in allvisit_colnames])
+                        _data = tblrow_to_dbrow(visit_row, allvisit_colnames,
+                                                allvisit_varchar)
                         visits.append(AllVisit(**_data))
                     all_visits[star.apogee_id] = visits
 
@@ -184,11 +209,18 @@ def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
     session = Session()
 
     # What columns do we load?
-    rc_colnames = [str(x).split('.')[1].upper()
-                   for x in RedClump.__table__.columns]
-    for name in ['ID', 'ALLSTAR_ID']:
-        i = rc_colnames.index(name)
-        rc_colnames.pop(i)
+    rc_skip = ['ID', 'ALLSTAR_ID']
+    rc_colnames = []
+    rc_varchar = []
+    for x in RedClump.__table__.columns:
+        col = str(x).split('.')[1].upper()
+        if col in rc_skip:
+            continue
+
+        if str(x.type) == 'VARCHAR':
+            rc_varchar.append(col)
+
+        rc_colnames.append(col)
 
     # What APOGEE IDs are already loaded as RC stars?
     rc_ap_ids = session.query(AllStar.apstar_id).join(RedClump).all()
@@ -198,7 +230,7 @@ def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
     with Timer() as t:
         for i,row in enumerate(rc_tbl):
             # Only data for columns that exist in the table
-            row_data = dict([(k.lower(), row[k]) for k in rc_colnames])
+            row_data = tblrow_to_dbrow(row, rc_colnames, rc_varchar)
 
             # Retrieve the parent AllStar record
             try:
