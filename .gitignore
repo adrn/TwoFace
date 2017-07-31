@@ -58,3 +58,4 @@ distribute-*.tar.gz
 notebooks
 cache
 mpi
+data
