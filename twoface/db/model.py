@@ -23,6 +23,9 @@ class Status(Base):
     id = Column(types.Integer, primary_key=True, autoincrement=False)
     message = Column('message', types.String)
 
+    def __repr__(self):
+        return "<Status id={0} message='{1}'>".format(self.id, self.message)
+
 class StarResult(Base):
     __tablename__ = 'starresult'
 

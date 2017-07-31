@@ -10,7 +10,8 @@ from ..config import TWOFACE_CACHE_PATH
 from ..util import Timer
 from ..log import log as logger
 from .connect import db_connect, Base
-from .model import AllStar, AllVisit, AllVisitToAllStar, Status, RedClump
+from .model import (AllStar, AllVisit, AllVisitToAllStar, Status, RedClump,
+                    StarResult)
 
 __all__ = ['initialize_db', 'load_red_clump']
 
@@ -202,13 +203,14 @@ def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
             # Retrieve the parent AllStar record
             try:
                 star = session.query(AllStar).filter(
-                    AllStar.apstar_id == row_data['apstar_id']).one()
+                    AllStar.apstar_id == row['APSTAR_ID']).one()
             except:
+                logger.debug('Red clump star not found in AllStar - skipping')
                 continue
 
-            if row['apstar_id'] in rc_ap_ids:
+            if row['APSTAR_ID'] in rc_ap_ids:
                 q = session.query(RedClump).join(AllStar).filter(
-                    AllStar.apstar_id == row['apstar_id'])
+                    AllStar.apstar_id == row['APSTAR_ID'])
 
                 if overwrite:
                     q.delete()

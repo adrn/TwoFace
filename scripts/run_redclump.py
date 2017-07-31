@@ -51,7 +51,7 @@ import yaml
 # Project
 from twoface.data import APOGEERVData
 from twoface.log import log as logger
-from twoface.db import Session, db_connect
+from twoface.db import db_connect
 from twoface.db import (JokerRun, AllStar, AllVisit, StarResult, Status,
                         AllVisitToAllStar, RedClump)
 from twoface.config import TWOFACE_CACHE_PATH
@@ -78,7 +78,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                       .format(db_path))
 
     logger.debug("Connecting to sqlite database at '{0}'".format(db_path))
-    engine = db_connect(database_path=db_path, ensure_db_exists=False)
+    Session, engine = db_connect(database_path=db_path,
+                                 ensure_db_exists=False)
     session = Session()
 
     # See if this run (by name) is in the database already, if so, grab that.
@@ -215,15 +216,16 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         n_samples = 0 # running total of good samples returned
         start_idx = 0
         all_samples = None
+        all_ln_probs = np.array([])
         for n in range(128): # MAGIC NUMBER: but we should never hit this
             logger.debug("\t Iteration {}, using {} prior samples"
                          .format(n, n_process))
 
             # Process n_process samples from prior cache, pulled from the file
             # starting from the index `start_idx`
-            samples = joker._rejection_sample_from_cache(data, n_process,
-                                                         run.prior_samples_file,
-                                                         start_idx)
+            samples, ln_probs = joker._rejection_sample_from_cache(
+                data, n_process, run.prior_samples_file, start_idx,
+                return_logprobs=True)
 
             # Number of samples that survive the rejection sampling step
             n_survive = samples.shape[0]
@@ -236,6 +238,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                     all_samples = samples
                 else:
                     all_samples = np.vstack((all_samples, samples))
+
+                all_ln_probs = np.concatenate((all_ln_probs, ln_probs))
 
             # End processing for this star if the number of samples we have is
             # larger than or equal to the number requested per star
@@ -258,6 +262,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
                 if all_samples is None:
                     all_samples = samples
+                    all_ln_probs = np.array(ln_probs)
 
                 logger.debug("\t Hit max prior samples limit!!")
                 break
@@ -275,7 +280,6 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                                                  prior_units)
 
         # Write the samples that pass to the results file
-        # TODO: We need to also save the interim prior probabilities!!
         with h5py.File(results_filename, 'r+') as f:
             if star.apogee_id not in f:
                 g = f.create_group(star.apogee_id)
@@ -287,6 +291,10 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                 if key in g:
                     del g[key]
                 quantity_to_hdf5(g, key, samples_dict[key])
+
+            if 'ln_prior_probs' in g:
+                del g['ln_prior_probs']
+            g.create_dataset('ln_prior_probs', data=all_ln_probs)
 
         logger.debug("\t saved samples ({:.2f} seconds)".format(time.time()-t0))
 
