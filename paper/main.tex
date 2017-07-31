@@ -243,7 +243,9 @@ In addition to the above requirements, we make the following assumptions
 that restrict our attention to a well-defined model space:
 \begin{description}
 \item[correct samplings] accurate representations of posterior pdf
-  given prior and likelihood; correct likelihood function.
+  given prior and likelihood; correct likelihood function. We hereby
+  take on all the assumptions given in \sectionname~\ref{sec:fitting},
+  about noise and kinematics, and so on.
 \item[no trinaries] related to the above: no trinaries, quads, or anything
   crazier.
 \item[sufficent samplings] density and support of samplings
@@ -261,9 +263,17 @@ In a hierarchical Bayesian inference, we replace the binary-star
 system priors used in \sectionname~\ref{sec:fitting} with a parameterized
 model for the binary-star population...
 
-Because all we have is a sampling of each system under the interim prior,
+Because all we have is a sampling of each system under the interim prior
+$p(\omega\given H_0)$,
 we have to re-weight or importance-sample the individual-star samplings
 in this hierarchical inference... Cite Hogg et al; Cite DFM et al.
+% The following needs checking for symbol conventions
+\begin{eqnarray}
+  \ln p(y\given\alpha,H_1) &=& \sum_{n=1}^N \ln p(y_n\given\alpha,H_1)
+  \\
+  \ln p(y_n\given\alpha,H_1) &\propto& \ln\left[\frac{1}{K_n}\,\sum_{k=1}^{K_n}\frac{p(\omega_{nk}\given\alpha,H_1)}{p(\omega_{nk}\given H_0)}\right]
+  \quad .
+\end{eqnarray}
 
 \section{The population of red-clump binary companions}
 
