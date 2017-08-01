@@ -153,7 +153,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
                                  for item in sublist])
                 session.commit()
                 logger.debug("Loaded batch {} ({:.2f} seconds)"
-                             .format(i*batch_size, t.elapsed()))
+                             .format(i, t.elapsed()))
                 t.reset()
 
                 all_visits = dict()
@@ -269,7 +269,7 @@ def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
                 session.add_all(rcstars)
                 session.commit()
                 logger.debug("Loaded rc batch {} ({:.2f} seconds)"
-                             .format(i*batch_size, t.elapsed()))
+                             .format(i, t.elapsed()))
                 t.reset()
                 rcstars = []
 
@@ -391,7 +391,7 @@ def load_cao(filename, database_file, overwrite=False, batch_size=1024):
                 session.add_all(cvs)
                 session.commit()
                 logger.debug("Loaded caovelocity batch {0} ({1:.2f} seconds)"
-                             .format(i*batch_size, t.elapsed()))
+                             .format(i, t.elapsed()))
                 t.reset()
                 cvs = []
 
