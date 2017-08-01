@@ -53,11 +53,12 @@ from twoface.data import APOGEERVData
 from twoface.log import log as logger
 from twoface.db import db_connect
 from twoface.db import (JokerRun, AllStar, AllVisit, StarResult, Status,
-                        AllVisitToAllStar, RedClump)
+                        AllVisitToAllStar, RedClump, CaoVelocity)
 from twoface.config import TWOFACE_CACHE_PATH
 from twoface.sample_prior import make_prior_cache
 
-def main(config_file, pool, seed, overwrite=False, _continue=False):
+def main(config_file, pool, seed, overwrite=False, _continue=False,
+         cao_only=False):
     config_file = abspath(expanduser(config_file))
 
     # parse config file
@@ -129,11 +130,16 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             run.jitter = 0. * u.m/u.s
 
         # Get all stars that are also in the RedClump table with >3 visits
-        stars = session.query(AllStar).join(AllVisitToAllStar, AllVisit,
-                                            RedClump)\
-                                      .group_by(AllStar.apstar_id)\
-                                      .having(func.count(AllVisit.id) >= 3)\
-                                      .all()
+        q = session.query(AllStar).join(AllVisitToAllStar, AllVisit, RedClump)\
+                                  .group_by(AllStar.apstar_id)\
+
+        if cao_only:
+            q = q.join(CaoVelocity).having(func.count(CaoVelocity.id) >= 3)
+
+        else:
+            q = q.having(func.count(AllVisit.id) >= 3)
+
+        stars = q.all()
 
         run.stars = stars
         session.add(run)
@@ -207,7 +213,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         logger.log(1, "Starting star {0}".format(star.apogee_id))
         t0 = time.time()
 
-        data = APOGEERVData.from_visits(star.visits)
+        data = star.apogeervdata(cao=cao_only)
         logger.log(1, "\t visits loaded ({:.2f} seconds)"
                    .format(time.time()-t0))
 
@@ -360,6 +366,12 @@ if __name__ == "__main__":
                         type=str, help="Path to config file that specifies the "
                                        "parameters for this JokerRun.")
 
+    # Semi-hack
+    parser.add_argument("--cao-only", dest="cao_only", default=False,
+                        action="store_true",
+                        help="Only run on Red Clump stars with >3 Cao-measured "
+                             "radial velocities.")
+
     args = parser.parse_args()
 
     loggers = [joker_logger, logger]
@@ -388,4 +400,5 @@ if __name__ == "__main__":
     pool = choose_pool(**pool_kwargs)
 
     main(config_file=args.config_file, pool=pool, seed=args.seed,
-         overwrite=args.overwrite, _continue=args._continue)
+         overwrite=args.overwrite, _continue=args._continue,
+         cao_only=args.cao_only)
