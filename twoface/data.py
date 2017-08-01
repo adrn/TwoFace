@@ -20,9 +20,6 @@ def star_to_apogeervdata(star, cao=False):
     rv = []
     rv_rand_err = []
     for v in star.visits:
-        jd.append(float(v.jd))
-        rv_rand_err.append(float(v.vrelerr))
-
         if cao:
             if v.cao_velocity is None:
                 logger.warning('Skipping visit {0} because no CaoVelocity '
@@ -33,6 +30,9 @@ def star_to_apogeervdata(star, cao=False):
 
         else:
             rv.append(float(v.vhelio))
+
+        jd.append(float(v.jd))
+        rv_rand_err.append(float(v.vrelerr))
 
     t = Time(jd, format='jd', scale='utc')
     rv = rv * u.km/u.s
