@@ -15,7 +15,7 @@ from .quantity_type import QuantityTypeClassFactory
 from . import numpy_adapt # just need to execute code
 
 __all__ = ['AllStar', 'AllVisit', 'RedClump', 'JokerRun', 'StarResult',
-           'Status', 'AllVisitToAllStar']
+           'Status', 'AllVisitToAllStar', 'CaoVelocity']
 
 class Status(Base):
     __tablename__ = 'status'
@@ -370,13 +370,13 @@ class CaoVelocity(Base):
 
     id = Column(types.Integer, primary_key=True)
 
-    allstar_id = Column("allstar_id", types.Integer,
-                        ForeignKey('allstar.id', ondelete='CASCADE'))
-    star = relationship("AllStar",
-                        backref=backref("cao_velocities",
-                                        cascade="all, delete-orphan"))
+    allvisit_id = Column("allvisit_id", types.Integer,
+                         ForeignKey('allvisit.id', ondelete='CASCADE'))
+    visit = relationship("AllVisit",
+                         backref=backref("cao_velocity",
+                                         cascade="all, delete-orphan"))
 
-    visit_name = Column("visit_name", types.REAL)
+    visit_name = Column("visit_name", types.String)
     bjd = Column("bjd", types.REAL)
     teff = Column("teff", types.REAL)
     logg = Column("logg", types.REAL)
@@ -386,13 +386,16 @@ class CaoVelocity(Base):
     c = Column("c", types.REAL)
     chiinf = Column("chiinf", types.REAL)
     chimix = Column("chimix", types.REAL)
-    vhelio = Column("vhelio", types.REAL) # vbary fo' real
+    vbary = Column("vbary", types.REAL)
     vshift = Column("vshift", types.REAL)
     vsini = Column("vsini", types.REAL)
     vmicro = Column("vmicro", types.REAL)
     vmacro = Column("vmacro", types.REAL)
     vrad = Column("vrad", types.REAL)
     xshift = Column("xshift", types.REAL)
+
+    def __repr__(self):
+        return "<CaoVelocity visit={0}>".format(self.visit_name)
 
 class RedClump(Base):
     __tablename__ = 'redclump'

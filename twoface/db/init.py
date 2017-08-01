@@ -11,9 +11,9 @@ from ..util import Timer
 from ..log import log as logger
 from .connect import db_connect, Base
 from .model import (AllStar, AllVisit, AllVisitToAllStar, Status, RedClump,
-                    StarResult)
+                    StarResult, CaoVelocity)
 
-__all__ = ['initialize_db', 'load_red_clump']
+__all__ = ['initialize_db', 'load_red_clump', 'load_cao']
 
 def tblrow_to_dbrow(tblrow, colnames, varchar_cols=[]):
     row_data = dict()
@@ -275,6 +275,128 @@ def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
 
     if len(rcstars) > 0:
         session.add_all(rcstars)
+        session.commit()
+
+    logger.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))
+
+    session.close()
+
+# ------------------------------------------------------------------------------
+def cao_visit_to_visit_id(visit):
+    """This is some whack magic shit"""
+    visit = visit.replace('apVisit', 'apogee.apo25m.s').replace('-', '.')
+    pieces = []
+    for piece in visit.split('.'):
+        try:
+            pieces.append(str(int(piece)))
+        except:
+            pieces.append(piece)
+    return '.'.join(pieces)
+
+def load_cao(filename, database_file, overwrite=False, batch_size=512):
+    """Load Jason Cao's Cannon-measured radial velocities into the database.
+
+    Parameters
+    ----------
+    filename : str
+        Full path to APOGEE red clump FITS file.
+    database_file : str
+        Filename (not path) of database file in cache path.
+    overwrite : bool (optional)
+        Overwrite any data already loaded into the database.
+    batch_size : int (optional)
+        How many rows to create before committing.
+    """
+
+    database_path = join(TWOFACE_CACHE_PATH, database_file)
+
+    norm = lambda x: abspath(expanduser(x))
+    tbl = Table.read(norm(filename), format='fits', hdu=1)
+
+    Session, engine = db_connect(database_path)
+    logger.debug("Connected to database at '{}'".format(database_path))
+    session = Session()
+
+    # What columns do we load?
+    skip = ['ID', 'ALLVISIT_ID',
+            'APOGEEID', 'RA', 'DEC', 'AirMass', 'FIBER', 'SNR']
+    colnames = []
+    varchar = []
+    for x in CaoVelocity.__table__.columns:
+        col = str(x).split('.')[1].upper()
+        if col in skip:
+            continue
+
+        if str(x.type) == 'VARCHAR':
+            varchar.append(col)
+
+        colnames.append(col)
+
+    # HACK: Jason uses the name "VISIT" but I use the column name "VISIT_NAME"
+    colnames.pop(colnames.index('VISIT_NAME'))
+    colnames.append('VISIT')
+
+    # What visits are already loaded?
+    visit_ids = [x[0] for x in
+                 session.query(AllVisit.visit_id).join(CaoVelocity).all()]
+    logger.debug("{0} CaoVelocity visits already loaded".format(len(visit_ids)))
+
+    cvs = []
+    with Timer() as t:
+        for i,row in enumerate(tbl):
+            # Only data for columns that exist in the table
+            row_data = tblrow_to_dbrow(row, colnames, varchar)
+            row_data['visit_name'] = row_data['visit']
+            del row_data['visit']
+
+            # Convert Jason's visit filename to an APOGEE visit_id
+            visit_id = cao_visit_to_visit_id(row_data['visit_name'])
+
+            # Retrieve the parent AllVisit record
+            try:
+                visit = session.query(AllVisit).filter(
+                    AllVisit.visit_id == visit_id).one()
+            except:
+                logger.debug('AllVisit row not found for CaoVelocity '
+                             'measurement - skipping')
+                continue
+
+            if visit_id in visit_ids: # already in there
+                q = session.query(CaoVelocity).join(AllVisit).filter(
+                    AllVisit.visit_id == visit_id)
+
+                if overwrite:
+                    q.delete()
+                    session.commit()
+
+                    cv = CaoVelocity(**row_data)
+                    cv.visit = visit
+                    cvs.append(cv)
+
+                    logger.log(1, 'Overwriting caovelocity {0} in database'
+                                  .format(cv))
+
+                else:
+                    cv = q.one()
+                    logger.log(1, 'Loaded caovelocity {0} from database'
+                               .format(cv))
+
+            else:
+                cv = CaoVelocity(**row_data)
+                cv.visit = visit
+                cvs.append(cv)
+                logger.log(1, 'Adding caovelocity {0} to database'.format(cv))
+
+            if i % batch_size == 0 and i > 0:
+                session.add_all(cvs)
+                session.commit()
+                logger.debug("Loaded caovelocity batch {0} ({1:.2f} seconds)"
+                             .format(i*batch_size, t.elapsed()))
+                t.reset()
+                cvs = []
+
+    if len(cvs) > 0:
+        session.add_all(cvs)
         session.commit()
 
     logger.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))
