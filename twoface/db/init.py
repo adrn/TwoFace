@@ -293,7 +293,7 @@ def cao_visit_to_visit_id(visit):
             pieces.append(piece)
     return '.'.join(pieces)
 
-def load_cao(filename, database_file, overwrite=False, batch_size=512):
+def load_cao(filename, database_file, overwrite=False, batch_size=1024):
     """Load Jason Cao's Cannon-measured radial velocities into the database.
 
     Parameters
