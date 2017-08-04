@@ -15,6 +15,7 @@
 % - Reserve () for function arguments; use [] or {} for outer shit.
 % - Always prior pdf or posterior pdf, never prior or posterior (that's your arse).
 % - Use \sectionname not Section, \figname not Figure, \documentname not Article or Paper or paper.
+% - Make sure that two assumptions in the two assumption lists only have the same name if they really are the same assumption: These are proper names!
 % - Hyphenate binary-star when it is an adjective, not when it is a noun!
 
 \include{gitstuff}
@@ -217,10 +218,15 @@ pass our thresholds for discovery as binary systems.
 In this \sectionname, we describe the first phase, that is, the
 individual-system sampling phase for discovery and characterization.
 
-We make our posterior samplings under the following assumptions:
+We perform our individual system fits---that is, make our posterior
+samplings---under the following assumptions:
 \begin{description}
-\item[foo] whatevs
-\item[bar] and more
+\item[no trinaries] whatevs: No trinaries or beyond. Obviously wrong!
+\item[SB1] whatevs: There is no significant light contributed by the secondary.
+\item[Kepler] whatevs: No non-gravitational contributions to RV history.
+\item[noise model] whatevs: Measurements are unbiased and noise estimates are correct up to jitter; everything Gaussian.
+\item[interim prior] We adopt a prior pdf on binary-system parameters
+  with the following properties...
 \end{description}
 
 Summary of \thejoker\ and what it does; that is, that it obeys the
@@ -310,6 +316,9 @@ in this hierarchical inference... Cite Hogg et al; Cite DFM et al.
 \section{The population of red-clump binary companions}
 
 \section{Discussion}
+
+Return to our various assumptions and make sure that we discuss them
+\emph{by name} here.
 
 \acknowledgements
 
