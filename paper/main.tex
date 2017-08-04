@@ -20,7 +20,7 @@
 \include{gitstuff}
 \include{preamble}
 
-% adjust ASS-TEX shit
+% adjust AAS-TEX shit
 \setlength{\parindent}{1.\baselineskip}
 
 % define macros for text
@@ -118,6 +118,9 @@ for ZZZ and WWW.
 
 \section{Introduction} \label{sec:intro}
 
+APW: Opening sentence: If we see RV changes, there must be binaries!
+Can we infer binary populations from bad data?
+
 If we want to use a spectroscopic survey to responsibly measure the
 binary-star population---that is, if we want to get (say) the mass,
 mass ratio, and period distribution of binary-star systems---we face
@@ -197,14 +200,43 @@ What we did (if anything) with the missing visits.
 
 \section{Method: Detection and orbit fitting}\label{sec:fitting}
 
-APW: Should we start this section with a set of named assumptions, as we
-did in Anderson et al?
+Our approach here is to proceed in two phases.
+In the first phase, we obtain a posterior sampling in binary-system
+parameter space for every individual star, treating it as a
+single-lined (SB1) spectroscopic binary system with a single
+companion.
+This sampling is performed under a relatively uninformative prior pdf,
+which will be called the ``\emph{interim prior}''.
+These samplings are used to discover and characterize individual binary-star
+systems, and generate (among other things) a catalog of binaries.
+In the second phase, we perform a hierarchical inference of the binary
+population, using (responsibly) these samplings under the interim
+prior as inputs.
+In the second phase we use all samplings of all stars, not just those that
+pass our thresholds for discovery as binary systems.
+In this \sectionname, we describe the first phase, that is, the
+individual-system sampling phase for discovery and characterization.
 
-Summary of \thejoker\ and what it does.
+We make our posterior samplings under the following assumptions:
+\begin{description}
+\item[foo] whatevs
+\item[bar] and more
+\end{description}
+
+Summary of \thejoker\ and what it does; that is, that it obeys the
+relevant parts of our assumptions.
 
 Any modifications or knob-settings for \thejoker?
 
+Examples of outputs and etc.
+
 \section{A catalog of red-clump binary systems}
+
+Thresholding on what now?
+
+Catalog.
+
+Some highlights from this catalog.
 
 \section{Method: Population inferences}\label{sec:popinference}
 
