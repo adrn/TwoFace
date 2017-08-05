@@ -17,6 +17,7 @@
 % - Use \sectionname not Section, \figname not Figure, \documentname not Article or Paper or paper.
 % - Make sure that two assumptions in the two assumption lists only have the same name if they really are the same assumption: These are proper names!
 % - Hyphenate binary-star when it is an adjective, not when it is a noun!
+% - Where there are defined math symbols (like \pars), use them!
 
 % other notes
 % - Binary engulfment reference: https://arxiv.org/pdf/1002.2216.pdf
@@ -36,6 +37,10 @@
 \newcommand{\DR}{\acronym{DR13}}
 \newcommand{\RC}{\acronym{RC}}
 \newcommand{\RGB}{\acronym{RGB}}
+
+% define macros for math
+\newcommand{\hyperpars}{\gamma}
+\newcommand{\pars}{\theta}
 
 % for response to referee
 % \renewcommand{\resp}[1]{#1}
@@ -306,32 +311,38 @@ that restrict our attention to a well-defined model space:
 \item[masses known] The mass of each primary \RC\ star is known, with
   a correctly known posterior pdf, from prior work (CITE NESS).
 \item[population parameterization] We adopt the following
-  parameterization of the population. In what follows, $\theta$ will
+  parameterization of the population. In what follows, $\hyperpars$ will
   stand in for the full set of hyper-parameters (population
   parameters).
   \begin{itemize}
   \item Each primary \RC\ star has a probability $F$ (pure probability
     $0<F<1$) of having a secondary companion. $F$ is a hyper-parameter
-    in $\theta$.
-  \item The log-period distribution $p(\ln P\given\theta)$ is a power
-    law between end-points, or
+    in $\hyperpars$.
+  \item For those with secondary companions, the log-period $\ln P$
+    distribution $p(\ln P\given\hyperpars)$ is a power law between
+    end-points, or
     \begin{eqnarray}
-      \ln p(\ln P\given\theta) &=& g_0 + (g_1 - g_0)\,\frac{\ln P - x_0}{x_1 - x_0}
+      \ln p(\ln P\given\hyperpars) &=& g_0 + (g_1 - g_0)\,\frac{\ln P - x_0}{x_1 - x_0}
       \quad \mbox{for $x_0<\ln P<x_1$,}
     \end{eqnarray}
-    where $g_0, g_1, x_0, x_1$ are hyper-parameters in $\theta$.
+    where $g_0, g_1, x_0, x_1$ are hyper-parameters in $\hyperpars$.
+    Parameters $g_0, g_1$ are natural logs of densities in log-period space.
+    Parameters $x_0, x_1$ are log-period limits.
   \item Each primary star has a true mass $M$ (which we only know
     noisily) and the companion mass is potentially larger or
-    smaller (!). The log-mass-ratio distribution $p(\ln q\given\theta)$ is
+    smaller (!). The log-mass-ratio $\ln q$ distribution
+    $p(\ln q\given\hyperpars)$ is
     \begin{eqnarray}
-      \ln p(\ln q\given\theta) &=& h_0 + (h_1 - h_0)\,\frac{\ln q - y_0}{y_1 - y_0}
+      \ln p(\ln q\given\hyperpars) &=& h_0 + (h_1 - h_0)\,\frac{\ln q - y_0}{y_1 - y_0}
       \quad \mbox{for $y_0<\ln q<y_1$,}
     \end{eqnarray}
-    where $h_0, h_1, y_0, y_1$ are hyper-parameters in $\theta$.
-  \item The eccentricity distribution $p(e\given P,\theta)$ is a beta,
+    where $h_0, h_1, y_0, y_1$ are hyper-parameters in $\hyperpars$.
+    Parameters $h_0, h_1$ are natural logs of densities in log-mass-ratio space.
+    Parameters $y_0, y_1$ are log-mass-ratio limits.
+  \item The eccentricity distribution $p(e\given P,\hyperpars)$ is a beta,
     and permitted to vary with period:
     \begin{eqnarray}
-      p(e\given P,\theta) &=& B(e\given \alpha(P),\beta(P))
+      p(e\given P,\hyperpars) &=& B(e\given \alpha(P),\beta(P))
       \\
       \alpha(P) &=& a_0 + (a_1 - a_0)\,\frac{P - x_0}{x_1 - x_0}
       \\
@@ -340,11 +351,15 @@ that restrict our attention to a well-defined model space:
     \end{eqnarray}
     where $B(x\given\alpha,\beta)$ is the beta distribution with
     control parameters $\alpha,\beta$, and $a_0, a_1, b_0, b_1$ are
-    hyper-parameters in $\theta$.
-  \item The inclination distribution $p(i)$ and the argument-of-perihelion
-    distribution $p(\omega)$ and the phase distribution $p(\phi)$ are all
-    fixed to their isotropic distributions. They bring no hyper-parameters
-    to $\theta$.
+    hyper-parameters in $\hyperpars$.
+    Parameters $a_0, a_1$ are values of the beta-distribution alpha-parameter
+    at the log-period limits, and parameters $b_0, b_1$ are values of the
+    beta-distribution beta-parameter at the limits.
+  \item The inclination $i$ distribution $p(i)$ and the
+    argument-of-perihelion $\omega$ distribution $p(\omega)$ and the
+    orbital-phase $\phi$ (at the fiducial time DEFINE THIS)
+    distribution $p(\phi)$ are all fixed to their isotropic
+    distributions. They bring no hyper-parameters to $\hyperpars$.
   \end{itemize}
 \item[hyper-priors] whatevs
 \end{description}
@@ -359,16 +374,25 @@ system priors used in \sectionname~\ref{sec:fitting} with a parameterized
 model for the binary-star population...
 
 Because all we have is a sampling of each system under the interim prior
-$p(\omega\given H_0)$,
+$p(\pars\given H_0)$,
 we have to re-weight or importance-sample the individual-star samplings
 in this hierarchical inference... Cite Hogg et al; Cite DFM et al.
 % The following needs checking for symbol conventions
 \begin{eqnarray}
-  \ln p(y\given\alpha,H_1) &=& \sum_{n=1}^N \ln p(y_n\given\alpha,H_1)
+  \ln p(y\given\hyperpars,H_1) &=& \sum_{n=1}^N \ln p(y_n\given\hyperpars,H_1)
   \\
-  \ln p(y_n\given\alpha,H_1) &\propto& \ln\left[\frac{1}{K_n}\,\sum_{k=1}^{K_n}\frac{p(\omega_{nk}\given\alpha,H_1)}{p(\omega_{nk}\given H_0)}\right]
-  \quad .
+  \ln p(y_n\given\hyperpars,H_1) &=& \ln\left[\frac{1}{K_n}\,\sum_{k=1}^{K_n}\frac{p(\pars_{nk}\given\hyperpars,H_1)}{p(\pars_{nk}\given H_0)}\right] + Q_n
+  \quad ,
 \end{eqnarray}
+where $y$ is the full data set, $y_n$ is the data set for star $n$,
+$\hyperpars$ is the vector of hyper-parameters,
+$H_1$ is the hypothesis (or model) that is our
+hyper-parameter-controlled hierarchical model,
+$H_0$ is the hypothesis corresponding to the interim prior of \sectionname~\ref{sec:fitting},
+the $\pars_{nk}$ are, for each star $n$, the $K_n$ samples from
+the posterior under $H_0$ (the interim prior),
+and $Q_n$ is an arbitrary constant that does not depend on any of the
+hyper-parameters.
 
 \section{The population of red-clump binary companions}
 
