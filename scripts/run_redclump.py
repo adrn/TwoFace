@@ -202,9 +202,6 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
                                             .filter(JokerRun.name == run.name)\
                                             .filter(Status.id == 0)
 
-    # HACK: only run for this one star
-    star_query = session.query(AllStar).filter(AllStar.apogee_id == '2M06312184+1732039')
-
     # Create a file to cache the resulting posterior samples
     results_filename = join(TWOFACE_CACHE_PATH, "{}.hdf5".format(run.name))
     n_stars = star_query.count()
