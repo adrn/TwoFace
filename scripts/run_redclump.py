@@ -97,6 +97,16 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
         raise MultipleResultsFound("Multiple JokerRun rows found for name '{0}'"
                                    .format(config['name']))
 
+    if run is not None and overwrite:
+        session.query(StarResult)\
+               .filter(StarResult.jokerrun_id == run.id)\
+               .delete()
+        session.commit()
+        session.delete(run)
+        session.commit()
+
+        run = None
+
     # If this run doesn't exist in the database yet, create it using the
     # parameters read from the config file.
     if run is None:
@@ -118,16 +128,22 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
         if 'jitter' in config['hyperparams']:
             # jitter is fixed to some quantity, specified in config file
             run.jitter = u.Quantity(*config['hyperparams']['jitter'].split())
+            logger.debug('Jitter is fixed to: {0:.2f}'.format(run.jitter))
 
         elif 'jitter_prior_mean' in config['hyperparams']:
             # jitter prior parameters are specified in config file
             run.jitter_mean = config['hyperparams']['jitter_prior_mean']
             run.jitter_stddev = config['hyperparams']['jitter_prior_stddev']
             run.jitter_unit = config['hyperparams']['jitter_prior_unit']
+            logger.debug('Sampling in jitter with mean = {0:.2f} (stddev in '
+                         'log(var) = {1:.2f}) [{2}]'
+                         .format(np.sqrt(np.exp(run.jitter_mean)),
+                                 run.jitter_stddev, run.jitter_unit))
 
         else:
             # no jitter is specified, assume no jitter
             run.jitter = 0. * u.m/u.s
+            logger.debug('No jitter.')
 
         # Get all stars that are also in the RedClump table with >3 visits
         q = session.query(AllStar).join(AllVisitToAllStar, AllVisit, RedClump)\
@@ -162,7 +178,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
 
     # Create a cache of prior samples (if it doesn't exist) and store the
     # filename in the database.
-    if not os.path.exists(run.prior_samples_file):
+    if not os.path.exists(run.prior_samples_file) or overwrite:
         logger.debug("Prior samples file not found - generating...")
         make_prior_cache(run.prior_samples_file, joker,
                          N=config['prior']['num_cache'],
@@ -185,6 +201,9 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
     result_query = session.query(StarResult).join(AllStar, JokerRun)\
                                             .filter(JokerRun.name == run.name)\
                                             .filter(Status.id == 0)
+
+    # HACK: only run for this one star
+    star_query = session.query(AllStar).filter(AllStar.apogee_id == '2M06312184+1732039')
 
     # Create a file to cache the resulting posterior samples
     results_filename = join(TWOFACE_CACHE_PATH, "{}.hdf5".format(run.name))
@@ -217,73 +236,17 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
         logger.log(1, "\t visits loaded ({:.2f} seconds)"
                    .format(time.time()-t0))
 
-        # adaptive scheme for the rejection sampling:
-        n_process = 128 * run.requested_samples_per_star # 128 = MAGIC NUMBER
-        n_samples = 0 # running total of good samples returned
-        start_idx = 0
-        all_samples = None
-        all_ln_probs = np.array([])
-        for n in range(128): # MAGIC NUMBER: but we should never hit this
-            logger.debug("\t Iteration {}, using {} prior samples"
-                         .format(n, n_process))
-
-            # Process n_process samples from prior cache, pulled from the file
-            # starting from the index `start_idx`
-            samples, ln_probs = joker._rejection_sample_from_cache(
-                data, n_process, run.prior_samples_file, start_idx,
-                seed=rnd.randint(100000), return_logprobs=True)
-
-            # Number of samples that survive the rejection sampling step
-            n_survive = samples.shape[0]
-
-            # Only store the samples if more than 1 survive
-            if n_survive > 1:
-                n_samples += n_survive
-
-                if all_samples is None:
-                    all_samples = samples
-                else:
-                    all_samples = np.vstack((all_samples, samples))
-
-                all_ln_probs = np.concatenate((all_ln_probs, ln_probs))
-
-            # End processing for this star if the number of samples we have is
-            # larger than or equal to the number requested per star
-            if n_samples >= run.requested_samples_per_star:
-                break
-
-            # Update the cache index to start pulling samples from
-            start_idx += n_process
-
-            # Increase the number of samples to process by a factor of two, so
-            # at each iteration the number of samples processed increases. It's
-            # not clear the 2 is the right increase - it might be 4, or 8!
-            n_process *= 2 # MAGIC NUMBER
-
-            # If the number of samples we would process in the next iteration is
-            # larger than the total number of samples, stop. Also, if the number
-            # of samples left in the
-            if (n_process > run.max_prior_samples or
-                    n_process > (n_cached_samples-start_idx)):
-
-                if all_samples is None:
-                    all_samples = samples
-                    all_ln_probs = np.array(ln_probs)
-
-                logger.debug("\t Hit max prior samples limit!!")
-                break
-
-        else:
-            # should never get here
-            raise RuntimeError("Hit maximum number of iterations!")
+        samples_dict, ln_prior = joker.iterative_rejection_sample(
+            data, run.requested_samples_per_star, run.prior_samples_file,
+            return_logprobs=True)
 
         logger.debug("\t done sampling ({:.2f} seconds)".format(time.time()-t0))
 
         # For now, it's sufficient to write the run results to an HDF5 file
         n = run.requested_samples_per_star
-        samples_dict = joker.unpack_full_samples(all_samples[:n],
-                                                 data.t_offset,
-                                                 prior_units)
+        all_ln_probs = ln_prior[:n]
+        samples_dict = dict([(k, v[:n]) for k,v in samples_dict.items()])
+        n_actual_samples = len(all_ln_probs)
 
         # Write the samples that pass to the results file
         with h5py.File(results_filename, 'r+') as f:
@@ -304,10 +267,10 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
 
         logger.debug("\t saved samples ({:.2f} seconds)".format(time.time()-t0))
 
-        if all_samples.shape[0] >= run.requested_samples_per_star:
+        if n_actual_samples >= run.requested_samples_per_star:
             result.status_id = 4 # completed
 
-        elif all_samples.shape[0] == 1:
+        elif n_actual_samples == 1:
             # Only one sample was returned - this is probably unimodal, so this
             # star needs MCMC
             result.status_id = 2 # needs mcmc
