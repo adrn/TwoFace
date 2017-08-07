@@ -14,6 +14,8 @@ Start by cloning the repository and change into the cloned repo:
 Dependencies
 ============
 
+First off, we require Python >= 3.5
+
 The Python package dependencies are included in a `conda
 <https://www.continuum.io/downloads>`_ `environment file
 <https://github.com/adrn/TwoFace/blob/master/environment.yml>`_ -- I recommend
