@@ -336,6 +336,11 @@ def load_cao(filename, database_file, overwrite=False, batch_size=1024):
     colnames.pop(colnames.index('VISIT_NAME'))
     colnames.append('VISIT')
 
+    # APOGEE ID's for all RC stars
+    RC_apogee_ids = [x[0] for x in
+                     session.query(AllStar.apogee_id).join(RedClump)
+                            .distinct().all()]
+
     # What visits are already loaded?
     visit_ids = [x[0] for x in
                  session.query(AllVisit.visit_id).join(CaoVelocity).all()]
@@ -344,6 +349,10 @@ def load_cao(filename, database_file, overwrite=False, batch_size=1024):
     cvs = []
     with Timer() as t:
         for i,row in enumerate(tbl):
+
+            if row['APOGEEID'] not in RC_apogee_ids:
+                continue
+
             # Only data for columns that exist in the table
             row_data = tblrow_to_dbrow(row, colnames, varchar)
             row_data['visit_name'] = row_data['visit']
