@@ -632,7 +632,7 @@ class JokerRun(Base):
     name = Column('name', types.String, nullable=False)
     notes = Column('notes', types.String)
     config_file = Column('config_file', types.String, nullable=False)
-    # cache_path = Column('cache_path', types.String, nullable=False)
+    # cache_path = Column('cache_path', types.String, nullable=False) # named after joker run name
     prior_samples_file = Column('prior_samples_file', types.String,
                                 nullable=False)
 
