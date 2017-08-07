@@ -227,10 +227,15 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
         data = star.apogeervdata(cao=cao_only)
         logger.log(1, "\t visits loaded ({:.2f} seconds)"
                    .format(time.time()-t0))
+        try:
+            samples_dict, ln_prior = joker.iterative_rejection_sample(
+                data, run.requested_samples_per_star, run.prior_samples_file,
+                return_logprobs=True)
 
-        samples_dict, ln_prior = joker.iterative_rejection_sample(
-            data, run.requested_samples_per_star, run.prior_samples_file,
-            return_logprobs=True)
+        except Exception as e:
+            logger.error("\t Failed sampling for star {0} \n Error: {1}"
+                         .format(star.apogee_id, str(e)))
+            continue
 
         logger.debug("\t done sampling ({:.2f} seconds)".format(time.time()-t0))
 
