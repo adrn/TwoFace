@@ -233,8 +233,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
                 return_logprobs=True)
 
         except Exception as e:
-            logger.error("\t Failed sampling for star {0} \n Error: {1}"
-                         .format(star.apogee_id, str(e)))
+            logger.warning("\t Failed sampling for star {0} \n Error: {1}"
+                           .format(star.apogee_id, str(e)))
             continue
 
         logger.debug("\t done sampling ({:.2f} seconds)".format(time.time()-t0))
