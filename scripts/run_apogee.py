@@ -162,7 +162,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
             # process n_process samples from prior cache
             samples = joker._rejection_sample_from_cache(data, n_process,
-                                                         run.prior_samples_file, start_idx)
+                                                         run.prior_samples_file,
+                                                         start_idx)
 
             n_survive = samples.shape[0]
             if n_survive > 1:

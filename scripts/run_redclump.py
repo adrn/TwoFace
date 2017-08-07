@@ -49,7 +49,6 @@ from thejoker.utils import quantity_to_hdf5
 import yaml
 
 # Project
-from twoface.data import APOGEERVData
 from twoface.log import log as logger
 from twoface.db import db_connect
 from twoface.db import (JokerRun, AllStar, AllVisit, StarResult, Status,
@@ -179,16 +178,12 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
     # Create a cache of prior samples (if it doesn't exist) and store the
     # filename in the database.
     if not os.path.exists(run.prior_samples_file) or overwrite:
-        logger.debug("Prior samples file not found - generating...")
+        logger.debug("Prior samples file not found - generating {0} samples..."
+                     .format(config['prior']['num_cache']))
         make_prior_cache(run.prior_samples_file, joker,
                          N=config['prior']['num_cache'],
                          max_batch_size=2**22) # MAGIC NUMBER
         logger.debug("...done")
-
-    # Read units from prior samples file
-    with h5py.File(run.prior_samples_file, 'r') as f:
-        prior_units = [u.Unit(uu) for uu in f.attrs['units']]
-        n_cached_samples = f['samples'].shape[0]
 
     # Query to get all stars associated with this run that need processing:
     # they should have a status id = 0 (needs processing)
