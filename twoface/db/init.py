@@ -11,9 +11,9 @@ from ..util import Timer
 from ..log import log as logger
 from .connect import db_connect, Base
 from .model import (AllStar, AllVisit, AllVisitToAllStar, Status, RedClump,
-                    StarResult, CaoVelocity)
+                    StarResult, CaoVelocity, NessRG)
 
-__all__ = ['initialize_db', 'load_red_clump', 'load_cao']
+__all__ = ['initialize_db', 'load_red_clump', 'load_cao', 'load_nessrg']
 
 def tblrow_to_dbrow(tblrow, colnames, varchar_cols=[]):
     row_data = dict()
@@ -406,6 +406,112 @@ def load_cao(filename, database_file, overwrite=False, batch_size=1024):
 
     if len(cvs) > 0:
         session.add_all(cvs)
+        session.commit()
+
+    logger.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))
+
+    session.close()
+
+# ----------------------------------------------------------------------------
+# Ness RG masses
+
+def ness_tblrow_to_dbrow(tblrow, colnames):
+    row_data = dict()
+    for _c in tblrow.colnames:
+        c = _c.replace('(','').replace(')','').replace('[','').replace(']','')
+        c = c.replace('/', '_')
+
+        if c in colnames:
+            row_data[c] = tblrow[_c]
+
+    return row_data
+
+def load_nessrg(filename, database_file, overwrite=False, batch_size=4096):
+    """Load the Ness red giant mass catalog.
+
+    Parameters
+    ----------
+    filename : str
+        Full path to Ness red giant info file.
+    database_file : str
+        Filename (not path) of database file in cache path.
+    overwrite : bool (optional)
+        Overwrite any data already loaded into the database.
+    batch_size : int (optional)
+        How many rows to create before committing.
+    """
+
+    database_path = join(TWOFACE_CACHE_PATH, database_file)
+
+    norm = lambda x: abspath(expanduser(x))
+    tbl = Table.read(norm(filename), format='fits', hdu=1)
+
+    Session, engine = db_connect(database_path)
+    logger.debug("Connected to database at '{}'".format(database_path))
+    session = Session()
+
+    # What columns do we load?
+    skip = ['ID', 'ALLSTAR_ID']
+    colnames = []
+    for x in NessRG.__table__.columns:
+        col = str(x).split('.')[1]
+        if col in skip:
+            continue
+        colnames.append(col)
+
+    # What 2MASS IDs are already loaded?
+    ap_ids = [x[0] for x in session.query(AllStar.apogee_id).join(NessRG).all()]
+
+    ness_rows = []
+    with Timer() as t:
+        for i,row in enumerate(tbl):
+            # Only data for columns that exist in the table
+            row_data = ness_tblrow_to_dbrow(row, colnames)
+
+            # Retrieve the parent AllStar record
+            try:
+                star = session.query(AllStar).filter(
+                    AllStar.apogee_id == row['2MASS']).one()
+            except:
+                logger.log(1, 'Star not found in AllStar - skipping')
+                continue
+
+            logger.debug('Loading star {0}'.format(row['2MASS']))
+            if row['2MASS'] in ap_ids:
+                q = session.query(NessRG).join(AllStar).filter(
+                    AllStar.apogee_id == row['2MASS'])
+
+                if overwrite:
+                    q.delete()
+                    session.commit()
+
+                    nrg = NessRG(**row_data)
+                    nrg.star = star
+                    ness_rows.append(nrg)
+
+                    logger.log(1, 'Overwriting NessRG {0} in database'
+                                  .format(nrg.star.apogee_id))
+
+                else:
+                    nrg = q.one()
+                    logger.log(1, 'Loaded NessRG {0} from database'.format(nrg))
+
+            else:
+                nrg = NessRG(**row_data)
+                nrg.star = star
+                ness_rows.append(nrg)
+                logger.log(1, 'Adding NessRG {0} to database'.format(nrg))
+
+            if i % batch_size == 0 and i > 0:
+                session.add_all(ness_rows)
+                session.commit()
+                logger.debug("Loaded batch {} ({:.2f} seconds)"
+                             .format(i, t.elapsed()))
+                t.reset()
+                ness_rows = []
+
+    if len(ness_rows) > 0:
+        session.add_all(ness_rows)
         session.commit()
 
     logger.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))

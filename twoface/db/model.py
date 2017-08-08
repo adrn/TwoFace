@@ -16,7 +16,7 @@ from .quantity_type import QuantityTypeClassFactory
 from . import numpy_adapt # just need to execute code
 
 __all__ = ['AllStar', 'AllVisit', 'RedClump', 'JokerRun', 'StarResult',
-           'Status', 'AllVisitToAllStar', 'CaoVelocity']
+           'Status', 'AllVisitToAllStar', 'CaoVelocity', 'NessRG']
 
 class Status(Base):
     __tablename__ = 'status'
@@ -655,3 +655,33 @@ class JokerRun(Base):
     def __repr__(self):
         return ("<JokerRun(name='{}', date='{}')>"
                 .format(self.name, self.date.isoformat()))
+
+class NessRG(Base):
+    __tablename__ = 'nessrg'
+
+    id = Column(types.Integer, primary_key=True)
+
+    allstar_id = Column('allstar_id', types.Integer,
+                        ForeignKey('allstar.id', ondelete='CASCADE'),
+                        index=True)
+    star = relationship("AllStar")
+
+    # Melissa Ness' masses and ages from:
+    # http://iopscience.iop.org/article/10.3847/0004-637X/823/2/114/meta
+
+    # strip ()[], replace / with _
+    Type = Column('Type', types.Integer)
+    Teff = Column('Teff', types.REAL)
+    logg = Column('logg', types.REAL)
+    Fe_H = Column('Fe_H', types.REAL)
+    a_Fe = Column('a_Fe', types.REAL)
+    lnM = Column('lnM', types.REAL)
+    lnAge = Column('lnAge', types.REAL)
+    chi2 = Column('chi2', types.REAL)
+
+    e_Teff = Column('e_Teff', types.REAL)
+    e_logg = Column('e_logg', types.REAL)
+    e_Fe_H = Column('e_Fe_H', types.REAL)
+    e_a_Fe = Column('e_a_Fe', types.REAL)
+    e_logM = Column('e_logM', types.REAL)
+    e_logAge = Column('e_logAge', types.REAL)

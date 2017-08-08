@@ -1,14 +1,17 @@
 # Project
 from twoface.log import log as logger
-from twoface.db.init import initialize_db, load_red_clump
+from twoface.db.init import initialize_db, load_red_clump, load_nessrg
 
-def main(allVisit_file, allStar_file, rc_file, overwrite=False, **_):
+def main(allVisit_file, allStar_file, rc_file, nessrg_file,
+         overwrite=False, **_):
     database_name = 'apogee.sqlite' # TODO: should this be enforced?
 
     initialize_db(allVisit_file, allStar_file, database_name,
                   overwrite=overwrite)
 
     load_red_clump(rc_file, database_name, overwrite=overwrite)
+
+    load_nessrg(nessrg_file, database_name, overwrite=overwrite)
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
@@ -33,6 +36,8 @@ if __name__ == "__main__":
                         type=str, help="Path to APOGEE allVisit FITS file.")
     parser.add_argument("--redclump", dest="rc_file", required=True, type=str,
                         help="Path to APOGEE Red Clump catalog FITS file.")
+    parser.add_argument("--nessrg", dest="nessrg_file", required=True, type=str,
+                        help="Path to Ness Red Giant masses FITS file.")
 
     args = parser.parse_args()
 
