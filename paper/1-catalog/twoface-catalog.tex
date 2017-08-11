@@ -7,22 +7,21 @@
 
 % style notes
 % -----------
-% - This file generates by Makefile; don't be typing ``pdflatex'' or some
-%   bullshit.
+% - This file generates by Makefile; don't be typing ``pdflatex'' or some BS.
 % - Line break between sentences to make the git diffs readable.
-% - Simple Monte Carlo gets a capital S to indicate that it is a defined thing.
 % - Use \, as a multiply operator.
 % - Reserve () for function arguments; use [] or {} for outer shit.
 % - Always prior pdf or posterior pdf, never prior or posterior (that's your
 %   arse).
 % - Use \sectionname not Section, \figname not Figure, \documentname not Article
-%   or Paper or paper.
+%   \tablename not Table, \eqname not Equation.
 % - Make sure that two assumptions in the two assumption lists only have the
 %   same name if they really are the same assumption: These are proper names!
 % - Hyphenate binary-star when it is an adjective, not when it is a noun!
 % - Where there are defined math symbols (like \pars), use them!
 
 % other notes
+% -----------
 % - Binary engulfment reference: https://arxiv.org/pdf/1002.2216.pdf
 
 % Outline:
@@ -68,8 +67,8 @@
 
 \begin{document}\sloppy\sloppypar\raggedbottom\frenchspacing % trust me
 
-\title{Binary companions of red clump stars I: \\
-       catalog and surviving companions}
+\title{Binary companions of red giant stars I: \\
+       catalog and companions that survive the common envelope phase}
 
 \author[0000-0003-0872-7098]{Adrian~M.~Price-Whelan}
 \affiliation{Department of Astrophysical Sciences,
@@ -105,16 +104,16 @@
 \begin{abstract}\noindent % trust me
 % Context
 Repeat radial-velocity measurements of stars can be used to find stellar,
-sub-stellar, and planetary companions of stars.
-The \apogee\ survey has measured multi-epoch but sparse radial velocities for
-$> XX$ (mainly red giant) stars.
+sub-stellar, and planetary companions.
+The \apogee\ survey (\DR) has measured multi-epoch but sparse radial velocities
+for $> XX$ (mainly red giant) stars.
 Though even few observations are useful for detecting companions, such data are
 difficult to use for constraining the physical properties of companions because
 permitted orbital solutions are highly degenerate.
 % Aims
 Here we perform a search for secondary companions of \nRC\ red clump (\RC) and
 \nRGB\ red giant branch (\RGB) stars that have similar radii to \RC\ stars
-observed as part of the \apogee\ survey.
+using data from the \apogee\ survey.
 Because the primary-star masses are known, the mass-function degeneracy is
 broken and the secondary-companion masses ($m\,\sin i$) can be inferred.
 % Methods
@@ -148,9 +147,22 @@ evidence for ZZZ and WWW.
 
 \section{Introduction} \label{sec:intro}
 
-APW: Opening sentence: Even with one single star and two epochs, if we
-see an RV change, there must be binaries! What more can we say? Can we
-infer binary populations from bad data?
+Time-domain radial velocity measurements of stars fundamentally contain
+information about massive companions: even with two observations of a single
+star, a difference in the measured radial velocities implies the existence of at
+least one companion.
+Of course with just two observations, the orbital properties of the companion(s)
+will be very poorly constrained.
+Most prior searches for companions using radial velocity data have therefore
+restricted their searches to only stars with ``sufficient'' data where the
+orbital solution is unamibiguous under the ... noise model.
+
+Many of the largest (in number of objects) stellar spectroscopic surveys observe
+large samples of stars sparsely, non-uniformly, and imprecisely.
+
+Even if period, generic orbital parameters are poorly known, limits on companion
+mass or pericenter
+
 
 If we want to use a spectroscopic survey to responsibly measure the
 binary-star population---that is, if we want to get (say) the mass,
