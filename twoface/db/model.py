@@ -664,7 +664,7 @@ class NessRG(Base):
     allstar_id = Column('allstar_id', types.Integer,
                         ForeignKey('allstar.id', ondelete='CASCADE'),
                         index=True)
-    star = relationship("AllStar")
+    star = relationship("AllStar", backref=backref("ness_rg", uselist=False))
 
     # Melissa Ness' masses and ages from:
     # http://iopscience.iop.org/article/10.3847/0004-637X/823/2/114/meta
