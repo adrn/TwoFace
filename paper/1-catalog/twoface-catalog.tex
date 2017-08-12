@@ -24,18 +24,6 @@
 % -----------
 % - Binary engulfment reference: https://arxiv.org/pdf/1002.2216.pdf
 
-% Outline:
-% - Intro
-% - Data (APOGEE description)
-% - Methods
-%     - Re-measure velocities
-%     - The Joker / orbit sampling
-% - Results
-%     - Catalog of companions (including samplings)
-%     - Differences between RGB / RC
-%     - Other interesting shit
-% - Discussion
-
 \include{gitstuff}
 \include{preamble}
 
@@ -68,7 +56,7 @@
 \begin{document}\sloppy\sloppypar\raggedbottom\frenchspacing % trust me
 
 \title{Binary companions of red giant stars I: \\
-       catalog and companions that survive the common envelope phase}
+       catalog and companions that survive the common envelope}
 
 \author[0000-0003-0872-7098]{Adrian~M.~Price-Whelan}
 \affiliation{Department of Astrophysical Sciences,
@@ -147,93 +135,79 @@ evidence for ZZZ and WWW.
 
 \section{Introduction} \label{sec:intro}
 
-Time-domain radial velocity measurements of stars fundamentally contain
-information about massive companions: even with two observations of a single
-star, a difference in the measured radial velocities implies the existence of at
-least one companion.
-Of course with just two observations, the orbital properties of the companion(s)
-will be very poorly constrained.
-Most prior searches for companions using radial velocity data have therefore
-restricted their searches to only stars with ``sufficient'' data where the
-orbital solution is unamibiguous under the ... noise model.
+Time-domain radial-velocity measurements of stars contain information about
+massive companions: even with two successive observations of a single star, a
+difference in the measured radial velocities implies the existence of at least
+one companion.
+However, with few or imprecise radial-velocity measurements, the orbital
+properties of the companion(s) are very poorly constrained.
+Most prior searches for companions using survey RV data have therefore
+restricted their searches to only sources with many epochs, so that the orbital
+solution can be unambiguously determined.
+The vast majority of spectroscopic targets with repeat observations in the
+largest (by number of objects) stellar spectroscopic surveys are in the opposite
+regime: targets are often observed just a few times with sparse, non-uniform
+phase coverage.
 
-Many of the largest (in number of objects) stellar spectroscopic surveys observe
-large samples of stars sparsely, non-uniformly, and imprecisely.
+% With such data, even if the period or other generic orbital parameters
+% are very poorly constrained, limits on companion mass or pericentric distance
+% of the companion may still XX.
 
-Even if period, generic orbital parameters are poorly known, limits on companion
-mass or pericenter
+If there are only a few radial-velocity measurements made per star, and the
+companion spectrum is not observed, any measured radial-velocity values will be
+consistent with many different combinations of (primary) orbital parameters
+(period, amplitude, eccentricity, etc.).
+To identify companions to the typical star observed in a spectroscopic survey,
+we therefore face at least one major challenge: how, given a small number of
+observations of a primary star, do we reliably obtain posterior information
+about the binary-system properties?
+In general, the likelihood function---and the posterior probability distribution
+function (pdf) under any reasonable prior pdf---will be highly multimodal, and
+many of the modes will have comparable integrated probability density.
+For example, with just two radial-velocity measurements, a harmonic series of
+period modes will exist in the likelihood function.
 
+We have solved this problem previously, though with limitations (to be discussed
+more below), with \thejoker\ (\citealt{Price-Whelan:2017}).
+\thejoker\ is a Monte Carlo rejection sampler that is computationally expensive
+but probabilistically righteous:
+It delivers independent posterior pdf samples for single-companion binary
+orbital parameters, given any number of radial-velocity measurements.
+Here we use \thejoker\ to generate posterior pdf samples for \todo{which?} stars
+observed by the \apogee\ surveys (see \sectionname~\ref{sec:data};
+\citealt{Majewski:2015}).
 
-If we want to use a spectroscopic survey to responsibly measure the
-binary-star population---that is, if we want to get (say) the mass,
-mass ratio, and period distribution of binary-star systems---we face
-(at least) two challenges.
-The first is how, given a small number of observations of a primary
-star (a single-lined spectroscopic binary star), do we reliably obtain posterior
-information about the binary-system properties?
-After all, if there are only a few radial-velocity measurements made
-per star, any observed radial-velocity values will be consistent with
-many different combinations of period and amplitude (not to mention
-eccentricity and argument of perihelion) for the primary orbit.
-In general, the likelihood function, and the posterior pdf under any
-reasonable prior pdf, will be highly multimodal in these kinds of
-problems, and many of the modes will have comparable integrated
-probability density.
-We have solved this problem previously, though with limitations (to be
-discussed more below), with \thejoker\ (CITE).
-\thejoker\ is a Simple Monte Carlo rejection sampler that is
-computationally expensive but probabilistically righteous: It delivers
-independent (zero-auto-correlations) posterior pdf samples for
-single-companion binary model parameters, given any number of
-radial-velocity measurements.
-
-The second challenge is how, given all these noisy, multi-modal
-posterior pdfs over binary-system properties, many of which will
-permit a wide range of qualitatively different system properties, and
-many of which will be consistent with no companion at all, can we
-constrain parameters of a model of the full binary-system population?
-No histogram of best-fit values, nor stack of multi-modal posteriors,
-would be anything like a good estimate of the true population
-distribution.
-We have also solved this problem previously, though in the exoplanet
-domain, with hierarchical probabilistic models based on importance
-sampling (CITE DFM, and also HOGG).
-These hierarchical models derive posterior estimates of the population
-parameters that accurately describe the population, given the noisy
-information about the individual systems, provided that the noise
-model is accurate---that is, provided that the likelihood functions
-used in the individual-system inferences are themselves accurate.
-
-Here we mash up these two solutions to these two challenges.
-We deliver a catalog of binary-star systems with \RC\ primaries, and also
-posterior information about the full population statistics, for at least
-a toy model of that full population.
-We use all the data---even the non-detections, marginal detections, and
-badly multi-modal posterior pdfs---when we infer the population model;
-that is, we don't arbitrarily cut to a catalog of ``clean'' binaries.
-
-For the study of single-line binaries, red-giant stars---and even
-better red-clump stars---are ideal.
-For one, because they are so luminous, they are unlikely (in general)
-to have equally-bright companions, and therefore are well approximated
-or fit as single-line objects.
-For two, they are standard candles, or can be distance-calibrated.
-For three, they have masses that can be estimated spectrally (making
-use of dredged-up elements; CITE MARTIG and CITE NESS).
+The \apogee\ surveys primarily target red-giant-branch (\RGB) stars, which are
+ideal for the study of single-line binary systems.
+For one, because they are so luminous, they are unlikely (in general) to have
+equally-bright companions, and their spectra are therefore well-approximated or
+fit as single-line objects.
+The subset of \RGB\ stars in the ``red clump'' (\RC) are even more powerful as
+they are standard candles and have masses that can be estimated using
+spectroscopy (using dredged-up elements; \citealt{Martig:2016,Ness:2016}).
 With primary-star mass estimates, the binary-orbit fitting will return
-$m\,\sin i$ estimates for the secondary, and not just mass-function
-estimates.
-For four, the \apogee\ pipelines, and also \thecannon\, produce
-detailed abundance estimates for red giants and \RC\ stars.
-If there are causal relationships between chemical abundances and
-binary companions---and we expect there will be---these should become
-visible here.
+$m_2\,\sin i$ estimates for the secondary, and not just estimates of the
+mass-function.
+Additionally, the \apogee\ pipelines (\citealt{Garcia-Perez:2016}) and also
+\thecannon\ (\citealt{Ness:2015}) produce detailed abundance estimates for \RGB\
+and \RC\ stars.
+If there are causal relationships between chemical abundances and binary
+companions---as are expected---these should be measurable here.
+
+By making cuts on this library of posterior pdf samples (described in detail in
+\sectionname~\ref{sec:whatever}), we deliver a catalog of binary-star systems
+from the \apogee\ survey with no cuts or constraints on data quality or volume.
+We additionally highlight the subset of this catalog with \RC\ star primaries,
+for which we can compute companion mass and pericentric distance.
+
+\section{Data} \label{sec:data}
+
+\todo{HOGG: fill in this ish}
 
 HOGG: Why and how does \apogee\ rock it?
 
-HOGG: What is up with delivering a catalog (it requires decision-making)?
-
-\section{Data}
+ASPCAP: \citealt{Garcia-Perez:2016}
+SDSSIV: \citealt{Blanton:2017}
 
 Overview of what \apogee\ is, and what data we are using.
 
@@ -241,7 +215,13 @@ How we updated the individual-visit radial velocity measurements.
 
 What we did (if anything) with the missing visits.
 
-\section{Method: Detection and orbit fitting}\label{sec:fitting}
+\section{Methods}
+
+\subsection{Re-measured radial velocities}\label{sec:rv-remeasure}
+
+\todo{HOGG: fill in this ish}
+
+\subsection{Detection and orbit fitting}\label{sec:fitting}
 
 Our approach here is to proceed in two phases.
 In the first phase, we obtain a posterior sampling in binary-system
@@ -278,7 +258,15 @@ Any modifications or knob-settings for \thejoker?
 
 Examples of outputs and etc.
 
-\section{A catalog of red-clump binary systems}
+\section{Results}
+
+\subsection{Catalog / posterior samples whatever} \label{sec:full-catalog}
+
+\todo{APW}
+
+\subsection{A catalog of red-clump binary systems} \label{sec:rc-catalog}
+
+\todo{APW}
 
 Thresholding on what now?
 
@@ -286,138 +274,9 @@ Catalog.
 
 Some highlights from this catalog.
 
-\section{Method: Population inferences}\label{sec:popinference}
+\subsection{Differences in companions of RC and RGB stars} \label{sec:rc-rgb}
 
-Now we want to take the individual-star fits---or samplings---that
-we made in \sectionname~\ref{sec:fitting} and, from these, produce
-an inference of the properties of the whole \RC\ binary-star population.
-Important necessary properties of this inference are the following:
-\begin{description}
-\item[utilize non-detections] Even stars which are consistent with
-  zero radial-velocity variation (no binary companion) are relevant to
-  a populations inference. This is for two reasons: The first is that
-  the small-mass and long-period ends of the binary population will
-  imprint only low-amplitude signals in the data. These signals are
-  present at low signal-to-noise, but not if we remove them because
-  they don't make some catalog or threshold cut. The second reason
-  these stars are important is that they constrain the fraction of
-  stars with no companions. Any populations-inference method we employ
-  must responsibly harvest the information in these non-detection
-  stars.
-\item[marginalize out individual-star parameters] Every star---even
-  any star with a high-confidence companion detection---will have a
-  highly multi-modal likelihood function, with many qualitatively
-  different companion models that are nonetheless locally
-  optimal. This means that most posterior samplings (created in
-  \sectionname~\ref{sec:fitting}) under our interim prior will show
-  multiple, qualitatively distinct modes in binary-system parameter
-  space.  Any correct population inference will marginalize out these
-  extremely non-trivial distributions over individual-star
-  binary-system parameters.
-\end{description}
-We can meet these requirements---at least in principle---with a
-hierarchical Bayesian inference (hierarchical probablistic model) of
-the binary-star population.
-
-In addition to the above requirements, we make the following assumptions
-that restrict our attention to a well-defined model space:
-\begin{description}
-\item[correct samplings] accurate representations of posterior pdf
-  given prior and likelihood; correct likelihood function. We hereby
-  take on all the assumptions given in \sectionname~\ref{sec:fitting},
-  about noise and kinematics, and so on.
-\item[no trinaries] related to the above: no trinaries, quads, or anything
-  crazier.
-\item[sufficent samplings] density and support of samplings
-\item[independent stars] no relation between one star and another; each
-  drawn from the same population; no multiple populations.
-\item[masses known] The mass of each primary \RC\ star is known, with
-  a correctly known posterior pdf, from prior work (CITE NESS).
-\item[population parameterization] We adopt the following
-  parameterization of the population. In what follows, $\hyperpars$ will
-  stand in for the full set of hyper-parameters (population
-  parameters).
-  \begin{itemize}
-  \item Each primary \RC\ star has a probability $F$ (pure probability
-    $0<F<1$) of having a secondary companion. $F$ is a hyper-parameter
-    in $\hyperpars$.
-  \item For those with secondary companions, the log-period $\ln P$
-    distribution $p(\ln P\given\hyperpars)$ is a power law between
-    end-points, or
-    \begin{eqnarray}
-      \ln p(\ln P\given\hyperpars) &=& g_0 + (g_1 - g_0)\,\frac{\ln P - x_0}{x_1 - x_0}
-      \quad \mbox{for $x_0<\ln P<x_1$,}
-    \end{eqnarray}
-    where $g_0, g_1, x_0, x_1$ are hyper-parameters in $\hyperpars$.
-    Parameters $g_0, g_1$ are natural logs of densities in log-period space.
-    Parameters $x_0, x_1$ are log-period limits.
-  \item Each primary star has a true mass $M$ (which we only know
-    noisily) and the companion mass is potentially larger or
-    smaller (!). The log-mass-ratio $\ln q$ distribution
-    $p(\ln q\given\hyperpars)$ is
-    \begin{eqnarray}
-      \ln p(\ln q\given\hyperpars) &=& h_0 + (h_1 - h_0)\,\frac{\ln q - y_0}{y_1 - y_0}
-      \quad \mbox{for $y_0<\ln q<y_1$,}
-    \end{eqnarray}
-    where $h_0, h_1, y_0, y_1$ are hyper-parameters in $\hyperpars$.
-    Parameters $h_0, h_1$ are natural logs of densities in log-mass-ratio space.
-    Parameters $y_0, y_1$ are log-mass-ratio limits.
-  \item The eccentricity distribution $p(e\given P,\hyperpars)$ is a beta,
-    and permitted to vary with period:
-    \begin{eqnarray}
-      p(e\given P,\hyperpars) &=& B(e\given \alpha(P),\beta(P))
-      \\
-      \alpha(P) &=& a_0 + (a_1 - a_0)\,\frac{P - x_0}{x_1 - x_0}
-      \\
-      \beta(P) &=& b_0 + (b_1 - b_0)\,\frac{P - x_0}{x_1 - x_0}
-      \quad ,
-    \end{eqnarray}
-    where $B(x\given\alpha,\beta)$ is the beta distribution with
-    control parameters $\alpha,\beta$, and $a_0, a_1, b_0, b_1$ are
-    hyper-parameters in $\hyperpars$.
-    Parameters $a_0, a_1$ are values of the beta-distribution alpha-parameter
-    at the log-period limits, and parameters $b_0, b_1$ are values of the
-    beta-distribution beta-parameter at the limits.
-  \item The inclination $i$ distribution $p(i)$ and the
-    argument-of-perihelion $\omega$ distribution $p(\omega)$ and the
-    orbital-phase $\phi$ (at the fiducial time DEFINE THIS)
-    distribution $p(\phi)$ are all fixed to their isotropic
-    distributions. They bring no hyper-parameters to $\hyperpars$.
-  \end{itemize}
-\item[hyper-priors] whatevs
-\end{description}
-
-The binary-system parameters for each individual \RC\ star were
-inferred (in \sectionname~\ref{sec:fitting}) with an interim prior that
-is very simple and doesn't represent our true beliefs about the
-binary-star population...
-
-In a hierarchical Bayesian inference, we replace the binary-star
-system priors used in \sectionname~\ref{sec:fitting} with a parameterized
-model for the binary-star population...
-
-Because all we have is a sampling of each system under the interim prior
-$p(\pars\given H_0)$,
-we have to re-weight or importance-sample the individual-star samplings
-in this hierarchical inference... Cite Hogg et al; Cite DFM et al.
-% The following needs checking for symbol conventions
-\begin{eqnarray}
-  \ln p(y\given\hyperpars,H_1) &=& \sum_{n=1}^N \ln p(y_n\given\hyperpars,H_1)
-  \\
-  \ln p(y_n\given\hyperpars,H_1) &=& \ln\left[\frac{1}{K_n}\,\sum_{k=1}^{K_n}\frac{p(\pars_{nk}\given\hyperpars,H_1)}{p(\pars_{nk}\given H_0)}\right] + Q_n
-  \quad ,
-\end{eqnarray}
-where $y$ is the full data set, $y_n$ is the data set for star $n$,
-$\hyperpars$ is the vector of hyper-parameters,
-$H_1$ is the hypothesis (or model) that is our
-hyper-parameter-controlled hierarchical model,
-$H_0$ is the hypothesis corresponding to the interim prior of \sectionname~\ref{sec:fitting},
-the $\pars_{nk}$ are, for each star $n$, the $K_n$ samples from
-the posterior under $H_0$ (the interim prior),
-and $Q_n$ is an arbitrary constant that does not depend on any of the
-hyper-parameters.
-
-\section{The population of red-clump binary companions}
+\todo{APW}
 
 \section{Discussion}
 
