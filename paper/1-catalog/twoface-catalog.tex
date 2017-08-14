@@ -135,6 +135,11 @@ evidence for ZZZ and WWW.
 
 \section{Introduction} \label{sec:intro}
 
+\todo{An alternate approach to this intro is to start with an overview of
+      binary stars, radial velocity measurements of binarity in general...}
+
+\todo{As is, the intro is missing many citations}
+
 Time-domain radial-velocity measurements of stars contain information about
 massive companions: even with two successive observations of a single star, a
 difference in the measured radial velocities implies the existence of at least
@@ -221,40 +226,82 @@ What we did (if anything) with the missing visits.
 
 \todo{HOGG: fill in this ish}
 
-\subsection{Detection and orbit fitting}\label{sec:fitting}
+\subsection{Orbit fitting and velocity modeling}\label{sec:fitting}
 
-Our approach here is to proceed in two phases.
-In the first phase, we obtain a posterior sampling in binary-system
-parameter space for every individual star, treating it as a
-single-lined (SB1) spectroscopic binary system with a single
-companion.
-This sampling is performed under a relatively uninformative prior pdf,
-which will be called the ``\emph{interim prior}''.
-These samplings are used to discover and characterize individual binary-star
-systems, and generate (among other things) a catalog of binaries.
-In the second phase, we perform a hierarchical inference of the binary
-population, using (responsibly) these samplings under the interim
-prior as inputs.
-In the second phase we use all samplings of all stars, not just those that
-pass our thresholds for discovery as binary systems.
-In this \sectionname, we describe the first phase, that is, the
-individual-system sampling phase for discovery and characterization.
+For every source in the sample of \apogee\ stars defined in
+\sectionname~\ref{sec:data}, we obtain a posterior sampling in binary-system
+parameter space, treating it as a single-lined (SB1) spectroscopic binary system
+with a single companion.
+This sampling is performed under a relatively uninformative prior pdf, and the
+resulting posterior samplings are used to discover and characterize individual
+binary-star systems and generate a catalog of companions.
+We use \thejoker\ to perform the posterior samplings; we briefly describe the
+algorithm below, but a full description is given in previous work
+(\citealt{Price-Whelan:2017}).
+In this \sectionname, we describe the assumptions and method used to generate
+individual-system samplings.
 
 We perform our individual system fits---that is, make our posterior
 samplings---under the following assumptions:
 \begin{description}
-\item[no trinaries] whatevs: No trinaries or beyond. Obviously wrong!
-\item[SB1] whatevs: There is no significant light contributed by the secondary.
-\item[Kepler] whatevs: No non-gravitational contributions to RV history.
-\item[noise model] whatevs: Measurements are unbiased and noise estimates are correct up to jitter; everything Gaussian.
-\item[interim prior] We adopt a prior pdf on binary-system parameters
-  with the following properties...
+\item[no multiplets] All radial-velocity variations of the primary star are
+  induced by a single companion.
+  This is motivated by the idea that triple star systems are usually
+  hierarchical so that the period of the inner binary is typically much shorter
+  than the orbital period of the outer body (\todo{CITATION NEEDED}).
+  At present, we ignore the possibility of higher-order multiple systems.
+  \todo{revisit this - do we want to also sample over a long-term trend?}
+\item[Kepler] Related to the first point, all velocity variations of the primary
+  are gravitational, and we therefore ignore the possibility of intrinsic
+  variation from, e.g., stellar oscillations.
+\item[SB1] All spectra are single-lined; that is, we assume that the secondary
+  is significantly fainter and is thus undetected in the spectra.
+  This assumption is motivated by the fact that we expect \RGB\ stars to be
+  substantially more luminous than their typical companion.
+  However, there are known double-lined binary stars in the \apogee\ catalog
+  (El-Badry et al., in prep.), and an unknown fraction of \RGB--\RGB\ binaries.
+\item[simple noise model] Measurements are unbiased and noise estimates are
+  correct up to an \todo{unknown} extra variance (the ``jitter'').
+  All noise contributions result in Gaussian uncertainties on the individual
+  radial-velocity measurements.
 \end{description}
 
-Summary of \thejoker\ and what it does; that is, that it obeys the
-relevant parts of our assumptions.
+\thejoker\ is a custom-built Monte Carlo sampler designed to produce independent
+posterior samples in orbital parameters, given radial-velocity measurements
+under the assumptions above.
+Our parametrization is similar to the notation in \citet{Murray:2010}:
+The radial velocity $v$ at time $t$ is given by
+\begin{equation}
+  v(t;\bs{\theta}) = v_0 + K\,[\cos\left(\omega + f(t; e, P, \phi_0)\right) +
+    e\,\cos\omega]
+\end{equation}
+where $\bs{\theta} = (P,e,\phi_0,\omega,K,v_0)$---period, eccentricity, initial
+phase, argument of pericenter, velocity semi-amplitude, Barycentric velocity---
+and the true anomaly, $f$, is a function of the specified parameters (see
+\sectionname~2 of \citealt{Price-Whelan:2017} or \eqname~63 in
+\citealt{Murray:2010}).
 
-Any modifications or knob-settings for \thejoker?
+\thejoker\ was designed for the extremely multi-modal pdfs expected when the
+number of radial-velocity measurements of a source is small, or the data have
+low signal-to-noise.
+While other Markov Chain Monte Carlo (MCMC) methods have difficulty producing
+independent samples with such data, \thejoker\ succeeds by brute force.
+After generating an initial (very large) library of prior samples from an
+assumed prior pdf (see below), the (typically multi-modal) likelihood is
+evaluated at each sample and used to rejection sample.
+In practice, given a number of requested samples for each star, the sampling
+proceeds iteratively: since it is easier to accept samples when the data is
+sparse or noisy, far more prior sample draws (and thus likelihood
+evaluations) must occur under very constraining data.
+
+In addition to generating posterior samples for each source, we also compute the
+fully marginalized likelihood (FML) under two other models: (1) a model in which
+the radial velocity of the source is constant, and (2) a model in which the
+radial-velocity variations are purely linear.
+We later use these FML values to define cuts on our full catalog of posterior
+samples to produce a catalog of companions.
+
+\todo{equations?}
 
 Examples of outputs and etc.
 
