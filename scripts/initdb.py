@@ -9,9 +9,11 @@ def main(allVisit_file, allStar_file, rc_file, nessrg_file,
     initialize_db(allVisit_file, allStar_file, database_name,
                   overwrite=overwrite)
 
-    load_red_clump(rc_file, database_name, overwrite=overwrite)
+    if rc_file is not None:
+        load_red_clump(rc_file, database_name, overwrite=overwrite)
 
-    load_nessrg(nessrg_file, database_name, overwrite=overwrite)
+    if nessrg_file is not None:
+        load_nessrg(nessrg_file, database_name, overwrite=overwrite)
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
@@ -34,9 +36,9 @@ if __name__ == "__main__":
                         type=str, help="Path to APOGEE allStar FITS file.")
     parser.add_argument("--allvisit", dest="allVisit_file", required=True,
                         type=str, help="Path to APOGEE allVisit FITS file.")
-    parser.add_argument("--redclump", dest="rc_file", required=True, type=str,
+    parser.add_argument("--redclump", dest="rc_file", type=str, default=None,
                         help="Path to APOGEE Red Clump catalog FITS file.")
-    parser.add_argument("--nessrg", dest="nessrg_file", required=True, type=str,
+    parser.add_argument("--nessrg", dest="nessrg_file", type=str, default=None,
                         help="Path to Ness Red Giant masses FITS file.")
 
     args = parser.parse_args()
