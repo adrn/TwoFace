@@ -4,6 +4,7 @@ from os.path import abspath, expanduser, join
 # Third-party
 from astropy.table import Table
 import numpy as np
+import sqlalchemy
 
 # Project
 from ..config import TWOFACE_CACHE_PATH
@@ -25,7 +26,7 @@ def tblrow_to_dbrow(tblrow, colnames, varchar_cols=[]):
     return row_data
 
 def initialize_db(allVisit_file, allStar_file, database_file,
-                  drop_all=False, overwrite=False, batch_size=4096):
+                  drop_all=False, batch_size=4096):
     """Initialize the database given FITS filenames for the APOGEE data.
 
     Parameters
@@ -38,8 +39,6 @@ def initialize_db(allVisit_file, allStar_file, database_file,
         Filename (not path) of database file in cache path.
     drop_all : bool (optional)
         Drop all existing tables and re-create the database.
-    overwrite : bool (optional)
-        Overwrite any data already loaded into the database.
     batch_size : int (optional)
         How many rows to create before committing.
     """
@@ -92,80 +91,9 @@ def initialize_db(allVisit_file, allStar_file, database_file,
 
         allvisit_colnames.append(col)
 
-    # What APOGEE IDs are already loaded?
-    ap_ids = [x[0] for x in session.query(AllStar.apstar_id).all()]
-    logger.debug("{0} stars already loaded".format(len(ap_ids)))
-
-    stars = []
-    all_visits = dict()
-    with Timer() as t:
-        for i,row in enumerate(allstar_tbl): # Load every star
-            row_data = tblrow_to_dbrow(row, allstar_colnames, allstar_varchar)
-
-            # If this APOGEE ID is already in the database and we are
-            # overwriting data, delete that row
-            if row_data['apstar_id'] in ap_ids:
-                q = session.query(AllStar).filter(
-                    AllStar.apstar_id == row_data['apstar_id'])
-                star = q.one()
-
-                if overwrite:
-                    visits = session.query(AllVisit).join(AllVisitToAllStar,
-                                                          AllStar)\
-                        .filter(AllStar.apstar_id == star.apstar_id).all()
-                    session.delete(star)
-                    for v in visits:
-                        session.delete(v)
-                    session.commit()
-
-                    star = AllStar(**row_data)
-                    stars.append(star)
-
-                    logger.log(1, 'Overwriting star {0} in database'
-                                  .format(star))
-
-                else:
-                    logger.log(1, 'Loaded star {0} from database'.format(star))
-
-            else:
-                star = AllStar(**row_data)
-                stars.append(star)
-                logger.log(1, 'Adding star {0} to database'.format(star))
-
-            if not star.visits or (star.visits and overwrite):
-                if star.apogee_id not in all_visits:
-                    visits = []
-                    rows = allvisit_tbl[allvisit_tbl['APOGEE_ID']==row['APOGEE_ID']]
-                    for j,visit_row in enumerate(rows):
-                        _data = tblrow_to_dbrow(visit_row, allvisit_colnames,
-                                                allvisit_varchar)
-                        visits.append(AllVisit(**_data))
-                    all_visits[star.apogee_id] = visits
-
-                else:
-                    visits = all_visits[star.apogee_id]
-
-                star.visits = visits
-
-            if i % batch_size == 0 and i > 0:
-                session.add_all(stars)
-                session.add_all([item for sublist in all_visits.values()
-                                 for item in sublist])
-                session.commit()
-                logger.debug("Loaded batch {} ({:.2f} seconds)"
-                             .format(i, t.elapsed()))
-                t.reset()
-
-                all_visits = dict()
-                stars = []
-
-    if len(stars) > 0:
-        session.add_all(stars)
-        session.add_all([item for sublist in all_visits.values()
-                         for item in sublist])
-        session.commit()
-
-    # Load the status table
+    # --------------------------------------------------------------------------
+    # First load the status table:
+    #
     if session.query(Status).count() == 0:
         logger.debug("Populating Status table...")
         statuses = list()
@@ -179,6 +107,101 @@ def initialize_db(allVisit_file, allStar_file, database_file,
         session.commit()
         logger.debug("...done")
 
+    # --------------------------------------------------------------------------
+    # Load the AllStar table:
+    #
+
+    # What APSTAR_ID's are already loaded?
+    ap_ids = [x[0] for x in session.query(AllStar.apstar_id).all()]
+    logger.debug("{0} stars already loaded".format(len(ap_ids)))
+
+    stars = []
+    with Timer() as t:
+        for i,row in enumerate(allstar_tbl): # Load every star
+            row_data = tblrow_to_dbrow(row, allstar_colnames, allstar_varchar)
+
+            if row_data['apstar_id'] in ap_ids:
+                # If this APSTAR_ID is already in the database skip it
+                logger.log(1, 'Star {0} already in database'
+                           .format(row_data['apstar_id']))
+
+            else:
+                # Otherwise, create a new object for this row
+                star = AllStar(**row_data)
+                stars.append(star)
+                logger.log(1, 'Adding star {0} to database'.format(star))
+
+            if i % batch_size == 0 and i > 0:
+                session.add_all(stars)
+                session.commit()
+                logger.debug("Loaded batch {} ({:.2f} seconds)"
+                             .format(i, t.elapsed()))
+                t.reset()
+                stars = []
+
+    if len(stars) > 0:
+        session.add_all(stars)
+        session.commit()
+
+    # --------------------------------------------------------------------------
+    # Load the AllVisit table:
+    #
+
+    # What VISIT_ID's are already loaded?
+    vis_ids = [x[0] for x in session.query(AllVisit.visit_id).all()]
+    logger.debug("{0} visits already loaded".format(len(vis_ids)))
+
+    visits = []
+    with Timer() as t:
+        for i,row in enumerate(allvisit_tbl): # Load every visit
+            row_data = tblrow_to_dbrow(row, allvisit_colnames, allvisit_varchar)
+
+            if row_data['visit_id'] in vis_ids:
+                # If this VISIT_ID is already in the database skip it
+                logger.log(1, 'Visit {0} already in database'
+                           .format(row_data['visit_id']))
+
+            else:
+                # Otherwise, createa new object for this row
+                visit = AllVisit(**row_data)
+                visits.append(visit)
+                logger.log(1, 'Adding visit {0} to database'.format(visit))
+
+            if i % batch_size == 0 and i > 0:
+                session.add_all(visits)
+                session.commit()
+                logger.debug("Loaded batch {} ({:.2f} seconds)"
+                             .format(i, t.elapsed()))
+                t.reset()
+                visits = []
+
+    if len(visits) > 0:
+        session.add_all(visits)
+        session.commit()
+
+    # --------------------------------------------------------------------------
+    # Now associate rows in AllStar with rows in AllVisit
+    #
+    # Note: here we do something a little crazy. Because APOGEE_ID isn't really
+    # a unique identifier (the same APOGEE_ID might be observed on different
+    # plates), the same visits might belong to two different APSTAR_ID's if we
+    # associate visits to APOGEE_ID's. But that is what we do: we give all
+    # visits to any APOGEE_ID, so any processing we do over all sources should
+    # UNIQUE/DISTINCT on APOGEE_ID.
+    for star in session.query(AllStar).all():
+        if len(star.visits) == 0:
+            visits = session.query(AllVisit).filter(
+                AllVisit.apogee_id == star.apogee_id).all()
+
+            if len(visits) == 0:
+                raise ValueError("Visits not found for star {0}".format(star))
+
+            logger.log(1, 'Attaching {0} visits to star {1}'
+                       .format(len(visits), star))
+
+            star.visits = visits
+
+    session.commit()
     session.close()
 
 def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
@@ -236,7 +259,7 @@ def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
             try:
                 star = session.query(AllStar).filter(
                     AllStar.apstar_id == row['APSTAR_ID']).one()
-            except:
+            except sqlalchemy.orm.exc.NoResultFound:
                 logger.debug('Red clump star not found in AllStar - skipping')
                 continue
 
@@ -341,7 +364,7 @@ def load_nessrg(filename, database_file, overwrite=False, batch_size=4096):
             try:
                 star = session.query(AllStar).filter(
                     AllStar.apogee_id == row['2MASS']).one()
-            except:
+            except sqlalchemy.orm.exc.NoResultFound:
                 logger.log(1, 'Star not found in AllStar - skipping')
                 continue
 

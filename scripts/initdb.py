@@ -2,18 +2,16 @@
 from twoface.log import log as logger
 from twoface.db.init import initialize_db, load_red_clump, load_nessrg
 
-def main(allVisit_file, allStar_file, rc_file, nessrg_file,
-         overwrite=False, **_):
+def main(allVisit_file, allStar_file, rc_file, nessrg_file, **_):
     database_name = 'apogee.sqlite' # TODO: should this be enforced?
 
-    initialize_db(allVisit_file, allStar_file, database_name,
-                  overwrite=overwrite)
+    initialize_db(allVisit_file, allStar_file, database_name)
 
     if rc_file is not None:
-        load_red_clump(rc_file, database_name, overwrite=overwrite)
+        load_red_clump(rc_file, database_name, overwrite=False) # HACK
 
     if nessrg_file is not None:
-        load_nessrg(nessrg_file, database_name, overwrite=overwrite)
+        load_nessrg(nessrg_file, database_name, overwrite=False) # HACK
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
@@ -28,9 +26,6 @@ if __name__ == "__main__":
                           dest='verbosity')
     vq_group.add_argument('-q', '--quiet', action='count', default=0,
                           dest='quietness')
-    parser.add_argument('-o', '--overwrite', action='store_true',
-                        dest='overwrite', default=False,
-                        help='Destroy everything.')
 
     parser.add_argument("--allstar", dest="allStar_file", required=True,
                         type=str, help="Path to APOGEE allStar FITS file.")
