@@ -56,8 +56,7 @@ from twoface.db import (JokerRun, AllStar, AllVisit, StarResult, Status,
 from twoface.config import TWOFACE_CACHE_PATH
 from twoface.sample_prior import make_prior_cache
 
-def main(config_file, pool, seed, overwrite=False, _continue=False,
-         cao_only=False):
+def main(config_file, pool, seed, overwrite=False, _continue=False):
     config_file = abspath(expanduser(config_file))
 
     # parse config file
@@ -147,12 +146,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
         # Get all stars that are also in the RedClump table with >3 visits
         q = session.query(AllStar).join(AllVisitToAllStar, AllVisit, RedClump)\
                                   .group_by(AllStar.apstar_id)\
-
-        if cao_only:
-            q = q.join(CaoVelocity).having(func.count(CaoVelocity.id) >= 3)
-
-        else:
-            q = q.having(func.count(AllVisit.id) >= 3)
+                                  .having(func.count(AllVisit.id) >= 3)
 
         stars = q.all()
 
@@ -224,7 +218,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False,
         logger.log(1, "Starting star {0}".format(star.apogee_id))
         t0 = time.time()
 
-        data = star.apogeervdata(cao=cao_only)
+        data = star.apogeervdata()
         logger.log(1, "\t visits loaded ({:.2f} seconds)"
                    .format(time.time()-t0))
         try:
@@ -321,16 +315,10 @@ if __name__ == "__main__":
     group.add_argument("--mpi", dest="mpi", default=False,
                        action="store_true", help="Run with MPI.")
 
-    #
     parser.add_argument("-c", "--config", dest="config_file", required=True,
                         type=str, help="Path to config file that specifies the "
                                        "parameters for this JokerRun.")
 
-    # Semi-hack
-    parser.add_argument("--cao-only", dest="cao_only", default=False,
-                        action="store_true",
-                        help="Only run on Red Clump stars with >3 Cao-measured "
-                             "radial velocities.")
 
     args = parser.parse_args()
 

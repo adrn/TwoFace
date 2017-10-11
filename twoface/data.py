@@ -3,34 +3,19 @@ import astropy.units as u
 from astropy.time import Time
 from thejoker.data import RVData
 
-# Project
-from .log import log as logger
-
-def star_to_apogeervdata(star, cao=False):
+def star_to_apogeervdata(star):
     """Return a `twoface.data.APOGEERVData` instance for this star.
 
     Parameters
     ----------
-    cao : bool (optional)
-        Return the data object using Jason Cao's re-measured velocities
-        instead of the APOGEE visit velocities.
+
     """
 
     jd = []
     rv = []
     rv_rand_err = []
     for v in star.visits:
-        if cao:
-            if v.cao_velocity is None:
-                logger.warning('Skipping visit {0} because no CaoVelocity '
-                               'found!'.format(v))
-                continue
-
-            rv.append(v.cao_velocity.vbary + v.cao_velocity.vshift)
-
-        else:
-            rv.append(float(v.vhelio))
-
+        rv.append(float(v.vhelio))
         jd.append(float(v.jd))
         rv_rand_err.append(float(v.vrelerr))
 

@@ -16,7 +16,7 @@ from .quantity_type import QuantityTypeClassFactory
 from . import numpy_adapt # just need to execute code
 
 __all__ = ['AllStar', 'AllVisit', 'RedClump', 'JokerRun', 'StarResult',
-           'Status', 'AllVisitToAllStar', 'CaoVelocity', 'NessRG']
+           'Status', 'AllVisitToAllStar', 'NessRG']
 
 class Status(Base):
     __tablename__ = 'status'
@@ -272,16 +272,9 @@ class AllStar(Base):
         return ("<ApogeeStar(id='{}', apogee_id='{}', {} results)>"
                 .format(self.id, self.apogee_id, len(self.results)))
 
-    def apogeervdata(self, cao=False):
-        """Return a `twoface.data.APOGEERVData` instance for this star.
-
-        Parameters
-        ----------
-        cao : bool (optional)
-            Return the data object using Jason Cao's re-measured velocities
-            instead of the APOGEE visit velocities.
-        """
-        return star_to_apogeervdata(self, cao=cao)
+    def apogeervdata(self):
+        """Return a `twoface.data.APOGEERVData` instance for this star. """
+        return star_to_apogeervdata(self)
 
 class AllVisit(Base):
     __tablename__ = 'allvisit'
@@ -380,40 +373,6 @@ class AllVisit(Base):
 
     def __repr__(self):
         return "<ApogeeVisit(APOGEE_ID='{}', MJD='{}')>".format(self.apogee_id, self.mjd)
-
-class CaoVelocity(Base):
-    __tablename__ = 'caovelocity'
-
-    id = Column(types.Integer, primary_key=True)
-
-    allvisit_id = Column("allvisit_id", types.Integer,
-                         ForeignKey('allvisit.id', ondelete='CASCADE'),
-                         index=True)
-    visit = relationship("AllVisit", uselist=False,
-                         backref=backref("cao_velocity",
-                                         cascade="all, delete-orphan",
-                                         uselist=False))
-
-    visit_name = Column("visit_name", types.String)
-    bjd = Column("bjd", types.REAL)
-    teff = Column("teff", types.REAL)
-    logg = Column("logg", types.REAL)
-    feh = Column("feh", types.REAL)
-    a = Column("a", types.REAL)
-    b = Column("b", types.REAL)
-    c = Column("c", types.REAL)
-    chiinf = Column("chiinf", types.REAL)
-    chimix = Column("chimix", types.REAL)
-    vbary = Column("vbary", types.REAL)
-    vshift = Column("vshift", types.REAL)
-    vsini = Column("vsini", types.REAL)
-    vmicro = Column("vmicro", types.REAL)
-    vmacro = Column("vmacro", types.REAL)
-    vrad = Column("vrad", types.REAL)
-    xshift = Column("xshift", types.REAL)
-
-    def __repr__(self):
-        return "<CaoVelocity visit={0}>".format(self.visit_name)
 
 class RedClump(Base):
     __tablename__ = 'redclump'
@@ -611,16 +570,9 @@ class RedClump(Base):
         return ("<RedClump(id='{0}', apogee_id='{1}', {2} results)>"
                 .format(self.id, self.star.apogee_id, len(self.star.results)))
 
-    def apogeervdata(self, cao=False):
-        """Return a `twoface.data.APOGEERVData` instance for this star.
-
-        Parameters
-        ----------
-        cao : bool (optional)
-            Return the data object using Jason Cao's re-measured velocities
-            instead of the APOGEE visit velocities.
-        """
-        return star_to_apogeervdata(self.star, cao=cao)
+    def apogeervdata(self):
+        """Return a `twoface.data.APOGEERVData` instance for this star."""
+        return star_to_apogeervdata(self.star)
 
 JitterType = QuantityTypeClassFactory(u.m/u.s)
 PeriodType = QuantityTypeClassFactory(u.day)
