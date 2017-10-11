@@ -18,7 +18,8 @@ import yaml
 from twoface.data import APOGEERVData
 from twoface.log import log as logger
 from twoface.db import Session, db_connect
-from twoface.db import JokerRun, AllStar, AllVisit, StarResult, Status, AllVisitToAllStar
+from twoface.db import (JokerRun, AllStar, AllVisit, StarResult, Status,
+                        AllVisitToAllStar)
 from twoface.config import TWOFACE_CACHE_PATH
 
 def main(config_file, pool, seed, overwrite=False, _continue=False):
@@ -38,8 +39,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     db_path = join(TWOFACE_CACHE_PATH, database_file)
 
     if not os.path.exists(db_path):
-        raise IOError("sqlite database not found at '{}'\n Did you run scripts/initdb.py yet?"
-                      .format(db_path))
+        raise IOError("sqlite database not found at '{}'\n Did you run "
+                      "scripts/initdb.py yet?".format(db_path))
 
     logger.debug("Connecting to sqlite database at '{}'".format(db_path))
     engine = db_connect(database_path=db_path, ensure_db_exists=False)
@@ -49,7 +50,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     # see if this run (by name) is in db already, if so, just grab
     _run = session.query(JokerRun).filter(JokerRun.name == config['name']).all()
     if len(_run) == 0:
-        logger.info("JokerRun '{}' not found in database - creating new entry..."
+        logger.info("JokerRun '{}' not found in database - creating new entry"
                     .format(config['name']))
 
         # create a JokerRun for this run

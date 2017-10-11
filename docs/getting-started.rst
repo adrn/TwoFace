@@ -35,22 +35,6 @@ linked to (from within the ``twoface/scripts`` directory) with:
     > --redclump="$APOGEE_PATH/test-rc.fits" \
     > -vv
 
-Now, need to load Jason Cao's...
-
-.. code-block:: bash
-
-    % python load_cao.py \
-    > --cao="$APOGEE_PATH/cao....fits" \
-    > -vv
-
-or, for testing:
-
-.. code-block:: bash
-
-    % python load_cao.py \
-    > --cao="$APOGEE_PATH/test-cao.fits" \
-    > -vv
-
 Generating posterior samples for the ``RedClump`` table
 =======================================================
 
