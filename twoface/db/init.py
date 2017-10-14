@@ -188,7 +188,8 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     # associate visits to APOGEE_ID's. But that is what we do: we give all
     # visits to any APOGEE_ID, so any processing we do over all sources should
     # UNIQUE/DISTINCT on APOGEE_ID.
-    for star in session.query(AllStar).all():
+    i = 0
+    for star in session.query(AllStar).yield_per(1000):
         if len(star.visits) == 0:
             visits = session.query(AllVisit).filter(
                 AllVisit.apogee_id == star.apogee_id).all()
@@ -200,6 +201,14 @@ def initialize_db(allVisit_file, allStar_file, database_file,
                        .format(len(visits), star))
 
             star.visits = visits
+
+        else:
+            continue
+
+        if i % batch_size == 0 and i > 0:
+            session.commit()
+
+        i += 1
 
     session.commit()
     session.close()
