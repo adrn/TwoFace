@@ -1,3 +1,6 @@
+# Standard library
+import sys
+
 # Project
 from twoface.log import log as logger
 from twoface.db.init import initialize_db, load_red_clump, load_nessrg
@@ -56,3 +59,4 @@ if __name__ == "__main__":
         logger.setLevel(logging.INFO)
 
     main(**vars(args))
+    sys.exit(0)
