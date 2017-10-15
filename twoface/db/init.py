@@ -110,6 +110,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     # --------------------------------------------------------------------------
     # Load the AllStar table:
     #
+    logger.info("Loading AllStar table")
 
     # What APSTAR_ID's are already loaded?
     ap_ids = [x[0] for x in session.query(AllStar.apstar_id).all()]
@@ -134,7 +135,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
             if i % batch_size == 0 and i > 0:
                 session.add_all(stars)
                 session.commit()
-                logger.debug("Loaded batch {} ({:.2f} seconds)"
+                logger.debug("Loaded batch {0} ({1:.2f} seconds)"
                              .format(i, t.elapsed()))
                 t.reset()
                 stars = []
@@ -146,6 +147,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     # --------------------------------------------------------------------------
     # Load the AllVisit table:
     #
+    logger.info("Loading AllVisit table")
 
     # What VISIT_ID's are already loaded?
     vis_ids = [x[0] for x in session.query(AllVisit.visit_id).all()]
@@ -170,7 +172,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
             if i % batch_size == 0 and i > 0:
                 session.add_all(visits)
                 session.commit()
-                logger.debug("Loaded batch {} ({:.2f} seconds)"
+                logger.debug("Loaded batch {0} ({1:.2f} seconds)"
                              .format(i, t.elapsed()))
                 t.reset()
                 visits = []
@@ -188,6 +190,8 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     # associate visits to APOGEE_ID's. But that is what we do: we give all
     # visits to any APOGEE_ID, so any processing we do over all sources should
     # UNIQUE/DISTINCT on APOGEE_ID.
+    logger.info("Linking AllVisit and AllStar tables")
+
     i = 0
     for star in session.query(AllStar).yield_per(1000):
         if len(star.visits) == 0:
@@ -206,6 +210,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
             continue
 
         if i % batch_size == 0 and i > 0:
+            logger.debug("Committing batch {0}".format(i//batch_size))
             session.commit()
 
         i += 1
