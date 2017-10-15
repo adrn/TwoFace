@@ -181,16 +181,9 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
     # Query to get all stars associated with this run that need processing:
     # they should have a status id = 0 (needs processing)
-    # star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
-    #                                    .filter(JokerRun.name == run.name)\
-    #                                    .filter(Status.id == 0)
-    star_query = session.query(AllStar).join(AllVisitToAllStar, AllVisit)\
-                                  .group_by(AllStar.apstar_id)\
-                                  .having(func.count(AllVisit.id) >= 3)
-
-    print(star_query.count())
-    import sys
-    sys.exit(0)
+    star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
+                                       .filter(JokerRun.name == run.name)\
+                                       .filter(Status.id == 0)
 
     # Base query to get a StarResult for a given Star so we can update the
     # status, etc.
@@ -219,8 +212,11 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     count = 0 # how many stars we've processed in this star batch
     batch_size = 16 # MAGIC NUMBER: how many stars to process before committing
     for star in star_query.all():
-        # retrieve existing StarResult from database
-        result = result_query.filter(AllStar.apogee_id == star.apogee_id).one()
+        # Retrieve existing StarResult from database. We limit(1) because the
+        # APOGEE_ID isn't unique, but we attach all visits for a given star to
+        # all rows, so grabbing one of them is fine.
+        result = result_query.filter(AllStar.apogee_id == star.apogee_id)\
+                             .limit(1).one()
 
         logger.log(1, "Starting star {0}".format(star.apogee_id))
         t0 = time.time()
@@ -281,7 +277,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         logger.debug("...done with star {} ({:.2f} seconds)"
                      .format(star.apogee_id, time.time()-t0))
 
-        if count % batch_size == 0:
+        if count % batch_size == 0 and count > 0:
             session.commit()
 
         count += 1
