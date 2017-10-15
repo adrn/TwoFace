@@ -113,24 +113,21 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     logger.info("Loading AllStar table")
 
     # What APSTAR_ID's are already loaded?
-    ap_ids = [x[0] for x in session.query(AllStar.apstar_id).all()]
-    logger.debug("{0} stars already loaded".format(len(ap_ids)))
+    loaded_ap_ids = [x[0] for x in session.query(AllStar.apstar_id).all()]
+    mask = np.logical_not(np.isin(allstar_tbl['APSTAR_ID'], loaded_ap_ids))
+    logger.debug("{0} stars already loaded".format(len(loaded_ap_ids)))
+    logger.debug("{0} stars left to load".format(mask.sum()))
 
     stars = []
     with Timer() as t:
-        for i,row in enumerate(allstar_tbl): # Load every star
+        i = 0
+        for row in allstar_tbl[mask]: # Load every star
             row_data = tblrow_to_dbrow(row, allstar_colnames, allstar_varchar)
 
-            if row_data['apstar_id'] in ap_ids:
-                # If this APSTAR_ID is already in the database skip it
-                logger.log(1, 'Star {0} already in database'
-                           .format(row_data['apstar_id']))
-
-            else:
-                # Otherwise, create a new object for this row
-                star = AllStar(**row_data)
-                stars.append(star)
-                logger.log(1, 'Adding star {0} to database'.format(star))
+            # create a new object for this row
+            star = AllStar(**row_data)
+            stars.append(star)
+            logger.log(1, 'Adding star {0} to database'.format(star))
 
             if i % batch_size == 0 and i > 0:
                 session.add_all(stars)
@@ -139,6 +136,8 @@ def initialize_db(allVisit_file, allStar_file, database_file,
                              .format(i, t.elapsed()))
                 t.reset()
                 stars = []
+
+            i += 1
 
     if len(stars) > 0:
         session.add_all(stars)
@@ -150,24 +149,21 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     logger.info("Loading AllVisit table")
 
     # What VISIT_ID's are already loaded?
-    vis_ids = [x[0] for x in session.query(AllVisit.visit_id).all()]
-    logger.debug("{0} visits already loaded".format(len(vis_ids)))
+    loaded_vis_ids = [x[0] for x in session.query(AllVisit.visit_id).all()]
+    mask = np.logical_not(np.isin(allvisit_tbl['VISIT_ID'], loaded_vis_ids))
+    logger.debug("{0} visits already loaded".format(len(loaded_vis_ids)))
+    logger.debug("{0} visits left to load".format(mask.sum()))
 
     visits = []
     with Timer() as t:
-        for i,row in enumerate(allvisit_tbl): # Load every visit
+        i = 0
+        for row in allvisit_tbl[mask]: # Load every visit
             row_data = tblrow_to_dbrow(row, allvisit_colnames, allvisit_varchar)
 
-            if row_data['visit_id'] in vis_ids:
-                # If this VISIT_ID is already in the database skip it
-                logger.log(1, 'Visit {0} already in database'
-                           .format(row_data['visit_id']))
-
-            else:
-                # Otherwise, createa new object for this row
-                visit = AllVisit(**row_data)
-                visits.append(visit)
-                logger.log(1, 'Adding visit {0} to database'.format(visit))
+            # create a new object for this row
+            visit = AllVisit(**row_data)
+            visits.append(visit)
+            logger.log(1, 'Adding visit {0} to database'.format(visit))
 
             if i % batch_size == 0 and i > 0:
                 session.add_all(visits)
@@ -176,6 +172,8 @@ def initialize_db(allVisit_file, allStar_file, database_file,
                              .format(i, t.elapsed()))
                 t.reset()
                 visits = []
+
+            i += 1
 
     if len(visits) > 0:
         session.add_all(visits)
@@ -194,20 +192,19 @@ def initialize_db(allVisit_file, allStar_file, database_file,
 
     i = 0
     for star in session.query(AllStar).yield_per(1000):
-        if len(star.visits) == 0:
-            visits = session.query(AllVisit).filter(
-                AllVisit.apogee_id == star.apogee_id).all()
-
-            if len(visits) == 0:
-                raise ValueError("Visits not found for star {0}".format(star))
-
-            logger.log(1, 'Attaching {0} visits to star {1}'
-                       .format(len(visits), star))
-
-            star.visits = visits
-
-        else:
+        if len(star.visits) > 0:
             continue
+
+        visits = session.query(AllVisit).filter(
+            AllVisit.apogee_id == star.apogee_id).all()
+
+        if len(visits) == 0:
+            raise ValueError("Visits not found for star {0}".format(star))
+
+        logger.log(1, 'Attaching {0} visits to star {1}'
+                   .format(len(visits), star))
+
+        star.visits = visits
 
         if i % batch_size == 0 and i > 0:
             logger.debug("Committing batch {0}".format(i//batch_size))
