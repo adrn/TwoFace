@@ -270,6 +270,9 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             result.status_id = 2 # needs mcmc
 
         else:
+            # TODO: check whether the samples returned are within one mode. If
+            # they are, then "needs mcmc" otherwise "needs more samples"
+
             # Multiple samples were returned, but not enough to satisfy the
             # number requested in the config file
             result.status_id = 1 # needs more samples
