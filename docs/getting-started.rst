@@ -14,10 +14,10 @@ then initialize the database by loading these data files:
 
 .. code-block:: bash
 
-    % export APOGEE_PATH="~/Data/APOGEE_DR13"
+    % export APOGEE_PATH="~/data/APOGEE_DR14"
     % python initdb.py \
-    > --allstar="$APOGEE_PATH/allStar-l30e.2.fits" \
-    > --allvisit="$APOGEE_PATH/allVisit-l30e.2.fits" \
+    > --allstar="$APOGEE_PATH/allStar-l31c.2.fits" \
+    > --allvisit="$APOGEE_PATH/allVisit-l31c.2.fits" \
     > --redclump="$APOGEE_PATH/apogee-rc-DR13.fits" \
     > --nessrg="$APOGEE_PATH/NessRG.fits" \
     > -vv
@@ -37,4 +37,3 @@ linked to (from within the ``twoface/scripts`` directory) with:
 
 Generating posterior samples for the ``RedClump`` table
 =======================================================
-
