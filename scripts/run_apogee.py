@@ -275,7 +275,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             P_samples = samples_dict['P'].to(u.day).value
             P_med = np.median(P_samples)
             T = np.ptp(data.t.mjd)
-            delta = 4*P**2 / (2*np.pi*T)
+            delta = 4*P_med**2 / (2*np.pi*T)
 
             if np.std(P_samples) < delta:
                 # Multiple samples were returned, but they look unimodal
