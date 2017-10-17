@@ -270,12 +270,21 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             result.status_id = 2 # needs mcmc
 
         else:
-            # TODO: check whether the samples returned are within one mode. If
+            # Check whether the samples returned are within one mode. If
             # they are, then "needs mcmc" otherwise "needs more samples"
+            P_samples = samples_dict['P'].to(u.day).value
+            P_med = np.median(P_samples)
+            T = np.ptp(data.t.mjd)
+            ∆ = 4*P**2 / (2*np.pi*T)
 
-            # Multiple samples were returned, but not enough to satisfy the
-            # number requested in the config file
-            result.status_id = 1 # needs more samples
+            if np.std(P_samples) < ∆:
+                # Multiple samples were returned, but they look unimodal
+                result.status_id = 2 # needs mcmc
+
+            else:
+                # Multiple samples were returned, but not enough to satisfy the
+                # number requested in the config file
+                result.status_id = 1 # needs more samples
 
         logger.debug("...done with star {} ({:.2f} seconds)"
                      .format(star.apogee_id, time.time()-t0))
