@@ -51,7 +51,7 @@ def main(database_file, apogee_id, joker_run, cao):
                                           '{0}.hdf5'.format(run.name)),
                                 apogee_id)
 
-    # Plot the data with orbits on top
+    # 1: Plot the data with orbits on top
     fig = plot_data_orbits(data, samples_dict, jitter=run.jitter,
                            xlim_choice='wide', title=star.apogee_id)
     fig.set_tight_layout(True)
@@ -60,7 +60,10 @@ def main(database_file, apogee_id, joker_run, cao):
                            xlim_choice='tight', title=star.apogee_id)
     fig.set_tight_layout(True)
 
-    # TODO:
+    # 2: Make a pseudo-corner plot (no histograms) of projections of the samples
+    # _samples_dict = samples_dict.copy()
+    # _samples_dict['m2'] = m2
+    # _samples_dict['rperi'] = rperi
 
     session.close()
 
