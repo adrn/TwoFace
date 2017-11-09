@@ -147,7 +147,7 @@ def main(data_path, pool, overwrite=False):
                 pass
 
     for row in arr:
-        apogee_id = row['APOGEE_ID']
+        apogee_id = row['APOGEE_ID'].astype(str)
         logger.debug("Running star {0} with {1} visits"
                      .format(apogee_id, row['n_visits']))
         visits = dr1314[dr1314['APOGEE_ID'] == apogee_id]
@@ -237,8 +237,8 @@ def main(data_path, pool, overwrite=False):
 
         # plot samples themselves
         prior_logs2_samples = np.random.normal(params.jitter[0],
-                                               params.jitter[1], size=10000)
-        prior_jitter_samples = np.sqrt(np.exp(prior_logs2_samples)) * params._jitter_unit
+                                               params.jitter[1], size=100000)
+        prior_jitter_samples = np.sqrt(np.exp(prior_logs2_samples)) / 1000. # km/s
 
         fig, axes = plt.subplots(2, 2, figsize=(10, 8),
                                  sharex='col', sharey='col')
@@ -263,9 +263,9 @@ def main(data_path, pool, overwrite=False):
 
         bins = np.logspace(-5, 1, 32)
 
-        axes[0,1].hist(prior_jitter_samples.to(u.km/u.s).value, bins=bins,
+        axes[0,1].hist(prior_jitter_samples, bins=bins,
                        normed=True, zorder=-100, color='#666666')
-        axes[1,1].hist(prior_jitter_samples.to(u.km/u.s).value, bins=bins,
+        axes[1,1].hist(prior_jitter_samples, bins=bins,
                        normed=True, zorder=-100, color='#666666')
 
         axes[0,1].hist(samples_dr13['jitter'].to(u.km/u.s).value, bins=bins,
