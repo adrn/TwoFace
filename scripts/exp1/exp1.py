@@ -8,6 +8,7 @@ from astropy.io import fits
 from astropy.table import Table, join
 from astropy.time import Time
 import astropy.units as u
+import h5py
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +18,7 @@ from thejoker.data import RVData
 from thejoker.sampler import JokerParams, TheJoker
 from thejoker.plot import plot_rv_curves
 from thejoker.log import log as logger
+from thejoker.utils import quantity_to_hdf5
 
 from twoface.sample_prior import make_prior_cache
 
@@ -133,10 +135,22 @@ def main(data_path, pool, overwrite=False):
         arr = np.array(rows, dtype=[('n_visits', int), ('APOGEE_ID', 'S32')])
         np.save(apogee_ids_file, arr)
 
+    # Make a file to store samples
+    dr13_results_filename = path.join(CACHE_PATH, "dr13_samples.hdf5")
+    dr14_results_filename = path.join(CACHE_PATH, "dr14_samples.hdf5")
+
+    # Ensure that the results file exists - this is where we cache samples that
+    # pass the rejection sampling step
+    for results_filename in [dr13_results_filename, dr14_results_filename]:
+        if not os.path.exists(results_filename):
+            with h5py.File(results_filename, 'w') as f:
+                pass
+
     for row in arr:
+        apogee_id = row['APOGEE_ID']
         logger.debug("Running star {0} with {1} visits"
-                     .format(row['APOGEE_ID'], row['n_visits']))
-        visits = dr1314[dr1314['APOGEE_ID'] == row['APOGEE_ID']]
+                     .format(apogee_id, row['n_visits']))
+        visits = dr1314[dr1314['APOGEE_ID'] == apogee_id]
 
         data_dr13 = rvdata_from_rows(visits, 'dr13')
         data_dr14 = rvdata_from_rows(visits, 'dr14')
@@ -146,7 +160,7 @@ def main(data_path, pool, overwrite=False):
         data_dr13.plot(ax=ax, color='tab:blue')
         data_dr14.plot(ax=ax, color='tab:orange')
         fig.savefig(path.join(PLOT_PATH, '{0}_{1}_data.png'
-                              .format(row['n_visits'], row['APOGEE_ID'])),
+                              .format(row['n_visits'], apogee_id)),
                     dpi=256)
 
         joker = TheJoker(params, pool=pool)
@@ -167,6 +181,22 @@ def main(data_path, pool, overwrite=False):
 
         logger.info("{0} DR13 samples, {1} DR14 samples"
                     .format(len(samples_dr13), len(samples_dr14)))
+
+        for results_filename, samples_dict in zip([dr13_results_filename,
+                                                   dr14_results_filename],
+                                                  [samples_dr13, samples_dr14]):
+            # Save the samples to the results file:
+            with h5py.File(results_filename, 'r+') as f:
+                if apogee_id not in f:
+                    g = f.create_group(apogee_id)
+
+                else:
+                    g = f[apogee_id]
+
+                for key in samples_dict.keys():
+                    if key in g:
+                        del g[key]
+                    quantity_to_hdf5(g, key, samples_dict[key])
 
         # plot sample orbits
         n_plot = 128
@@ -202,7 +232,7 @@ def main(data_path, pool, overwrite=False):
         fig.set_facecolor('w')
         fig.tight_layout()
         fig.savefig(path.join(PLOT_PATH, '{0}_{1}_orbits.png'
-                              .format(row['n_visits'], row['APOGEE_ID'])),
+                              .format(row['n_visits'], apogee_id)),
                     dpi=256)
 
         # plot samples themselves
@@ -246,7 +276,7 @@ def main(data_path, pool, overwrite=False):
 
         fig.tight_layout()
         fig.savefig(path.join(PLOT_PATH, '{0}_{1}_samples.png'
-                              .format(row['n_visits'], row['APOGEE_ID'])),
+                              .format(row['n_visits'], apogee_id)),
                     dpi=256)
 
     pool.close()
