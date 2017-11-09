@@ -57,7 +57,7 @@ def load_apogee_dr13_dr14_rg(data_path):
     allstar_dr14 = read_table(path.join(data_path, 'APOGEE_DR14',
                                         'allStar-l31c.2.fits'),
                               star_columns)
-    allvisit_dr14 = read_table(path.join(data_path, 'APOGEE_DR13',
+    allvisit_dr14 = read_table(path.join(data_path, 'APOGEE_DR14',
                                          'allVisit-l31c.2.fits'),
                                visit_columns)
 
@@ -130,7 +130,7 @@ def main(data_path, pool, overwrite=False):
             aids = np.array(visits['APOGEE_ID']).astype(str)
             _ids = np.random.choice(aids, replace=False, size=n_per_bin)
             rows += [(n, _id) for _id in _ids]
-        arr = np.array(rows, dtype=[('n_visits', int), ('APOGEE_ID', str)])
+        arr = np.array(rows, dtype=[('n_visits', int), ('APOGEE_ID', 'S32')])
         np.save(apogee_ids_file, arr)
 
     for row in arr:
@@ -138,8 +138,8 @@ def main(data_path, pool, overwrite=False):
                      .format(row['APOGEE_ID'], row['n_visits']))
         visits = dr1314[dr1314['APOGEE_ID'] == row['APOGEE_ID']]
 
-        data_dr13 = rvdata_from_rows(rows, 'dr13')
-        data_dr14 = rvdata_from_rows(rows, 'dr14')
+        data_dr13 = rvdata_from_rows(visits, 'dr13')
+        data_dr14 = rvdata_from_rows(visits, 'dr14')
 
         # plot data
         fig,ax = plt.subplots(1, 1, figsize=(8,6))
