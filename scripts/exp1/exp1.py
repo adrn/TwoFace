@@ -16,7 +16,7 @@ import schwimmbad
 from thejoker.data import RVData
 from thejoker.sampler import JokerParams, TheJoker
 from thejoker.plot import plot_rv_curves
-from TheJoker.log import log as logger
+from thejoker.log import log as logger
 
 from twoface.sample_prior import make_prior_cache
 
@@ -88,7 +88,7 @@ def rvdata_from_rows(rows, name):
         rv=np.array(rows['VHELIO_{0}'.format(name)]).astype('<f8') * u.km/u.s,
         stddev=np.array(rows['VRELERR_{0}'.format(name)]).astype('<f8') * u.km/u.s)
 
-def main(data_path, overwrite=False):
+def main(data_path, pool, overwrite=False):
 
     # Configuration settings / setup
     n_requested_samples = 128
@@ -100,18 +100,26 @@ def main(data_path, overwrite=False):
 
     # Make the prior cache if it doesn't already exist
     if not path.exists(prior_file):
+        logger.info("Generating prior cache - this could take a few minutes")
         joker = TheJoker(params)
         make_prior_cache(prior_file, joker,
                          N=2**29, max_batch_size=2**24)
 
+    else:
+        logger.debug("Prior cache already exists")
+
     # Load the red giant visits that overlap dr13-dr14
+    logger.debug("Loading APOGEE DR13 and DR14 data")
     dr1314 = load_apogee_dr13_dr14_rg(data_path=data_path)
 
     apogee_ids_file = path.join(CACHE_PATH, 'apogee_ids.npy')
     if path.exists(apogee_ids_file):
+        logger.debug("APOGEE ID file already exists")
         arr = np.load(apogee_ids_file)
 
     else:
+        logger.info("Generating APOGEE ID file - this could take a few minutes")
+
         # Get a pandas dataframe so we can efficiently group visits by APOGEE_ID
         df = dr1314.to_pandas()
         grouped = df.groupby('APOGEE_ID')
@@ -126,6 +134,8 @@ def main(data_path, overwrite=False):
         np.save(apogee_ids_file, arr)
 
     for row in arr:
+        logger.debug("Running star {0} with {1} visits"
+                     .format(row['APOGEE_ID'], row['n_visits']))
         visits = dr1314[dr1314['APOGEE_ID'] == row['APOGEE_ID']]
 
         data_dr13 = rvdata_from_rows(rows, 'dr13')
@@ -268,6 +278,8 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--overwrite', action='store_true',
                         dest='overwrite', default=False,
                         help='Destroy everything.')
+
+    parser.add_argument('--data-path', dest='data_path', default=None, type=str)
 
     args = parser.parse_args()
 
