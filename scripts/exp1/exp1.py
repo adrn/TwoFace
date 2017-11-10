@@ -171,7 +171,7 @@ def main(data_path, pool, overwrite=False):
                     done.append(True)
 
                 else:
-                    done.appned(False)
+                    done.append(False)
         both_done = all(done)
 
         # Only run the joker if we don't already have samples
