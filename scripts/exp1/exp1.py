@@ -301,7 +301,7 @@ def main(data_path, pool, overwrite=False):
                        normed=True, alpha=0.6)
         axes[1,1].hist(samples_dr14['jitter'].to(u.km/u.s).value, bins=bins,
                        normed=True, alpha=0.6)
-        axes[0,1].set_xscale('log')
+        # axes[0,1].set_xscale('log')
         axes[1,1].set_xlabel('jitter, $s$ [{0:latex_inline}]'.format(u.km/u.s))
         axes[0,1].set_xlim(1E-3, 5)
 
