@@ -98,7 +98,7 @@ def main(data_path, pool, overwrite=False):
     n_per_bin = 16 # 16 stars per n_visits bin
     prior_file = path.join(CACHE_PATH, 'dr13_dr14_prior_samples.h5')
     params = JokerParams(P_min=8*u.day, P_max=32768*u.day,
-                         jitter=(5., 6.), jitter_unit=u.m/u.s)
+                         jitter=(10., 4.), jitter_unit=u.m/u.s)
 
     # Make the prior cache if it doesn't already exist
     if not path.exists(prior_file):
@@ -237,7 +237,8 @@ def main(data_path, pool, overwrite=False):
 
         # plot samples themselves
         prior_logs2_samples = np.random.normal(params.jitter[0],
-                                               params.jitter[1], size=100000)
+                                               params.jitter[1],
+                                               size=100000)
         prior_jitter_samples = np.sqrt(np.exp(prior_logs2_samples)) / 1000. # km/s
 
         fig, axes = plt.subplots(2, 2, figsize=(10, 8),
