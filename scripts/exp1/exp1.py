@@ -49,6 +49,9 @@ def load_apogee_dr13_dr14_rg(data_path):
     if data_path is None:
         data_path = APOGEE_DATA_PATH
 
+    else:
+        data_path = path.expanduser(data_path)
+
     allstar_dr13 = read_table(path.join(data_path, 'APOGEE_DR13',
                                         'allStar-l30e.2.fits'),
                               star_columns)
@@ -99,16 +102,6 @@ def main(data_path, pool, overwrite=False):
     prior_file = path.join(CACHE_PATH, 'dr13_dr14_prior_samples.h5')
     params = JokerParams(P_min=8*u.day, P_max=32768*u.day,
                          jitter=(10., 4.), jitter_unit=u.m/u.s)
-
-    # Make the prior cache if it doesn't already exist
-    if not path.exists(prior_file):
-        logger.info("Generating prior cache - this could take a few minutes")
-        joker = TheJoker(params)
-        make_prior_cache(prior_file, joker,
-                         N=2**29, max_batch_size=2**24)
-
-    else:
-        logger.debug("Prior cache already exists")
 
     # Load the red giant visits that overlap dr13-dr14
     logger.debug("Loading APOGEE DR13 and DR14 data")
@@ -186,6 +179,13 @@ def main(data_path, pool, overwrite=False):
                     f[apogee_id], trend_cls=params.trend_cls)
 
         else:
+            # Make the prior cache if it doesn't already exist
+            if not path.exists(prior_file):
+                logger.info("Generating prior cache - this could take a few minutes")
+                joker = TheJoker(params)
+                make_prior_cache(prior_file, joker,
+                                 N=2**29, max_batch_size=2**24)
+
             joker = TheJoker(params, pool=pool)
 
             logger.debug("Beginning sampling...")
@@ -301,14 +301,16 @@ def main(data_path, pool, overwrite=False):
                        normed=True, alpha=0.6)
         axes[1,1].hist(samples_dr14['jitter'].to(u.km/u.s).value, bins=bins,
                        normed=True, alpha=0.6)
-        # axes[0,1].set_xscale('log')
+        axes[0,1].set_xscale('log')
         axes[1,1].set_xlabel('jitter, $s$ [{0:latex_inline}]'.format(u.km/u.s))
-        axes[0,1].set_xlim(1E-3, 5)
+        axes[0,1].set_xlim(1E-5, 1)
 
         fig.tight_layout()
         fig.savefig(path.join(PLOT_PATH, '{0}_{1}_samples.png'
                               .format(row['n_visits'], apogee_id)),
                     dpi=256)
+
+        plt.close('all')
 
     pool.close()
     sys.exit(0)
