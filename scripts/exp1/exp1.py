@@ -15,7 +15,7 @@ import numpy as np
 import schwimmbad
 
 from thejoker.data import RVData
-from thejoker.sampler import JokerParams, TheJoker
+from thejoker.sampler import JokerParams, TheJoker, JokerSamples
 from thejoker.plot import plot_rv_curves
 from thejoker.log import log as logger
 from thejoker.utils import quantity_to_hdf5
@@ -163,40 +163,64 @@ def main(data_path, pool, overwrite=False):
                               .format(row['n_visits'], apogee_id)),
                     dpi=256)
 
-        joker = TheJoker(params, pool=pool)
-
-        logger.debug("Beginning sampling...")
-
-        t1 = time.time()
-        samples_dr13 = joker.iterative_rejection_sample(
-            data_dr13, n_requested_samples=n_requested_samples,
-            prior_cache_file=prior_file)
-        logger.debug("Done with DR13...{0:.2f} seconds".format(time.time()-t1))
-
-        t1 = time.time()
-        samples_dr14 = joker.iterative_rejection_sample(
-            data_dr14, n_requested_samples=n_requested_samples,
-            prior_cache_file=prior_file)
-        logger.debug("Done with DR14...{0:.2f} seconds".format(time.time()-t1))
-
-        logger.info("{0} DR13 samples, {1} DR14 samples"
-                    .format(len(samples_dr13), len(samples_dr14)))
-
-        for results_filename, samples_dict in zip([dr13_results_filename,
-                                                   dr14_results_filename],
-                                                  [samples_dr13, samples_dr14]):
-            # Save the samples to the results file:
+        # Check whether these samples are already in the results file
+        done = []
+        for results_filename in [dr13_results_filename, dr14_results_filename]:
             with h5py.File(results_filename, 'r+') as f:
-                if apogee_id not in f:
-                    g = f.create_group(apogee_id)
+                if apogee_id in f or overwrite:
+                    done.append(True)
 
                 else:
-                    g = f[apogee_id]
+                    done.appned(False)
+        both_done = all(done)
 
-                for key in samples_dict.keys():
-                    if key in g:
-                        del g[key]
-                    quantity_to_hdf5(g, key, samples_dict[key])
+        # Only run the joker if we don't already have samples
+        if both_done:
+            logger.info("Samples already done for DR13 and DR14 - loading...")
+            with h5py.File(dr13_results_filename, 'r+') as f:
+                samples_dr13 = JokerSamples.from_hdf5(f[apogee_id])
+
+            with h5py.File(dr14_results_filename, 'r+') as f:
+                samples_dr14 = JokerSamples.from_hdf5(f[apogee_id])
+
+        else:
+            joker = TheJoker(params, pool=pool)
+
+            logger.debug("Beginning sampling...")
+
+            t1 = time.time()
+            samples_dr13 = joker.iterative_rejection_sample(
+                data_dr13, n_requested_samples=n_requested_samples,
+                prior_cache_file=prior_file)
+            logger.debug("Done with DR13...{0:.2f} seconds"
+                         .format(time.time()-t1))
+
+            t1 = time.time()
+            samples_dr14 = joker.iterative_rejection_sample(
+                data_dr14, n_requested_samples=n_requested_samples,
+                prior_cache_file=prior_file)
+            logger.debug("Done with DR14...{0:.2f} seconds"
+                         .format(time.time()-t1))
+
+            logger.info("{0} DR13 samples, {1} DR14 samples"
+                        .format(len(samples_dr13), len(samples_dr14)))
+
+            for results_filename, samples_dict in zip([dr13_results_filename,
+                                                       dr14_results_filename],
+                                                      [samples_dr13,
+                                                       samples_dr14]):
+                # Save the samples to the results file:
+                with h5py.File(results_filename, 'r+') as f:
+                    if apogee_id not in f:
+                        g = f.create_group(apogee_id)
+
+                    else:
+                        g = f[apogee_id]
+
+                    for key in samples_dict.keys():
+                        if key in g:
+                            del g[key]
+                        quantity_to_hdf5(g, key, samples_dict[key])
 
         # plot sample orbits
         n_plot = 128
