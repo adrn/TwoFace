@@ -178,10 +178,12 @@ def main(data_path, pool, overwrite=False):
         if both_done:
             logger.info("Samples already done for DR13 and DR14 - loading...")
             with h5py.File(dr13_results_filename, 'r+') as f:
-                samples_dr13 = JokerSamples.from_hdf5(f[apogee_id])
+                samples_dr13 = JokerSamples.from_hdf5(
+                    f[apogee_id], trend_cls=params.trend_cls)
 
             with h5py.File(dr14_results_filename, 'r+') as f:
-                samples_dr14 = JokerSamples.from_hdf5(f[apogee_id])
+                samples_dr14 = JokerSamples.from_hdf5(
+                    f[apogee_id], trend_cls=params.trend_cls)
 
         else:
             joker = TheJoker(params, pool=pool)
@@ -277,8 +279,8 @@ def main(data_path, pool, overwrite=False):
                           marker='.', color='k', alpha=0.45)
 
         axes[1,0].set_xlabel("$P$ [day]")
-        axes[0,0].set_ylabel("$K$ [km/s]")
-        axes[1,0].set_ylabel("$K$ [km/s]")
+        axes[0,0].set_ylabel("$K$ [{0:latex_inline}]".format(u.km/u.s))
+        axes[1,0].set_ylabel("$K$ [{0:latex_inline}]".format(u.km/u.s))
         axes[0,0].set_xscale('log')
         axes[0,0].set_yscale('log')
         axes[0,0].set_ylim(samples_dr13['K'].to(u.km/u.s).value.min(),
@@ -298,6 +300,8 @@ def main(data_path, pool, overwrite=False):
         axes[1,1].hist(samples_dr14['jitter'].to(u.km/u.s).value, bins=bins,
                        normed=True, alpha=0.6)
         axes[0,1].set_xscale('log')
+        axes[1,1].set_xlabel('jitter, $s$ [{0:latex_inline}]'.format(u.km/u.s))
+        axes[0,1].set_xlim(1E-3, 5)
 
         fig.tight_layout()
         fig.savefig(path.join(PLOT_PATH, '{0}_{1}_samples.png'
