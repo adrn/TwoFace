@@ -238,10 +238,12 @@ def main(data_path, pool, overwrite=False):
         _ = plot_rv_curves(samples_dr13, t_grid, rv_unit=u.km/u.s,
                            data=data_dr13,
                            ax=axes[0], plot_kwargs=dict(color='#888888'),
-                           n_plot=n_plot, add_labels=False)
+                           n_plot=min([n_plot, len(samples_dr13)]),
+                           add_labels=False)
 
         _ = plot_rv_curves(samples_dr14, t_grid, rv_unit=u.km/u.s,
-                           data=data_dr14, n_plot=n_plot, ax=axes[1],
+                           data=data_dr14, ax=axes[1],
+                           n_plot=min([n_plot, len(samples_dr14)]),
                            plot_kwargs=dict(color='#888888'))
 
         rv_min = min(data_dr13.rv.to(u.km/u.s).value.min(),
