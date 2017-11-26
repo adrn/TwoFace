@@ -56,7 +56,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO']) &
                                 ((allvisit_tbl['STARFLAG'] & skip_mask) == 0)]
 
-    Session, engine = db_connect(database_path)
+    Session, engine = db_connect(database_path, ensure_db_exists=True)
     logger.debug("Connected to database at '{}'".format(database_path))
 
     if drop_all:
