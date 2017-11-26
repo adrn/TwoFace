@@ -237,14 +237,14 @@ def main(data_path, pool, overwrite=False):
 
         _ = plot_rv_curves(samples_dr13, t_grid, rv_unit=u.km/u.s,
                            data=data_dr13,
-                           ax=axes[0], plot_kwargs=dict(color='#888888'),
+                           ax=axes[0], add_labels=False,
                            n_plot=min([n_plot, len(samples_dr13)]),
-                           add_labels=False)
+                           plot_kwargs=dict(color='#888888', rasterized=True))
 
         _ = plot_rv_curves(samples_dr14, t_grid, rv_unit=u.km/u.s,
                            data=data_dr14, ax=axes[1],
                            n_plot=min([n_plot, len(samples_dr14)]),
-                           plot_kwargs=dict(color='#888888'))
+                           plot_kwargs=dict(color='#888888', rasterized=True))
 
         rv_min = min(data_dr13.rv.to(u.km/u.s).value.min(),
                      data_dr14.rv.to(u.km/u.s).value.min())
@@ -261,7 +261,7 @@ def main(data_path, pool, overwrite=False):
         fig.tight_layout()
         fig.savefig(path.join(PLOT_PATH, '{0}_{1}_orbits.png'
                               .format(row['n_visits'], apogee_id)),
-                    dpi=256)
+                    dpi=128)
 
         # plot samples themselves
         prior_logs2_samples = np.random.normal(params.jitter[0],
