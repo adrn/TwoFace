@@ -38,8 +38,8 @@ def table_to_column_code(table, skip=None):
         if len(dtype.shape) > 0:
             sql_type = 'postgresql.ARRAY({})'.format(sql_type)
 
-        col_map[name.lower()] = '{name} = Column("{name}", {type})'.format(name=name.lower(),
-                                                                           type=sql_type)
+        col_map[name.lower()] = ('{name} = Column("{name}", {type})'
+                                 .format(name=name.lower(), type=sql_type))
 
     return col_map
 
@@ -56,19 +56,21 @@ def main(allVisit_file, allStar_file, rc_file, **kwargs):
 
     # populate columns of the tables
     print("-------- AllStar --------")
-    for name,col in table_to_column_code(allstar_tbl, skip=allstar_skip).items():
+    for name,col in table_to_column_code(allstar_tbl,
+                                         skip=allstar_skip).items():
         print(col)
 
     print("\n"*4)
-    print("--------------------------------------------------------------------")
+    print("-------------------------------------------------------------------")
     print("\n"*4)
 
     print("-------- AllVisit --------")
-    for name,col in table_to_column_code(allvisit_tbl, skip=allvisit_skip).items():
+    for name,col in table_to_column_code(allvisit_tbl,
+                                         skip=allvisit_skip).items():
         print(col)
 
     print("\n"*4)
-    print("--------------------------------------------------------------------")
+    print("-------------------------------------------------------------------")
     print("\n"*4)
 
     print("-------- Red Clump --------")
@@ -79,14 +81,15 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
 
     # Define parser object
-    parser = ArgumentParser(description="Initialize the TwoFace project database.")
+    parser = ArgumentParser(description="Initialize the TwoFace database.")
 
     parser.add_argument("--allstar", dest="allStar_file", required=True,
                         type=str, help="Path to APOGEE allStar FITS file.")
     parser.add_argument("--allvisit", dest="allVisit_file", required=True,
                         type=str, help="Path to APOGEE allVisit FITS file.")
     parser.add_argument("--redclump", dest="rc_file", required=True,
-                        type=str, help="Path to APOGEE Red Clump catalog FITS file.")
+                        type=str, help="Path to APOGEE Red Clump catalog FITS "
+                                       "file.")
 
     args = parser.parse_args()
 

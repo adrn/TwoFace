@@ -1,17 +1,20 @@
+# Standard library
+import sys
+
 # Project
 from twoface.log import log as logger
 from twoface.db.init import initialize_db, load_red_clump, load_nessrg
 
-def main(allVisit_file, allStar_file, rc_file, nessrg_file,
-         overwrite=False, **_):
+def main(allVisit_file, allStar_file, rc_file, nessrg_file, **_):
     database_name = 'apogee.sqlite' # TODO: should this be enforced?
 
-    initialize_db(allVisit_file, allStar_file, database_name,
-                  overwrite=overwrite)
+    initialize_db(allVisit_file, allStar_file, database_name)
 
-    load_red_clump(rc_file, database_name, overwrite=overwrite)
+    if rc_file is not None:
+        load_red_clump(rc_file, database_name, overwrite=False) # HACK
 
-    load_nessrg(nessrg_file, database_name, overwrite=overwrite)
+    if nessrg_file is not None:
+        load_nessrg(nessrg_file, database_name, overwrite=False) # HACK
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
@@ -26,17 +29,15 @@ if __name__ == "__main__":
                           dest='verbosity')
     vq_group.add_argument('-q', '--quiet', action='count', default=0,
                           dest='quietness')
-    parser.add_argument('-o', '--overwrite', action='store_true',
-                        dest='overwrite', default=False,
-                        help='Destroy everything.')
 
     parser.add_argument("--allstar", dest="allStar_file", required=True,
                         type=str, help="Path to APOGEE allStar FITS file.")
     parser.add_argument("--allvisit", dest="allVisit_file", required=True,
                         type=str, help="Path to APOGEE allVisit FITS file.")
-    parser.add_argument("--redclump", dest="rc_file", required=True, type=str,
+
+    parser.add_argument("--redclump", dest="rc_file", type=str, default=None,
                         help="Path to APOGEE Red Clump catalog FITS file.")
-    parser.add_argument("--nessrg", dest="nessrg_file", required=True, type=str,
+    parser.add_argument("--nessrg", dest="nessrg_file", type=str, default=None,
                         help="Path to Ness Red Giant masses FITS file.")
 
     args = parser.parse_args()
@@ -58,3 +59,4 @@ if __name__ == "__main__":
         logger.setLevel(logging.INFO)
 
     main(**vars(args))
+    sys.exit(0)

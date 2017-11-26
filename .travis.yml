@@ -30,7 +30,7 @@ env:
         - ASTROPY_VERSION=stable
         - MAIN_CMD='python setup.py'
         - SETUP_CMD='test'
-        - PIP_DEPENDENCIES='git+https://github.com/adrn/thejoker git+https://github.com/adrn/schwimmbad emcee corner'
+        - PIP_DEPENDENCIES='git+https://github.com/adrn/twobody git+https://github.com/adrn/thejoker git+https://github.com/adrn/schwimmbad emcee corner'
 
         # For this package-template, we include examples of Cython modules,
         # so Cython is required for testing. If your package does not include

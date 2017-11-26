@@ -4,20 +4,21 @@
 from os import path
 
 # Third-party
-import h5py
 import matplotlib.pyplot as plt
 from sqlalchemy.orm.exc import NoResultFound
+from thejoker.sampler import JokerSamples
+from twobody.celestial import VelocityTrend1
 
 # Project
 from twoface.log import log as logger
 from twoface.db import db_connect
 from twoface.db import (JokerRun, AllStar, AllVisit, StarResult, Status,
-                        AllVisitToAllStar, RedClump, CaoVelocity)
+                        AllVisitToAllStar, RedClump)
 from twoface.config import TWOFACE_CACHE_PATH
 from twoface.io import load_samples
 from twoface.plot import plot_data_orbits
 
-def main(database_file, apogee_id, joker_run, cao):
+def main(database_file, apogee_id, joker_run):
 
     db_path = path.join(TWOFACE_CACHE_PATH, database_file)
     if not path.exists(db_path):
@@ -37,6 +38,7 @@ def main(database_file, apogee_id, joker_run, cao):
         star = session.query(AllStar).join(StarResult, JokerRun)\
                       .filter(AllStar.apogee_id == apogee_id)\
                       .filter(JokerRun.name == joker_run)\
+                      .limit(1)\
                       .one()
 
     except NoResultFound:
@@ -44,19 +46,21 @@ def main(database_file, apogee_id, joker_run, cao):
                             .format(apogee_id, joker_run))
 
     # get the RV data for this star
-    data = star.apogeervdata(cao=cao)
+    data = star.apogeervdata()
 
     # load posterior samples from The Joker
     samples_dict = load_samples(path.join(TWOFACE_CACHE_PATH,
                                           '{0}.hdf5'.format(run.name)),
                                 apogee_id)
 
-    # 1: Plot the data with orbits on top
-    fig = plot_data_orbits(data, samples_dict, jitter=run.jitter,
+    samples = JokerSamples(trend_cls=VelocityTrend1, **samples_dict)
+
+    # Plot the data with orbits on top
+    fig = plot_data_orbits(data, samples, jitter=run.jitter,
                            xlim_choice='wide', title=star.apogee_id)
     fig.set_tight_layout(True)
 
-    fig = plot_data_orbits(data, samples_dict, jitter=run.jitter,
+    fig = plot_data_orbits(data, samples, jitter=run.jitter,
                            xlim_choice='tight', title=star.apogee_id)
     fig.set_tight_layout(True)
 
@@ -96,11 +100,6 @@ if __name__ == "__main__":
                         default="apogee.sqlite", type=str,
                         help="Path to the database file.")
 
-    parser.add_argument("--cao", dest="cao_velocities", default=False,
-                        action="store_true",
-                        help="Plot the Cao velocities instead of APOGEE "
-                             "radial velocities.")
-
     args = parser.parse_args()
 
     # Set logger level based on verbose flags
@@ -120,4 +119,4 @@ if __name__ == "__main__":
         logger.setLevel(logging.INFO)
 
     main(apogee_id=args.apogee_id, database_file=args.database_file,
-         joker_run=args.joker_run, cao=args.cao_velocities)
+         joker_run=args.joker_run)

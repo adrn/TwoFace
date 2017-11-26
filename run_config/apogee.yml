@@ -1,10 +1,13 @@
-name: no-jitter
+name: apogee-jitter
 database_file: apogee.sqlite
 hyperparams:
   P_min: 8 day
-  P_max: 8192 day
+  P_max: 32768 day
   requested_samples_per_star: 128 # M_min
+  jitter_prior_mean: 4.
+  jitter_prior_stddev: 3.
+  jitter_prior_unit: m/s
 prior:
-  max_samples: 268435456
+  max_samples: 33554432
   num_cache: 536870912
-  samples_file: P8-8192_prior_samples.hdf5
+  samples_file: P8-32768_prior_samples.hdf5

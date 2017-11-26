@@ -10,4 +10,4 @@ Two Face
     getting-started
 
 
-Info on APOGEE radial velocities: http://www.sdss.org/dr13/irspec/radialvelocities/
+Info on APOGEE radial velocities: http://www.sdss.org/dr14/irspec/radialvelocities/
