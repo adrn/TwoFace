@@ -4,8 +4,8 @@ hyperparams:
   P_min: 8 day
   P_max: 32768 day
   requested_samples_per_star: 128 # M_min
-  jitter_prior_mean: 4.
-  jitter_prior_stddev: 3.
+  jitter_prior_mean: 5.
+  jitter_prior_stddev: 4.
   jitter_prior_unit: m/s
 prior:
   max_samples: 33554432
