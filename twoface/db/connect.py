@@ -18,7 +18,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
 
-def db_connect(database_path, ensure_db_exists=True):
+def db_connect(database_path, ensure_db_exists=False):
     """
     Connect to the specified database.
 
