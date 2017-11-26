@@ -48,8 +48,13 @@ def initialize_db(allVisit_file, allStar_file, database_file,
 
     norm = lambda x: abspath(expanduser(x))
     allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
-    allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO'])]
     allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
+
+    # Remove bad velocities and flagged bad visits:
+    skip_mask = np.sum(2 ** np.array([9, 10, 11, 12, 13, # Persistence issues
+                                      16, 17])) # Bad template cross-correlation
+    allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO']) &
+                                ((allvisit_tbl['STARFLAG'] & skip_mask) == 0)]
 
     Session, engine = db_connect(database_path)
     logger.debug("Connected to database at '{}'".format(database_path))
