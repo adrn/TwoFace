@@ -209,7 +209,8 @@ def initialize_db(allVisit_file, allStar_file, database_file,
                 AllVisit.apogee_id == star.apogee_id).all()
 
             if len(visits) == 0:
-                raise ValueError("Visits not found for star {0}".format(star))
+                logger.warn("Visits not found for star {0}".format(star))
+                continue
 
             logger.log(1, 'Attaching {0} visits to star {1}'
                        .format(len(visits), star))
