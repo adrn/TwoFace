@@ -227,6 +227,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                              .limit(1).one()
 
         logger.log(1, "Starting star {0}".format(star.apogee_id))
+        logger.log(1, "Current status: {0}".format(str(star.status)))
         t0 = time.time()
 
         data = star.apogeervdata()
