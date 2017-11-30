@@ -179,6 +179,11 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                          max_batch_size=2**22) # MAGIC NUMBER
         logger.debug("...done")
 
+    # Get done APOGEE ID's
+    done_subq = session.query(AllStar.apogee_id)\
+                       .join(StarResult, JokerRun, Status)\
+                       .filter(Status.id > 0).distinct()
+
     # Query to get all stars associated with this run that need processing:
     # they should have a status id = 0 (needs processing)
     star_filter = ((AllStar.logg_err < 0.2) &
@@ -190,14 +195,16 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
                                        .filter(JokerRun.name == run.name)\
                                        .filter(Status.id == 0)\
-                                       .filter(star_filter)
+                                       .filter(star_filter)\
+                                       .filter(~AllStar.apogee_id.in_(done_subq))
 
     # Base query to get a StarResult for a given Star so we can update the
     # status, etc.
     result_query = session.query(StarResult).join(AllStar, JokerRun)\
                                             .filter(JokerRun.name == run.name)\
                                             .filter(Status.id == 0)\
-                                            .filter(star_filter)
+                                            .filter(star_filter)\
+                                            .filter(~AllStar.apogee_id.in_(done_subq))
 
     # Create a file to cache the resulting posterior samples
     results_filename = join(TWOFACE_CACHE_PATH, "{0}.hdf5".format(run.name))
