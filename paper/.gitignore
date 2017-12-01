@@ -8,5 +8,5 @@
 *.pdf
 *.synctex.gz
 *Notes.bib
-
+*.png
 gitstuff.tex
