@@ -4,6 +4,7 @@
 % ----------
 % - write a first draft of the introduction
 % - list our assumptions for detection & characterization (TheJoker)
+% - Check abstract numbers (~80,000 RG stars with 3 or more good visits?)
 
 % style notes
 % -----------
@@ -28,14 +29,14 @@
 \include{preamble}
 
 % adjust AAS-TEX shit
-\setlength{\parindent}{1.1\baselineskip}
+% \setlength{\parindent}{1.1\baselineskip}
 
 % define macros for text
 \newcommand{\apogee}{\project{\acronym{APOGEE}}}
 \newcommand{\sdssiii}{\project{\acronym{SDSS-III}}}
 \newcommand{\thejoker}{\project{The~Joker}}
 \newcommand{\thecannon}{\project{The~Cannon}}
-\newcommand{\DR}{\acronym{DR13}}
+\newcommand{\DR}{\acronym{DR14}}
 \newcommand{\RC}{\acronym{RC}}
 \newcommand{\RGB}{\acronym{RGB}}
 
@@ -55,7 +56,7 @@
 
 \begin{document}\sloppy\sloppypar\raggedbottom\frenchspacing % trust me
 
-\title{Binary companions of red giant stars I: \\
+\title{Binary companions of red giant stars with APOGEE I: \\
        catalog and companions that survive the common envelope}
 
 \author[0000-0003-0872-7098]{Adrian~M.~Price-Whelan}
@@ -83,40 +84,43 @@
 \affiliation{Max-Planck-Institut f\"ur Astronomie,
              K\"onigstuhl 17, D-69117 Heidelberg, Germany}
 
-\author{Jason~Cao}
-\affiliation{Center for Cosmology and Particle Physics,
-             Department of Physics,
-             New York University, 726 Broadway,
-             New York, NY 10003, USA}
+% \author{Jason~Cao}
+% \affiliation{Center for Cosmology and Particle Physics,
+%              Department of Physics,
+%              New York University, 726 Broadway,
+%              New York, NY 10003, USA}
 
 \begin{abstract}\noindent % trust me
 % Context
-Repeat radial-velocity measurements of stars can be used to find stellar,
-sub-stellar, and planetary companions.
-The \apogee\ survey (\DR) has measured multi-epoch but sparse radial velocities
-for $> XX$ (mainly red giant) stars.
-Though even few observations are useful for detecting companions, such data are
+Repeat radial-velocity measurements of stars can be used to identify stellar-,
+sub-stellar, and planetary-mass companions.
+Even few observations are useful for detecting companions, though such data are
 difficult to use for constraining the physical properties of companions because
 permitted orbital solutions are highly degenerate.
 % Aims
-Here we perform a search for secondary companions of \nRC\ red clump (\RC) and
-\nRGB\ red giant branch (\RGB) stars that have similar radii to \RC\ stars
-using data from the \apogee\ survey.
-Because the primary-star masses are known, the mass-function degeneracy is
-broken and the secondary-companion masses ($m\,\sin i$) can be inferred.
+Here we perform a search for secondary companions of red giant branch (\RGB)
+stars using data from the \apogee\ survey (\DR), which has measured multi-epoch
+($\geq 3$) but sparse radial velocities for $> 80,000$ \RGB\ stars.
+In some cases, where the primary-star masses are known, the mass-function
+degeneracy is broken and the secondary-companion masses ($m_2\,\sin i$) can be
+inferred.
 % Methods
-We use a custom-built Monte Carlo sampler (\thejoker) combined with prior
-measurements of primary masses and stellar parameters to deliver (often highly
-multi-modal) posterior beliefs about companion mass, pericenter distance, and
-other orbital parameters for the \RC\ and \RGB\ stars.
+We use a custom-built Monte Carlo sampler (\thejoker) combined with stellar
+parameters and primary mass estimates to deliver (often highly multi-modal)
+posterior beliefs about companion mass, pericenter distance, and other orbital
+parameters for the stars.
+We compare the companion populations of red clump (\RC) versus \RGB\ stars at
+similar surface gravity and temperature, and study the metallicity dependence
+of companion properties.
 % Results
-We deliver a catalog of \ncompanions\ companions \todo{that meet some criteria},
-and posterior samplings for all \ntotal\ stars in the parent sample.
-We find \todo{describe} differences between the companions around \RC\ and \RGB\
-stars that are \todo{in/consistent} with the theoretical prediction that
-stellar companions should not survive the common-envelope \RGB\ phase.
-We additionally find trends with chemical abundances, and we find tentative
-evidence for ZZZ and WWW.
+We provide a catalog of \ncompanions\ companions for which the companion
+properties can be confidently determined, along with posterior samplings for all
+\ntotal\ stars in the parent sample.
+\todo{We find differences between the companions around \RC\ and \RGB\
+stars that are in/consistent with the theoretical prediction that
+stellar companions should not survive the common-envelope \RGB\ phase.}
+\todo{We additionally find trends in XX with chemical abundances.}
+
 \end{abstract}
 
 \keywords{
@@ -222,10 +226,6 @@ What we did (if anything) with the missing visits.
 
 \section{Methods}
 
-\subsection{Re-measured radial velocities}\label{sec:rv-remeasure}
-
-\todo{HOGG: fill in this ish}
-
 \subsection{Orbit fitting and velocity modeling}\label{sec:fitting}
 
 For every source in the sample of \apogee\ stars defined in
@@ -311,7 +311,7 @@ Examples of outputs and etc.
 
 \todo{APW}
 
-\subsection{A catalog of red-clump binary systems} \label{sec:rc-catalog}
+\subsection{A catalog of confident companions} \label{sec:conf-companions}
 
 \todo{APW}
 
@@ -321,7 +321,13 @@ Catalog.
 
 Some highlights from this catalog.
 
-\subsection{Differences in companions of RC and RGB stars} \label{sec:rc-rgb}
+\subsection{Differences in companions of RC and RGB stars}
+\label{sec:rc-rgb}
+
+\todo{APW}
+
+\subsection{Trends in RGB companions with chemical abundances}
+\label{sec:rgb-chemistry}
 
 \todo{APW}
 
