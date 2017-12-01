@@ -1,0 +1,116 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+\usepackage{subfig}
+
+\begin{document}
+
+\section{}
+
+\begin{figure*}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{figures/snr.pdf}
+\end{center}
+\caption{%
+Signal-to-noise ratio (SNR) distribution for DR13 visits that also appear in
+DR14.
+}
+\end{figure*}
+
+
+\begin{figure*}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{figures/visit_vhelio_compare.pdf}
+\end{center}
+\caption{%
+One point per \emph{visit}, comparing the derived barycentric radial velocity.
+Only visits that appear in DR13 and DR14 are plotted here, and I've downsampled
+so that an equal number of points are plotted for each SNR bin (there are
+$\approx10^5$ in each SNR bin).
+In case you can't see the legend, blue points are the higher SNR bin, orange are
+lower.
+I'm somewhat troubled by the cloud of blue points centered on 0; it seems like
+many moderate SNR visits are getting large ($\approx$10's of km/s) velocity
+shifts between DR13 and DR14.
+}
+\end{figure*}
+
+
+\begin{figure*}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{figures/visit_vhelio_vs_snr.pdf}
+\end{center}
+\caption{%
+Another way to look at the last point.
+Again, one point per visit, plotting the difference in derived RV normalized by
+the reported DR14 uncertainty of the measured RV.
+}
+\end{figure*}
+
+
+\begin{figure*}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{figures/std_vhelio_compare.pdf}
+\end{center}
+\caption{%
+Now I compute aggregate statistics on all visits for unique
+\texttt{APOGEE\_ID}'s as a way to see how the RMS or velocity scatter changes
+between DR13 and DR14. Each point here is now a unique \emph{source}, and in
+this case represents the standard deviation of all visit velocities for a given
+source in DR13 vs. DR14 in linear (left) and log (right).
+}
+\end{figure*}
+
+\begin{figure*}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{figures/MAD_vhelio_compare.pdf}
+\end{center}
+\caption{%
+Same as last figure, but using $\sigma = 1.5 \times {\rm MAD}$, using the median
+absolute deviation (MAD) as a more robust estimator of the scatter.
+}
+\end{figure*}
+
+\begin{figure*}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{figures/MAD_vhelio_diff.pdf}
+\end{center}
+\caption{%
+Now I'm plotting the difference in the MAD-estimated scatter vs. median SNR for
+each source.
+The vertical axis has is log, but linear from $-10^{-3}$ to $10^{-3}$.
+The fact that this is symmetric is strange to me.
+}
+\end{figure*}
+
+
+\begin{figure}
+\begin{tabular}{cc}
+\subfloat{\includegraphics[width=2.5in]{figures/0.pdf}} &
+\subfloat{\includegraphics[width=2.5in]{figures/1.pdf}} \\
+\subfloat{\includegraphics[width=2.5in]{figures/2.pdf}} &
+\subfloat{\includegraphics[width=2.5in]{figures/3.pdf}} \\
+\subfloat{\includegraphics[width=2.5in]{figures/4.pdf}} &
+\subfloat{\includegraphics[width=2.5in]{figures/5.pdf}} \\
+\subfloat{\includegraphics[width=2.5in]{figures/6.pdf}} &
+\subfloat{\includegraphics[width=2.5in]{figures/7.pdf}} \\
+\end{tabular}
+\caption{Visit velocities for a random batch of APOGEE stars. Error bars are
+plotted for all points, but are sometimes smaller than the marker.}
+\end{figure}
+
+\begin{figure}
+\begin{tabular}{cc}
+\subfloat{\includegraphics[width=2.5in]{figures/8.pdf}} &
+\subfloat{\includegraphics[width=2.5in]{figures/9.pdf}} \\
+\subfloat{\includegraphics[width=2.5in]{figures/10.pdf}} &
+\subfloat{\includegraphics[width=2.5in]{figures/11.pdf}} \\
+\subfloat{\includegraphics[width=2.5in]{figures/12.pdf}} &
+\subfloat{\includegraphics[width=2.5in]{figures/13.pdf}} \\
+\subfloat{\includegraphics[width=2.5in]{figures/14.pdf}} &
+\subfloat{\includegraphics[width=2.5in]{figures/15.pdf}} \\
+\end{tabular}
+\caption{Visit velocities for a random batch of APOGEE stars.}
+\end{figure}
+
+\end{document}
