@@ -227,6 +227,12 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     count = 0 # how many stars we've processed in this star batch
     batch_size = 16 # MAGIC NUMBER: how many stars to process before committing
     for star in star_query.all():
+
+        if result_query.filter(AllStar.apogee_id == star.apogee_id).count() < 1:
+            logger.debug('Star {0} has no result object!'
+                         .format(star.apogee_id))
+            continue
+
         # Retrieve existing StarResult from database. We limit(1) because the
         # APOGEE_ID isn't unique, but we attach all visits for a given star to
         # all rows, so grabbing one of them is fine.
