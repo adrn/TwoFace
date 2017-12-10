@@ -343,19 +343,19 @@ where
       \frac{p(\theta_n \given \alpha)}{p(\theta_n \given \alpha_0)} \,
       p(\theta_n \given D_n, \alpha_0)\\
     &\approx& \mathcal{Z}_n \, \frac{1}{K_n} \,
-      \sum_k^{K_n} \frac{p(\theta_n^{(k)} \given \alpha)}{p(\theta_n^{(k)} \given \alpha_0)}\\
+      \sum_k^{K_n} \frac{p(\theta_{nk} \given \alpha)}{p(\theta_{nk} \given \alpha_0)}\\
     &=& \frac{\mathcal{Z}_n}{K_n} \,
-      \sum_k^{K_n} \frac{p(y_n^{(k)} \given \alpha)}{p(y_n^{(k)} \given \alpha_0)}
+      \sum_k^{K_n} \frac{p(y_{nk} \given \alpha)}{p(y_{nk} \given \alpha_0)}
 \end{eqnarray}
 
 \begin{eqnarray}
     p(\{D_n\} \given \alpha) &\propto& \prod_n^N \frac{1}{K_n} \,
-      \sum_k^{K_n} \frac{p(y_n^{(k)} \given \alpha)}{p(y_n^{(k)} \given \alpha_0)}\\
+      \sum_k^{K_n} \frac{p(y_{nk} \given \alpha)}{p(y_{nk} \given \alpha_0)}\\
     \ln p(\{D_n\} \given \alpha) &\propto& \sum_n^N \left[
-      \ln\left( \sum_k^{K_n} \frac{p(y_n^{(k)} \given \alpha)}{p(y_n^{(k)} \given \alpha_0)} \right)
+      \ln\left( \sum_k^{K_n} \frac{p(y_{nk} \given \alpha)}{p(y_{nk} \given \alpha_0)} \right)
       - \ln K_n\right]\\
     &\propto& \sum_n^N \left[
-      \underset{k}{\rm logsumexp}\left[ \ln{p(y_n^{(k)} \given \alpha)} - \ln{p(y_n^{(k)} \given \alpha_0)} \right]
+      \underset{k}{\rm logsumexp}\left[ \ln{p(y_{nk} \given \alpha)} - \ln{p(y_{nk} \given \alpha_0)} \right]
       - \ln K_n\right]
 \end{eqnarray}
 
