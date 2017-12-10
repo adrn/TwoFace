@@ -305,6 +305,60 @@ samples to produce a catalog of companions.
 
 Examples of outputs and etc.
 
+\subsection{Infer the jitter}
+
+For each $n$ of $N$ RGB stars in APOGEE, we obtain $K$ posterior samples over
+primary orbital parameters $\bs{w} = (P, e, \omega, \phi_0, K, v_0)$ and the
+jitter parameter, $y = \ln s^2$, using {\it The Joker}.
+To obtain this sampling, we use an interim prior on the jitter parameter
+parametrized by a mean and root-variance $\alpha_0 = (\mu_{y,0}, \sigma_{y,0})$.
+
+\begin{eqnarray}
+    \bs{\theta}_{k} &=& (\bs{w}, y)_{k}\\
+    \bs{\theta}_{k} &\sim& p(\bs{\theta}_k \given \{D_n\}, \alpha_0)
+\end{eqnarray}
+
+New hyperprior, parameters to infer: $\alpha = (\mu_y, \sigma_y)$.
+
+We want to obtain posterior samples in
+\begin{eqnarray}
+    p(\alpha \given \{D_n\}) &\propto& p(\{D_n\} \given \alpha) \, p(\alpha)
+\end{eqnarray}
+where
+\begin{eqnarray}
+    p(\{D_n\} \given \alpha) &=& \prod_n^N p(D_n \given \alpha) \quad .
+\end{eqnarray}
+
+
+\begin{eqnarray}
+    p(D_n \given \alpha) &=& \int \dd \theta_n \, p(D_n \given \theta_n) \,
+      p(\theta_n \given \alpha)\\
+    &=& \int \dd \theta_n \, p(D_n \given \theta_n) \, p(\theta_n \given \alpha) \,
+      \frac{p(\theta_n \given D_n, \alpha_0)}{p(\theta_n \given D_n, \alpha_0)}\\
+    &=& \int \dd \theta_n \, p(D_n \given \theta_n) \, p(\theta_n \given \alpha) \,
+      p(\theta_n \given D_n, \alpha_0) \,
+      \frac{p(D_n \given \alpha_0)}{p(D_n \given \theta_n) \,
+      p(\theta_n \given \alpha_0)}\\
+    &=& p(D_n \given \alpha_0) \, \int \dd \theta_n \,
+      \frac{p(\theta_n \given \alpha)}{p(\theta_n \given \alpha_0)} \,
+      p(\theta_n \given D_n, \alpha_0)\\
+    &\approx& \mathcal{Z}_n \, \frac{1}{K_n} \,
+      \sum_k^{K_n} \frac{p(\theta_n^{(k)} \given \alpha)}{p(\theta_n^{(k)} \given \alpha_0)}\\
+    &=& \frac{\mathcal{Z}_n}{K_n} \,
+      \sum_k^{K_n} \frac{p(y_n^{(k)} \given \alpha)}{p(y_n^{(k)} \given \alpha_0)}
+\end{eqnarray}
+
+\begin{eqnarray}
+    p(\{D_n\} \given \alpha) &\propto& \prod_n^N \frac{1}{K_n} \,
+      \sum_k^{K_n} \frac{p(y_n^{(k)} \given \alpha)}{p(y_n^{(k)} \given \alpha_0)}\\
+    \ln p(\{D_n\} \given \alpha) &\propto& \sum_n^N \left[
+      \ln\left( \sum_k^{K_n} \frac{p(y_n^{(k)} \given \alpha)}{p(y_n^{(k)} \given \alpha_0)} \right)
+      - \ln K_n\right]\\
+    &\propto& \sum_n^N \left[
+      \underset{k}{\rm logsumexp}\left[ \ln{p(y_n^{(k)} \given \alpha)} - \ln{p(y_n^{(k)} \given \alpha_0)} \right]
+      - \ln K_n\right]
+\end{eqnarray}
+
 \section{Results}
 
 \subsection{Catalog / posterior samples whatever} \label{sec:full-catalog}
