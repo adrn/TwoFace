@@ -269,7 +269,7 @@ class AllStar(Base):
     # chi2_class = Column("chi2_class", postgresql.ARRAY(types.REAL))
 
     def __repr__(self):
-        return ("<ApogeeStar(id='{}', apogee_id='{}', {} results)>"
+        return ("<ApogeeStar(id='{0}', apogee_id='{1}', {2} results)>"
                 .format(self.id, self.apogee_id, len(self.results)))
 
     def apogeervdata(self):
@@ -605,7 +605,7 @@ class JokerRun(Base):
                                nullable=False)
 
     def __repr__(self):
-        return ("<JokerRun(name='{}', date='{}')>"
+        return ("<JokerRun(name='{0}', date='{0}')>"
                 .format(self.name, self.date.isoformat()))
 
 class NessRG(Base):
