@@ -272,9 +272,9 @@ class AllStar(Base):
         return ("<ApogeeStar(id='{0}', apogee_id='{1}', {2} results)>"
                 .format(self.id, self.apogee_id, len(self.results)))
 
-    def apogeervdata(self):
+    def apogeervdata(self, clean=False):
         """Return a `twoface.data.APOGEERVData` instance for this star. """
-        return star_to_apogeervdata(self)
+        return star_to_apogeervdata(self, clean=clean)
 
 class AllVisit(Base):
     __tablename__ = 'allvisit'
