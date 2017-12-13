@@ -27,7 +27,7 @@ def star_to_apogeervdata(star, clean=False):
     data = APOGEERVData(t=t, rv=rv, stddev=rv_err)
 
     if clean:
-        bad_mask = (np.isclose(np.abs(data.rv.value), 9999.) &
+        bad_mask = (np.isclose(np.abs(data.rv.value), 9999.) |
                     (data.stddev.to(u.km/u.s).value >= 100.))
         data = data[~bad_mask]
 
