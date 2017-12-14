@@ -5,6 +5,7 @@ import datetime
 
 # Third-party
 import astropy.units as u
+import numpy as np
 from sqlalchemy import Table, Column, types
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship, backref
@@ -283,6 +284,29 @@ class AllStar(Base):
     def apogeervdata(self, clean=False):
         """Return a `twoface.data.APOGEERVData` instance for this star. """
         return star_to_apogeervdata(self, clean=clean)
+
+    @property
+    def fparam(self):
+        vals = np.zeros(9)
+        for i in range(9):
+            vals[i] = getattr(self, 'fparam{0}'.format(i))
+        return vals
+
+    @property
+    def fparam_cov(self):
+        vals = np.zeros((9,9))
+        for i in range(9):
+            for j in range(9):
+                name = 'fparam{0}{1}'.format(i, j)
+                if hasattr(self, name):
+                    vals[i,j] = getattr(self, name)
+                    vals[j,i] = getattr(self, name)
+
+                name = 'fparam{0}{1}'.format(j, i)
+                if hasattr(self, name):
+                    vals[i,j] = getattr(self, name)
+                    vals[j,i] = getattr(self, name)
+        return vals
 
 class AllVisit(Base):
     __tablename__ = 'allvisit'
