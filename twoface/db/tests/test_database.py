@@ -41,7 +41,7 @@ class TestDB(object):
 
         # get star entry and check total num of visits
         star = s.query(AllStar).filter(AllStar.target_id == test_target_ID).one()
-        assert len(star.visits) == 6
+        assert len(star.visits) == 3
 
         # get a visit and check that it has one star
         visit = s.query(AllVisit).filter(AllVisit.target_id == test_target_ID).limit(1).one()

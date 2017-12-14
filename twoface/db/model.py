@@ -133,10 +133,6 @@ class AllStar(Base):
     min_h = Column("min_h", types.REAL)
     max_h = Column("max_h", types.REAL)
     min_jk = Column("min_jk", types.REAL)
-    # param = Column("param", postgresql.ARRAY(types.REAL))
-    # fparam = Column("fparam", postgresql.ARRAY(types.REAL))
-    # param_cov = Column("param_cov", postgresql.ARRAY(types.REAL))
-    # fparam_cov = Column("fparam_cov", postgresql.ARRAY(types.REAL))
     teff = Column("teff", types.REAL)
     teff_err = Column("teff_err", types.REAL)
     logg = Column("logg", types.REAL)
@@ -267,6 +263,18 @@ class AllStar(Base):
     pm_src = Column("pm_src", types.String)
     # fparam_class = Column("fparam_class", postgresql.ARRAY(types.REAL))
     # chi2_class = Column("chi2_class", postgresql.ARRAY(types.REAL))
+
+    # need to split up FPARAM
+    # Teff, logg, vmicro, [M/H], [C/M], [N/M], [alpha/M], vsini, vmacro
+    # param = Column("param", postgresql.ARRAY(types.REAL))
+    # param_cov = Column("param_cov", postgresql.ARRAY(types.REAL))
+    _fp_str = "fparam{i} = Column('fparam{i}', types.REAL)"
+    _cov_str = "fparam_cov{i}{j} = Column('fparam_cov{i}{j}', types.REAL)"
+    for i in range(9):
+        exec(_fp_str.format(i=i))
+        for j in range(9):
+            if j < i: continue
+            exec(_cov_str.format(i=i, j=j))
 
     def __repr__(self):
         return ("<ApogeeStar(id='{0}', apogee_id='{1}', {2} results)>"
