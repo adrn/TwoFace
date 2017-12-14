@@ -5,6 +5,7 @@ import datetime
 
 # Third-party
 import astropy.units as u
+import numpy as np
 from sqlalchemy import Table, Column, types
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship, backref
@@ -133,10 +134,6 @@ class AllStar(Base):
     min_h = Column("min_h", types.REAL)
     max_h = Column("max_h", types.REAL)
     min_jk = Column("min_jk", types.REAL)
-    # param = Column("param", postgresql.ARRAY(types.REAL))
-    # fparam = Column("fparam", postgresql.ARRAY(types.REAL))
-    # param_cov = Column("param_cov", postgresql.ARRAY(types.REAL))
-    # fparam_cov = Column("fparam_cov", postgresql.ARRAY(types.REAL))
     teff = Column("teff", types.REAL)
     teff_err = Column("teff_err", types.REAL)
     logg = Column("logg", types.REAL)
@@ -268,13 +265,48 @@ class AllStar(Base):
     # fparam_class = Column("fparam_class", postgresql.ARRAY(types.REAL))
     # chi2_class = Column("chi2_class", postgresql.ARRAY(types.REAL))
 
+    # need to split up FPARAM
+    # Teff, logg, vmicro, [M/H], [C/M], [N/M], [alpha/M], vsini, vmacro
+    # param = Column("param", postgresql.ARRAY(types.REAL))
+    # param_cov = Column("param_cov", postgresql.ARRAY(types.REAL))
+    _fp_str = "fparam{i} = Column('fparam{i}', types.REAL)"
+    _cov_str = "fparam_cov{i}{j} = Column('fparam_cov{i}{j}', types.REAL)"
+    for i in range(9):
+        exec(_fp_str.format(i=i))
+        for j in range(9):
+            if j < i: continue
+            exec(_cov_str.format(i=i, j=j))
+
     def __repr__(self):
-        return ("<ApogeeStar(id='{}', apogee_id='{}', {} results)>"
+        return ("<ApogeeStar(id='{0}', apogee_id='{1}', {2} results)>"
                 .format(self.id, self.apogee_id, len(self.results)))
 
-    def apogeervdata(self):
+    def apogeervdata(self, clean=False):
         """Return a `twoface.data.APOGEERVData` instance for this star. """
-        return star_to_apogeervdata(self)
+        return star_to_apogeervdata(self, clean=clean)
+
+    @property
+    def fparam(self):
+        vals = np.zeros(9)
+        for i in range(9):
+            vals[i] = getattr(self, 'fparam{0}'.format(i))
+        return vals
+
+    @property
+    def fparam_cov(self):
+        vals = np.zeros((9,9))
+        for i in range(9):
+            for j in range(9):
+                name = 'fparam{0}{1}'.format(i, j)
+                if hasattr(self, name):
+                    vals[i,j] = getattr(self, name)
+                    vals[j,i] = getattr(self, name)
+
+                name = 'fparam{0}{1}'.format(j, i)
+                if hasattr(self, name):
+                    vals[i,j] = getattr(self, name)
+                    vals[j,i] = getattr(self, name)
+        return vals
 
 class AllVisit(Base):
     __tablename__ = 'allvisit'
@@ -605,7 +637,7 @@ class JokerRun(Base):
                                nullable=False)
 
     def __repr__(self):
-        return ("<JokerRun(name='{}', date='{}')>"
+        return ("<JokerRun(name='{0}', date='{0}')>"
                 .format(self.name, self.date.isoformat()))
 
 class NessRG(Base):

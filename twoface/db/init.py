@@ -2,6 +2,7 @@
 from os.path import abspath, expanduser, join
 
 # Third-party
+from astropy.io import fits
 from astropy.table import Table
 import numpy as np
 import sqlalchemy
@@ -22,8 +23,20 @@ def tblrow_to_dbrow(tblrow, colnames, varchar_cols=[]):
     for k in colnames:
         if k in varchar_cols:
             row_data[k.lower()] = tblrow[k].strip()
+
+        # special case the array columns
+        elif k.lower().startswith('fparam') and 'cov' not in k.lower():
+            i = int(k[-1])
+            row_data[k.lower()] = tblrow[k[:-1]][i]
+
+        elif k.lower().startswith('fparam') and 'cov' in k.lower():
+            i = int(k[-2])
+            j = int(k[-1])
+            row_data[k.lower()] = tblrow[k[:-2]][i,j]
+
         else:
             row_data[k.lower()] = tblrow[k]
+
     return row_data
 
 def initialize_db(allVisit_file, allStar_file, database_file,
@@ -47,14 +60,25 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     database_path = join(TWOFACE_CACHE_PATH, database_file)
 
     norm = lambda x: abspath(expanduser(x))
-    allvisit_tbl = Table.read(norm(allVisit_file), format='fits', hdu=1)
-    allstar_tbl = Table.read(norm(allStar_file), format='fits', hdu=1)
+    allvisit_tbl = fits.getdata(norm(allVisit_file))
+    allstar_tbl = fits.getdata(norm(allStar_file))
 
     # Remove bad velocities and flagged bad visits:
     skip_mask = np.sum(2 ** np.array([9, 10, 11, 12, 13, # Persistence issues
                                       16, 17])) # Bad template cross-correlation
     allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO']) &
                                 ((allvisit_tbl['STARFLAG'] & skip_mask) == 0)]
+
+    # Remove STAR_WARN and SUSPECT_BROAD_LINES stars:
+    allstar_tbl = allstar_tbl[((allstar_tbl['ASPCAPFLAG'] & (2**7)) == 0) &
+                              ((allstar_tbl['STARFLAG'] & (2**17)) == 0)]
+
+    # Only load visits for stars that we're loading
+    allvisit_tbl = allvisit_tbl[np.isin(allvisit_tbl['APOGEE_ID'],
+                                        allstar_tbl['APOGEE_ID'])]
+
+    allvisit_tbl = Table(allvisit_tbl)
+    allstar_tbl = Table(allstar_tbl)
 
     Session, engine = db_connect(database_path, ensure_db_exists=True)
     logger.debug("Connected to database at '{}'".format(database_path))
