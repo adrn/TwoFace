@@ -10,7 +10,8 @@ from thejoker.sampler.utils import get_ivar
 __all__ = ['plot_data_orbits']
 
 def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
-                     xlim_choice='wide', n_times=4096, title=None):
+                     xlim_choice='wide', n_times=4096, title=None,
+                     ax=None):
     """
     Plot the APOGEE RV data vs. time and orbits computed from The Joker samples.
 
@@ -40,7 +41,10 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
         ivar = get_ivar(data, jitter.to(data.rv.unit).value)
         data.ivar = ivar / data.rv.unit**2
 
-    fig, ax = plt.subplots(1, 1, figsize=(12,6))
+    if ax is None:
+        fig, ax = plt.subplots(1, 1, figsize=(12,6))
+    else:
+        fig = ax.figure
 
     now = Time.now()
 
