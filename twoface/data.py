@@ -41,14 +41,21 @@ class APOGEERVData(RVData):
 
         Parameters
         ----------
-        visits : list
-            List of ``AllVisit`` instances.
+        visits : list, structured array, `astropy.table.Table`
+            List of ``AllVisit`` database row instances, or rows sub-selected
+            from the allVisit FITS file.
 
         """
+        from .db import AllVisit
+        if isinstance(visits[0], AllVisit):
+            jd = [float(v.jd) for v in visits]
+            rv = [float(v.vhelio) for v in visits]
+            rv_rand_err = [float(v.vrelerr) for v in visits]
 
-        jd = [float(v.jd) for v in visits]
-        rv = [float(v.vhelio) for v in visits]
-        rv_rand_err = [float(v.vrelerr) for v in visits]
+        else:
+            jd = visits['JD']
+            rv = visits['VHELIO']
+            rv_rand_err = visits['VRELERR']
 
         t = Time(jd, format='jd', scale='utc')
         rv = rv * u.km/u.s

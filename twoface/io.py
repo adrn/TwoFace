@@ -1,5 +1,7 @@
 # Third-party
 import h5py
+from twobody.celestial import VelocityTrend1
+from thejoker.sampler import JokerSamples
 from thejoker.utils import quantity_from_hdf5
 
 __all__ = ['load_samples']
@@ -14,6 +16,8 @@ def load_samples(group_or_filename, apogee_id=None):
         If a filename is passed to ``group_or_filename``, you must also specify
         the APOGEE ID of the source to load.
     """
+    # HACK: so far, we've only used VelocityTrend1, so assume that
+    trend_cls = VelocityTrend1
 
     if isinstance(group_or_filename, str):
         if apogee_id is None:
@@ -37,4 +41,4 @@ def load_samples(group_or_filename, apogee_id=None):
     if f is not None:
         f.close()
 
-    return samples_dict
+    return JokerSamples(trend_cls=trend_cls, **samples_dict)
