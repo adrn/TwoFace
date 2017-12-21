@@ -186,16 +186,9 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
     # Query to get all stars associated with this run that need processing:
     # they should have a status id = 0 (needs processing)
-    star_filter = ((AllStar.logg_err < 0.2) &
-                   (AllStar.logg < 3.5) &
-                   (AllStar.logg > -999) &
-                   (AllStar.teff_err > 0.) &
-                   (AllStar.teff_err < 200.) &
-                   (AllStar.teff < 5500))
     star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
                                        .filter(JokerRun.name == run.name)\
                                        .filter(Status.id == 0)\
-                                       .filter(star_filter)\
                                        .filter(~AllStar.apogee_id.in_(done_subq))
 
     # Base query to get a StarResult for a given Star so we can update the
@@ -203,7 +196,6 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     result_query = session.query(StarResult).join(AllStar, JokerRun)\
                                             .filter(JokerRun.name == run.name)\
                                             .filter(Status.id == 0)\
-                                            .filter(star_filter)\
                                             .filter(~AllStar.apogee_id.in_(done_subq))
 
     # Create a file to cache the resulting posterior samples
