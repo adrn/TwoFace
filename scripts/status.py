@@ -27,8 +27,7 @@ def main(run_name):
     for status in session.query(Status).order_by(Status.id).all():
         star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
                                            .filter(JokerRun.name == run.name)\
-                                           .filter(Status.id == status.id)\
-                                           .filter(~AllStar.apogee_id.in_(done_subq))
+                                           .filter(Status.id == status.id)
         print("{0} ({1}): {2}".format(status.message, status.id,
                                       star_query.count()))
 
