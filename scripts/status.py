@@ -1,9 +1,10 @@
 from os import path
 from twoface.db import (db_connect, AllStar, AllVisit, AllVisitToAllStar,
                         StarResult, Status, JokerRun)
+from twoface.config import TWOFACE_CACHE_PATH
 
 def main(run_name):
-    Session, _ = db_connect(path.join('cache', 'apogee.sqlite'))
+    Session, _ = db_connect(path.join(TWOFACE_CACHE_PATH, 'apogee.sqlite'))
     session = Session()
 
     done_subq = session.query(AllStar.apogee_id)\
