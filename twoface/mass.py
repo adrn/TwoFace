@@ -5,7 +5,7 @@
 # Third-party
 import numpy as np
 
-__all__ = ['CM_NM_to_CNM', 'CM_NM_to_CN', 'get_martig_vec']
+__all__ = ['CM_NM_to_CNM', 'CM_NM_to_CN', 'get_martig_vec', 'm2_func']
 
 # For abundance transformations:
 log_eC = 8.39
@@ -72,3 +72,7 @@ def get_martig_vec(Teff, logg, M_H, C_M, N_M):
     vec[6] = logg
 
     return vec
+
+
+def m2_func(m2, m1, sini, mf):
+    return (m2*sini)**3 / (m1 + m2)**2 - mf
