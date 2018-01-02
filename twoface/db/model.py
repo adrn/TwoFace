@@ -9,6 +9,7 @@ import numpy as np
 from sqlalchemy import Table, Column, types
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.ext.hybrid import hybrid_property
 
 # Project
 from ..mass import get_martig_vec
@@ -336,6 +337,20 @@ class AllStar(Base):
         from ..mass import M
         x = self.martig_vec
         return M.dot(x).dot(x)
+
+    @hybrid_property
+    def martig_filter(self):
+        return None
+
+    @martig_filter.expression
+    def martig_filter(cls):
+        return ((cls.fparam3 > -0.8) &
+                (cls.fparam0 > 4000) & (cls.fparam0 < 5000) &
+                (cls.fparam1 > 1.8) & (cls.fparam1 < 3.3) &
+                (cls.fparam4 > -0.25) & (cls.fparam4 < 0.15) &
+                (cls.fparam5 > -0.1) & (cls.fparam5 < 0.45) &
+                (((cls.fparam4+8.39) - (cls.fparam5+7.78)) > -0.6) &
+                (((cls.fparam4+8.39) - (cls.fparam5+7.78)) < 0.2))
 
 
 class AllVisit(Base):
