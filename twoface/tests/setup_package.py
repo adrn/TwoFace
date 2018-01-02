@@ -1,3 +1,2 @@
 def get_package_data():
-    return {
-        _ASTROPY_PACKAGE_NAME_ + '.tests': ['coveragerc']}
+    return {'twoface.tests': ['coveragerc', 'martig_tbl.txt']}

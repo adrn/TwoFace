@@ -11,13 +11,16 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship, backref
 
 # Project
+from ..mass import get_martig_vec
 from ..data import star_to_apogeervdata
 from .connect import Base
 from .quantity_type import QuantityTypeClassFactory
 from . import numpy_adapt # just need to execute code
 
+
 __all__ = ['AllStar', 'AllVisit', 'RedClump', 'JokerRun', 'StarResult',
            'Status', 'AllVisitToAllStar', 'NessRG']
+
 
 class Status(Base):
     __tablename__ = 'status'
@@ -27,6 +30,7 @@ class Status(Base):
 
     def __repr__(self):
         return "<Status id={0} message='{1}'>".format(self.id, self.message)
+
 
 class StarResult(Base):
     __tablename__ = 'starresult'
@@ -53,6 +57,7 @@ class StarResult(Base):
                 .format(self.star.apogee_id, self.jokerrun.name,
                         self.status.message))
 
+
 AllVisitToAllStar = Table('allvisit_to_allstar',
                           Base.metadata,
                           Column('allstar_id', types.Integer,
@@ -61,6 +66,7 @@ AllVisitToAllStar = Table('allvisit_to_allstar',
                           Column('allvisit_id', types.Integer,
                                  ForeignKey('allvisit.id', ondelete='CASCADE'),
                                  index=True))
+
 
 class AllStar(Base):
     __tablename__ = 'allstar'
@@ -307,6 +313,30 @@ class AllStar(Base):
                     vals[i,j] = getattr(self, name)
                     vals[j,i] = getattr(self, name)
         return vals
+
+    @property
+    def martig_vec(self):
+        """
+        Need to get a 1D array with:
+            1, [M/H], [C/M], [N/M], [(C+N)/M], Teff/4000, logg
+
+        FPARAM contains:
+            Teff, logg, <vmicro>, [M/H], [C/M], [N/M]
+        """
+        Teff, logg, _, M_H, C_M, N_M, *_ = self.fparam
+        return get_martig_vec(Teff, logg, M_H, C_M, N_M)
+
+    @property
+    def martig_mass(self):
+        """Estimate the stellar mass of the star using the fit parameters from
+        Martig et al. and the stellar parameters.
+
+        According to Martig et al., the uncertainty is ~0.25 Msun.
+        """
+        from ..mass import M
+        x = self.martig_vec
+        return M.dot(x).dot(x)
+
 
 class AllVisit(Base):
     __tablename__ = 'allvisit'
