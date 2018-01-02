@@ -82,8 +82,8 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
     plot_rv_curves(P_max_samples, t_grid, rv_unit=u.km/u.s, ax=ax,
                    n_plot=1, plot_kwargs=dark_style)
 
-    if now.mjd < t_grid.max():
-        ax.axvline(now.mjd, zorder=-10, color='#31a354', alpha=0.4)
+    # if now.mjd < t_grid.max():
+    #     ax.axvline(now.mjd, zorder=-10, color='#31a354', alpha=0.4)
 
     ax.set_xlim(t_grid.min(), t_grid.max())
 
