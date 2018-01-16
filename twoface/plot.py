@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from thejoker.plot import plot_rv_curves
-from thejoker.sampler.utils import get_ivar
+from thejoker.sampler.likelihood import get_ivar
 
 __all__ = ['plot_data_orbits']
+
 
 def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
                      xlim_choice='wide', n_times=4096, title=None,
