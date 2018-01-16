@@ -56,6 +56,7 @@ from twoface.db import (JokerRun, AllStar, AllVisit, StarResult, Status,
 from twoface.config import TWOFACE_CACHE_PATH
 from twoface.sample_prior import make_prior_cache
 
+
 def main(config_file, pool, seed, overwrite=False, _continue=False):
     config_file = abspath(expanduser(config_file))
 
@@ -312,6 +313,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
     session.commit()
     session.close()
+
 
 if __name__ == "__main__":
     from argparse import ArgumentParser

@@ -18,6 +18,7 @@ from twoface.config import TWOFACE_CACHE_PATH
 from twoface.io import load_samples
 from twoface.plot import plot_data_orbits
 
+
 def main(database_file, apogee_id, joker_run):
 
     db_path = path.join(TWOFACE_CACHE_PATH, database_file)
@@ -72,6 +73,7 @@ def main(database_file, apogee_id, joker_run):
     session.close()
 
     plt.show()
+
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
