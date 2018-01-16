@@ -1,4 +1,4 @@
-name: twoface
+name: twoface-new
 
 channels:
   - astropy
@@ -17,6 +17,7 @@ dependencies:
   - pip:
     - emcee
     - corner
-    - git+https://github.com/adrn/thejoker
+    - tqdm
+    - git+https://github.com/adrn/twobody
+    - git+https://github.com/adrn/thejoker@twobody-0.1
     - git+https://github.com/adrn/schwimmbad
-
