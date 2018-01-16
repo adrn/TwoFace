@@ -13,6 +13,7 @@ dependencies:
   - pyyaml
   - cython
   - h5py
+  - jupyter
   - pip
   - pip:
     - emcee
