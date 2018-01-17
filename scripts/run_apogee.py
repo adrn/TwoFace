@@ -288,9 +288,9 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             # Check whether the samples returned are within one mode. If
             # they are, then "needs mcmc" otherwise "needs more samples"
             P_samples = samples_dict['P'].to(u.day).value
-            P_med = np.median(P_samples)
+            P_min = P_samples.min()
             T = np.ptp(data.t.mjd)
-            delta = 4*P_med**2 / (2*np.pi*T)
+            delta = 4*P_min**2 / (2*np.pi*T)
 
             if np.std(P_samples) < delta:
                 # Multiple samples were returned, but they look unimodal
