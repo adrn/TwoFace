@@ -4,10 +4,10 @@
 from os import path
 
 # Third-party
+import h5py
 import matplotlib.pyplot as plt
 from sqlalchemy.orm.exc import NoResultFound
 from thejoker.sampler import JokerSamples
-from twobody.celestial import VelocityTrend1
 
 # Project
 from twoface.log import log as logger
@@ -15,7 +15,6 @@ from twoface.db import db_connect
 from twoface.db import (JokerRun, AllStar, AllVisit, StarResult, Status,
                         AllVisitToAllStar, RedClump)
 from twoface.config import TWOFACE_CACHE_PATH
-from twoface.io import load_samples
 from twoface.plot import plot_data_orbits
 
 
@@ -50,11 +49,9 @@ def main(database_file, apogee_id, joker_run):
     data = star.apogeervdata()
 
     # load posterior samples from The Joker
-    samples_dict = load_samples(path.join(TWOFACE_CACHE_PATH,
-                                          '{0}.hdf5'.format(run.name)),
-                                apogee_id)
-
-    samples = JokerSamples(trend_cls=VelocityTrend1, **samples_dict)
+    h5_file = path.join(TWOFACE_CACHE_PATH, '{0}.hdf5'.format(run.name))
+    with h5py.File(h5_file) as f:
+        samples = JokerSamples.from_hdf5(f[apogee_id])
 
     # Plot the data with orbits on top
     fig = plot_data_orbits(data, samples, jitter=run.jitter,

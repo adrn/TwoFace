@@ -10,7 +10,7 @@ parameters of the processing run. These are mainly hyper-parameters for
 `The Joker <thejoker.readthedocs.io>`_, but  also specify things like the name
 of the database file to pull data from, the name of the run, and the number of
 prior samples to generate and cache. To see an example, check out the YAML file
-at ``twoface/run_config/redclump.yml``.
+at ``twoface/run_config/apogee.yml``.
 
 Parallel processing
 ===================
