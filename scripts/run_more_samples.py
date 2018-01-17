@@ -44,11 +44,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         config = yaml.load(f.read())
 
     # filename of sqlite database
-    if 'database_file' not in config:
-        database_file = None
-
-    else:
-        database_file = config['database_file']
+    database_file = config['database_file']
 
     db_path = join(TWOFACE_CACHE_PATH, database_file)
     if not os.path.exists(db_path):
@@ -61,79 +57,17 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                                  ensure_db_exists=False)
     session = Session()
 
-    # See if this run (by name) is in the database already, if so, grab that.
+    # Get object for this JokerRun
     try:
         run = session.query(JokerRun).filter(
             JokerRun.name == config['name']).one()
-        logger.info("JokerRun '{0}' already found in database"
-                    .format(config['name']))
 
     except NoResultFound:
-        run = None
+        raise NoResultFound('No JokerRun "{0}" found in database! Did you '
+                            'run the `run_apogee.py` script yet?'
+                            .format(config['name']))
 
-    except MultipleResultsFound:
-        raise MultipleResultsFound("Multiple JokerRun rows found for name '{0}'"
-                                   .format(config['name']))
-
-    if run is not None and overwrite:
-        session.query(StarResult)\
-               .filter(StarResult.jokerrun_id == run.id)\
-               .delete()
-        session.commit()
-        session.delete(run)
-        session.commit()
-
-        run = None
-
-    # If this run doesn't exist in the database yet, create it using the
-    # parameters read from the config file.
-    if run is None:
-        logger.info("JokerRun '{0}' not found in database, creating entry..."
-                    .format(config['name']))
-
-        # Create a JokerRun for this run
-        run = JokerRun()
-        run.config_file = config_file
-        run.name = config['name']
-        run.P_min = u.Quantity(*config['hyperparams']['P_min'].split())
-        run.P_max = u.Quantity(*config['hyperparams']['P_max'].split())
-        run.requested_samples_per_star = int(
-            config['hyperparams']['requested_samples_per_star'])
-        run.max_prior_samples = int(config['prior']['max_samples'])
-        run.prior_samples_file = join(TWOFACE_CACHE_PATH,
-                                      config['prior']['samples_file'])
-
-        if 'jitter' in config['hyperparams']:
-            # jitter is fixed to some quantity, specified in config file
-            run.jitter = u.Quantity(*config['hyperparams']['jitter'].split())
-            logger.debug('Jitter is fixed to: {0:.2f}'.format(run.jitter))
-
-        elif 'jitter_prior_mean' in config['hyperparams']:
-            # jitter prior parameters are specified in config file
-            run.jitter_mean = config['hyperparams']['jitter_prior_mean']
-            run.jitter_stddev = config['hyperparams']['jitter_prior_stddev']
-            run.jitter_unit = config['hyperparams']['jitter_prior_unit']
-            logger.debug('Sampling in jitter with mean = {0:.2f} (stddev in '
-                         'log(var) = {1:.2f}) [{2}]'
-                         .format(np.sqrt(np.exp(run.jitter_mean)),
-                                 run.jitter_stddev, run.jitter_unit))
-
-        else:
-            # no jitter is specified, assume no jitter
-            run.jitter = 0. * u.m/u.s
-            logger.debug('No jitter.')
-
-        # Get all stars that are also in the RedClump table with >3 visits
-        q = session.query(AllStar).join(AllVisitToAllStar, AllVisit)\
-                                  .group_by(AllStar.apstar_id)\
-                                  .having(func.count(AllVisit.id) >= 3)
-
-        stars = q.all()
-
-        run.stars = stars
-        session.add(run)
-        session.commit()
-
+    # Set up TheJoker based on hyperparams
     if run.jitter is None or np.isnan(run.jitter):
         jitter_kwargs = dict(jitter=(float(run.jitter_mean),
                                      float(run.jitter_stddev)),
@@ -149,52 +83,45 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                          **jitter_kwargs)
     joker = TheJoker(params, random_state=rnd, pool=pool)
 
-    # Create a cache of prior samples (if it doesn't exist) and store the
-    # filename in the database.
-    if not os.path.exists(run.prior_samples_file) or overwrite:
-        logger.debug("Prior samples file not found - generating {0} samples..."
-                     .format(config['prior']['num_cache']))
-        make_prior_cache(run.prior_samples_file, joker,
-                         N=config['prior']['num_cache'],
-                         max_batch_size=2**22) # MAGIC NUMBER
-        logger.debug("...done")
+    # run.prior_samples_file
 
-    # Get done APOGEE ID's
+    # Get all stars in this JokerRun that have statuses 1 or 2 (needs more prior
+    # samples, needs mcmc respectively)
     done_subq = session.query(AllStar.apogee_id)\
                        .join(StarResult, JokerRun, Status)\
-                       .filter(Status.id > 0).distinct()
+                       .filter(JokerRun.name == config['name'])\
+                       .filter(Status.id.in_([1, 2]) > 0).distinct()
 
     # Query to get all stars associated with this run that need processing:
     # they should have a status id = 0 (needs processing)
     star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
                                        .filter(JokerRun.name == run.name)\
-                                       .filter(Status.id == 0)\
-                                       .filter(~AllStar.apogee_id.in_(done_subq))
+                                       .filter(AllStar.apogee_id.in_(done_subq))
 
     # Base query to get a StarResult for a given Star so we can update the
     # status, etc.
     result_query = session.query(StarResult).join(AllStar, JokerRun)\
-                                            .filter(JokerRun.name == run.name)\
-                                            .filter(Status.id == 0)\
-                                            .filter(~AllStar.apogee_id.in_(done_subq))
+                                            .filter(JokerRun.name == run.name)
 
-    # Create a file to cache the resulting posterior samples
+    # The file with cached posterior samples:
     results_filename = join(TWOFACE_CACHE_PATH, "{0}.hdf5".format(run.name))
     n_stars = star_query.count()
-    logger.info("{0} stars left to process for run '{1}'"
+    logger.info("{0} stars left to process for run more samples '{1}'"
                 .format(n_stars, run.name))
 
-    # Ensure that the results file exists - this is where we cache samples that
-    # pass the rejection sampling step
-    if not os.path.exists(results_filename):
-        with h5py.File(results_filename, 'w') as f:
-            pass
+    if not path.exists(results_filename):
+        raise IOError("Posterior samples result file {0} doesn't exist! Are "
+                      "you sure you ran `run_apogee.py`?"
+                      .format(results_filename))
 
     # --------------------------------------------------------------------------
     # Here is where we do the actual processing of the data for each star. We
-    # loop through all stars that still need processing and iteratively
-    # rejection sample with larger and larger prior sample batch sizes. We do
-    # this for efficiency, but the argument for this is somewhat made up...
+    # loop through all stars that still need processing and either continue with
+    # iterative rejection sampling (needs more samples) or fire up standard mcmc
+    # (needs mcmc)
+
+    # TODO: left off here
+
 
     count = 0 # how many stars we've processed in this star batch
     batch_size = 16 # MAGIC NUMBER: how many stars to process before committing
