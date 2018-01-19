@@ -71,7 +71,7 @@ def main(config_file, pool, seed, overwrite=False):
 
     # TODO: a temporary hack for the end-of-2017 apogee-jitter run: we need to
     # make sure a 2nd prior cache exists with even more samples!
-    _path, ext = path.splitext(run.prior_cache_file)
+    _path, ext = path.splitext(run.prior_samples_file)
     new_path = '{0}_moar{1}'.format(_path, ext)
     if not path.exists(new_path):
         make_prior_cache(new_path, joker,
