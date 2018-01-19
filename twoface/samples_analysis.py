@@ -1,4 +1,5 @@
 # Third-party
+import astropy.units as u
 import numpy as np
 
 __all__ = ['unimodal_P']

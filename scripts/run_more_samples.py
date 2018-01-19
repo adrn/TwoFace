@@ -121,7 +121,8 @@ def main(config_file, pool, seed, overwrite=False):
                    .format(time.time()-t0))
         try:
             samples, ln_prior = joker.rejection_sample(
-                data=data, prior_cache_file=run.prior_samples_file,
+                # HACK: data=data, prior_cache_file=run.prior_samples_file,
+                data=data, prior_cache_file=new_path,
                 return_logprobs=True)
 
         except Exception as e:
@@ -139,11 +140,10 @@ def main(config_file, pool, seed, overwrite=False):
 
         # Write the samples that pass to the results file
         with h5py.File(results_filename, 'r+') as f:
-            if star.apogee_id not in f:
-                g = f.create_group(star.apogee_id)
+            if star.apogee_id in f:
+                del f[star.apogee_id]
 
-            else:
-                g = f[star.apogee_id]
+            g = f.create_group(star.apogee_id)
 
             samples.to_hdf5(g)
 
