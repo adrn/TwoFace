@@ -37,22 +37,17 @@ import os
 import time
 
 # Third-party
-import astropy.units as u
 import h5py
 import numpy as np
 from schwimmbad import choose_pool
-from sqlalchemy import func
-from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from thejoker.log import log as joker_logger
-from thejoker.sampler import JokerParams, TheJoker
-from thejoker.utils import quantity_to_hdf5
+from thejoker.sampler import TheJoker
 import yaml
 
 # Project
 from twoface.log import log as logger
-from twoface.db import db_connect
-from twoface.db import (JokerRun, AllStar, AllVisit, StarResult, Status,
-                        AllVisitToAllStar)
+from twoface.db import db_connect, get_run
+from twoface.db import JokerRun, AllStar, StarResult, Status
 from twoface.config import TWOFACE_CACHE_PATH
 from twoface.sample_prior import make_prior_cache
 
@@ -63,6 +58,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     # parse config file
     with open(config_file, 'r') as f:
         config = yaml.load(f.read())
+        config['config_file'] = config_file
 
     # filename of sqlite database
     if 'database_file' not in config:
@@ -82,92 +78,13 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                                  ensure_db_exists=False)
     session = Session()
 
-    # See if this run (by name) is in the database already, if so, grab that.
-    try:
-        run = session.query(JokerRun).filter(
-            JokerRun.name == config['name']).one()
-        logger.info("JokerRun '{0}' already found in database"
-                    .format(config['name']))
-
-    except NoResultFound:
-        run = None
-
-    except MultipleResultsFound:
-        raise MultipleResultsFound("Multiple JokerRun rows found for name '{0}'"
-                                   .format(config['name']))
-
-    if run is not None and overwrite:
-        session.query(StarResult)\
-               .filter(StarResult.jokerrun_id == run.id)\
-               .delete()
-        session.commit()
-        session.delete(run)
-        session.commit()
-
-        run = None
-
-    # If this run doesn't exist in the database yet, create it using the
-    # parameters read from the config file.
-    if run is None:
-        logger.info("JokerRun '{0}' not found in database, creating entry..."
-                    .format(config['name']))
-
-        # Create a JokerRun for this run
-        run = JokerRun()
-        run.config_file = config_file
-        run.name = config['name']
-        run.P_min = u.Quantity(*config['hyperparams']['P_min'].split())
-        run.P_max = u.Quantity(*config['hyperparams']['P_max'].split())
-        run.requested_samples_per_star = int(
-            config['hyperparams']['requested_samples_per_star'])
-        run.max_prior_samples = int(config['prior']['max_samples'])
-        run.prior_samples_file = join(TWOFACE_CACHE_PATH,
-                                      config['prior']['samples_file'])
-
-        if 'jitter' in config['hyperparams']:
-            # jitter is fixed to some quantity, specified in config file
-            run.jitter = u.Quantity(*config['hyperparams']['jitter'].split())
-            logger.debug('Jitter is fixed to: {0:.2f}'.format(run.jitter))
-
-        elif 'jitter_prior_mean' in config['hyperparams']:
-            # jitter prior parameters are specified in config file
-            run.jitter_mean = config['hyperparams']['jitter_prior_mean']
-            run.jitter_stddev = config['hyperparams']['jitter_prior_stddev']
-            run.jitter_unit = config['hyperparams']['jitter_prior_unit']
-            logger.debug('Sampling in jitter with mean = {0:.2f} (stddev in '
-                         'log(var) = {1:.2f}) [{2}]'
-                         .format(np.sqrt(np.exp(run.jitter_mean)),
-                                 run.jitter_stddev, run.jitter_unit))
-
-        else:
-            # no jitter is specified, assume no jitter
-            run.jitter = 0. * u.m/u.s
-            logger.debug('No jitter.')
-
-        # Get all stars that are also in the RedClump table with >3 visits
-        q = session.query(AllStar).join(AllVisitToAllStar, AllVisit)\
-                                  .group_by(AllStar.apstar_id)\
-                                  .having(func.count(AllVisit.id) >= 3)
-
-        stars = q.all()
-
-        run.stars = stars
-        session.add(run)
-        session.commit()
-
-    if run.jitter is None or np.isnan(run.jitter):
-        jitter_kwargs = dict(jitter=(float(run.jitter_mean),
-                                     float(run.jitter_stddev)),
-                             jitter_unit=u.Unit(run.jitter_unit))
-
-    else:
-        jitter_kwargs = dict(jitter=run.jitter)
+    # Retrieve or create a JokerRun instance
+    run = get_run(config, session, overwrite=overwrite)
+    params = run.get_joker_params()
 
     # Create TheJoker sampler instance with the specified random seed and pool
     rnd = np.random.RandomState(seed=seed)
     logger.debug("Creating TheJoker instance with {0}, {1}".format(rnd, pool))
-    params = JokerParams(P_min=run.P_min, P_max=run.P_max, anomaly_tol=1E-11,
-                         **jitter_kwargs)
     joker = TheJoker(params, random_state=rnd, pool=pool)
 
     # Create a cache of prior samples (if it doesn't exist) and store the
@@ -240,9 +157,10 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         logger.log(1, "\t visits loaded ({:.2f} seconds)"
                    .format(time.time()-t0))
         try:
-            samples_dict, ln_prior = joker.iterative_rejection_sample(
-                data, run.requested_samples_per_star, run.prior_samples_file,
-                return_logprobs=True)
+            samples, ln_prior = joker.iterative_rejection_sample(
+                data=data, n_requested_samples=run.requested_samples_per_star,
+                prior_cache_file=run.prior_samples_file,
+                n_prior_samples=run.max_prior_samples, return_logprobs=True)
 
         except Exception as e:
             logger.warning("\t Failed sampling for star {0} \n Error: {1}"
@@ -254,7 +172,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         # For now, it's sufficient to write the run results to an HDF5 file
         n = run.requested_samples_per_star
         all_ln_probs = ln_prior[:n]
-        samples_dict = dict([(k, v[:n]) for k,v in samples_dict.items()])
+        samples = samples[:n]
         n_actual_samples = len(all_ln_probs)
 
         # Write the samples that pass to the results file
@@ -265,10 +183,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             else:
                 g = f[star.apogee_id]
 
-            for key in samples_dict.keys():
-                if key in g:
-                    del g[key]
-                quantity_to_hdf5(g, key, samples_dict[key])
+            samples.to_hdf5(g)
 
             if 'ln_prior_probs' in g:
                 del g['ln_prior_probs']
@@ -285,14 +200,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             result.status_id = 2 # needs mcmc
 
         else:
-            # Check whether the samples returned are within one mode. If
-            # they are, then "needs mcmc" otherwise "needs more samples"
-            P_samples = samples_dict['P'].to(u.day).value
-            P_min = P_samples.min()
-            T = np.ptp(data.t.mjd)
-            delta = 4*P_min**2 / (2*np.pi*T)
 
-            if np.std(P_samples) < delta:
+            if unimodal_P(samples, data):
                 # Multiple samples were returned, but they look unimodal
                 result.status_id = 2 # needs mcmc
 

@@ -65,13 +65,16 @@ def initialize_db(allVisit_file, allStar_file, database_file,
 
     # Remove bad velocities and flagged bad visits:
     skip_mask = np.sum(2 ** np.array([9, 10, 11, 12, 13, # Persistence issues
-                                      16, 17])) # Bad template cross-correlation
+                                      16, # Bad template cross-correlation
+                                      17])) # SUSPECT_BROAD_LINES
     allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO']) &
+                                (allvisit_tbl['VHELIO'] > -9999.) &
+                                (allvisit_tbl['VRELERR'] < 100.) & # MAGIC NUMBER
                                 ((allvisit_tbl['STARFLAG'] & skip_mask) == 0)]
 
-    # Remove STAR_WARN and SUSPECT_BROAD_LINES stars:
+    # Remove STAR_WARN and STAR_BAD stars:
     allstar_tbl = allstar_tbl[((allstar_tbl['ASPCAPFLAG'] & (2**7)) == 0) &
-                              ((allstar_tbl['STARFLAG'] & (2**17)) == 0)]
+                              ((allstar_tbl['ASPCAPFLAG'] & (2**23)) == 0)]
 
     # Only load visits for stars that we're loading
     allvisit_tbl = allvisit_tbl[np.isin(allvisit_tbl['APOGEE_ID'],

@@ -11,33 +11,29 @@ This script must be run *after* run_apogee.py
 """
 
 # Standard library
-from os.path import abspath, expanduser, join
+from os import path
 import os
 import time
 
 # Third-party
-import astropy.units as u
 import h5py
 import numpy as np
 from schwimmbad import choose_pool
-from sqlalchemy import func
-from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from thejoker.log import log as joker_logger
-from thejoker.sampler import JokerParams, TheJoker
-from thejoker.utils import quantity_to_hdf5
+from thejoker.sampler import TheJoker
 import yaml
 
 # Project
+from twoface import unimodal_P
 from twoface.log import log as logger
-from twoface.db import db_connect
-from twoface.db import (JokerRun, AllStar, AllVisit, StarResult, Status,
-                        AllVisitToAllStar)
+from twoface.db import db_connect, get_run
+from twoface.db import JokerRun, AllStar, StarResult, Status
 from twoface.config import TWOFACE_CACHE_PATH
 from twoface.sample_prior import make_prior_cache
 
 
-def main(config_file, pool, seed, overwrite=False, _continue=False):
-    config_file = abspath(expanduser(config_file))
+def main(config_file, pool, seed, overwrite=False):
+    config_file = path.abspath(path.expanduser(config_file))
 
     # parse config file
     with open(config_file, 'r') as f:
@@ -46,7 +42,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     # filename of sqlite database
     database_file = config['database_file']
 
-    db_path = join(TWOFACE_CACHE_PATH, database_file)
+    db_path = path.join(TWOFACE_CACHE_PATH, database_file)
     if not os.path.exists(db_path):
         raise IOError("sqlite database not found at '{0}'\n Did you run "
                       "scripts/initdb.py yet for that database?"
@@ -57,71 +53,49 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
                                  ensure_db_exists=False)
     session = Session()
 
-    # Get object for this JokerRun
-    try:
-        run = session.query(JokerRun).filter(
-            JokerRun.name == config['name']).one()
+    run = get_run(config, session, overwrite=False)
 
-    except NoResultFound:
-        raise NoResultFound('No JokerRun "{0}" found in database! Did you '
-                            'run the `run_apogee.py` script yet?'
-                            .format(config['name']))
-
-    # Set up TheJoker based on hyperparams
-    if run.jitter is None or np.isnan(run.jitter):
-        jitter_kwargs = dict(jitter=(float(run.jitter_mean),
-                                     float(run.jitter_stddev)),
-                             jitter_unit=u.Unit(run.jitter_unit))
-
-    else:
-        jitter_kwargs = dict(jitter=run.jitter)
+    # The file with cached posterior samples:
+    results_filename = path.join(TWOFACE_CACHE_PATH,
+                                 "{0}.hdf5".format(run.name))
+    if not path.exists(results_filename):
+        raise IOError("Posterior samples result file {0} doesn't exist! Are "
+                      "you sure you ran `run_apogee.py`?"
+                      .format(results_filename))
 
     # Create TheJoker sampler instance with the specified random seed and pool
     rnd = np.random.RandomState(seed=seed)
     logger.debug("Creating TheJoker instance with {0}, {1}".format(rnd, pool))
-    params = JokerParams(P_min=run.P_min, P_max=run.P_max, anomaly_tol=1E-11,
-                         **jitter_kwargs)
+    params = run.get_joker_params()
     joker = TheJoker(params, random_state=rnd, pool=pool)
 
-    # run.prior_samples_file
+    # TODO: a temporary hack for the end-of-2017 apogee-jitter run: we need to
+    # make sure a 2nd prior cache exists with even more samples!
+    _path, ext = path.splitext(run.prior_cache_file)
+    new_path = '{0}_moar{1}'.format(_path, ext)
+    if not path.exists(new_path):
+        make_prior_cache(new_path, joker,
+                         N=8 * config['prior']['num_cache'], # OMG: ~100 GB
+                         max_batch_size=2**24) # MAGIC NUMBER
 
-    # Get all stars in this JokerRun that have statuses 1 or 2 (needs more prior
-    # samples, needs mcmc respectively)
-    done_subq = session.query(AllStar.apogee_id)\
-                       .join(StarResult, JokerRun, Status)\
-                       .filter(JokerRun.name == config['name'])\
-                       .filter(Status.id.in_([1, 2]) > 0).distinct()
-
-    # Query to get all stars associated with this run that need processing:
-    # they should have a status id = 0 (needs processing)
+    # Get all stars in this JokerRun that need more prior samples
     star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
                                        .filter(JokerRun.name == run.name)\
-                                       .filter(AllStar.apogee_id.in_(done_subq))
+                                       .filter(Status.id == 1)
 
     # Base query to get a StarResult for a given Star so we can update the
     # status, etc.
     result_query = session.query(StarResult).join(AllStar, JokerRun)\
                                             .filter(JokerRun.name == run.name)
 
-    # The file with cached posterior samples:
-    results_filename = join(TWOFACE_CACHE_PATH, "{0}.hdf5".format(run.name))
     n_stars = star_query.count()
     logger.info("{0} stars left to process for run more samples '{1}'"
                 .format(n_stars, run.name))
 
-    if not path.exists(results_filename):
-        raise IOError("Posterior samples result file {0} doesn't exist! Are "
-                      "you sure you ran `run_apogee.py`?"
-                      .format(results_filename))
-
     # --------------------------------------------------------------------------
     # Here is where we do the actual processing of the data for each star. We
-    # loop through all stars that still need processing and either continue with
-    # iterative rejection sampling (needs more samples) or fire up standard mcmc
-    # (needs mcmc)
-
-    # TODO: left off here
-
+    # loop through all stars that still need processing and continue with
+    # rejection sampling.
 
     count = 0 # how many stars we've processed in this star batch
     batch_size = 16 # MAGIC NUMBER: how many stars to process before committing
@@ -146,8 +120,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         logger.log(1, "\t visits loaded ({:.2f} seconds)"
                    .format(time.time()-t0))
         try:
-            samples_dict, ln_prior = joker.iterative_rejection_sample(
-                data, run.requested_samples_per_star, run.prior_samples_file,
+            samples, ln_prior = joker.rejection_sample(
+                data=data, prior_cache_file=run.prior_samples_file,
                 return_logprobs=True)
 
         except Exception as e:
@@ -160,7 +134,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
         # For now, it's sufficient to write the run results to an HDF5 file
         n = run.requested_samples_per_star
         all_ln_probs = ln_prior[:n]
-        samples_dict = dict([(k, v[:n]) for k,v in samples_dict.items()])
+        samples = samples[:n]
         n_actual_samples = len(all_ln_probs)
 
         # Write the samples that pass to the results file
@@ -171,10 +145,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             else:
                 g = f[star.apogee_id]
 
-            for key in samples_dict.keys():
-                if key in g:
-                    del g[key]
-                quantity_to_hdf5(g, key, samples_dict[key])
+            samples.to_hdf5(g)
 
             if 'ln_prior_probs' in g:
                 del g['ln_prior_probs']
@@ -191,14 +162,8 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
             result.status_id = 2 # needs mcmc
 
         else:
-            # Check whether the samples returned are within one mode. If
-            # they are, then "needs mcmc" otherwise "needs more samples"
-            P_samples = samples_dict['P'].to(u.day).value
-            P_med = np.median(P_samples)
-            T = np.ptp(data.t.mjd)
-            delta = 4*P_med**2 / (2*np.pi*T)
 
-            if np.std(P_samples) < delta:
+            if unimodal_P(samples, data):
                 # Multiple samples were returned, but they look unimodal
                 result.status_id = 2 # needs mcmc
 
@@ -233,15 +198,6 @@ if __name__ == "__main__":
                           dest='verbosity')
     vq_group.add_argument('-q', '--quiet', action='count', default=0,
                           dest='quietness')
-
-    oc_group = parser.add_mutually_exclusive_group()
-    oc_group.add_argument("--overwrite", dest="overwrite", default=False,
-                          action="store_true",
-                          help="Overwrite any existing results for this "
-                               "JokerRun.")
-    oc_group.add_argument("--continue", dest="_continue", default=False,
-                          action="store_true",
-                          help="Continue the the JokerRun.")
 
     parser.add_argument("-s", "--seed", dest="seed", default=None, type=int,
                         help="Random number seed")
@@ -283,5 +239,4 @@ if __name__ == "__main__":
     pool_kwargs = dict(mpi=args.mpi, processes=args.n_procs)
     pool = choose_pool(**pool_kwargs)
 
-    main(config_file=args.config_file, pool=pool, seed=args.seed,
-         overwrite=args.overwrite, _continue=args._continue)
+    main(config_file=args.config_file, pool=pool, seed=args.seed)
