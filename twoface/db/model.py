@@ -281,7 +281,8 @@ class AllStar(Base):
     for i in range(9):
         exec(_fp_str.format(i=i))
         for j in range(9):
-            if j < i: continue
+            if j < i:
+                continue
             exec(_cov_str.format(i=i, j=j))
 
     def __repr__(self):
@@ -301,18 +302,18 @@ class AllStar(Base):
 
     @property
     def fparam_cov(self):
-        vals = np.zeros((9,9))
+        vals = np.zeros((9, 9))
         for i in range(9):
             for j in range(9):
                 name = 'fparam{0}{1}'.format(i, j)
                 if hasattr(self, name):
-                    vals[i,j] = getattr(self, name)
-                    vals[j,i] = getattr(self, name)
+                    vals[i, j] = getattr(self, name)
+                    vals[j, i] = getattr(self, name)
 
                 name = 'fparam{0}{1}'.format(j, i)
                 if hasattr(self, name):
-                    vals[i,j] = getattr(self, name)
-                    vals[j,i] = getattr(self, name)
+                    vals[i, j] = getattr(self, name)
+                    vals[j, i] = getattr(self, name)
         return vals
 
     @property
@@ -450,6 +451,57 @@ class AllVisit(Base):
 
     def __repr__(self):
         return "<ApogeeVisit(APOGEE_ID='{}', MJD='{}')>".format(self.apogee_id, self.mjd)
+
+
+JitterType = QuantityTypeClassFactory(u.m/u.s)
+PeriodType = QuantityTypeClassFactory(u.day)
+class JokerRun(Base):
+    __tablename__ = 'jokerrun'
+
+    id = Column(types.Integer, primary_key=True)
+    date = Column('date', types.DateTime, default=datetime.datetime.utcnow)
+    name = Column('name', types.String, nullable=False)
+    notes = Column('notes', types.String)
+    config_file = Column('config_file', types.String, nullable=False)
+    # cache_path = Column('cache_path', types.String, nullable=False) # named after joker run name
+    prior_samples_file = Column('prior_samples_file', types.String,
+                                nullable=False)
+
+    stars = relationship("AllStar", secondary="starresult",
+                         back_populates="joker_runs")
+
+    # The Joker parameters:
+    jitter = Column('jitter', JitterType, default=float('nan')) # nan=not fixed
+    jitter_mean = Column('jitter_mean', types.Numeric, default=float('nan'))
+    jitter_stddev = Column('jitter_stddev', types.Numeric, default=float('nan'))
+    jitter_unit = Column('jitter_unit', types.String, default="")
+
+    P_min = Column('P_min', PeriodType, nullable=False)
+    P_max = Column('P_max', PeriodType, nullable=False)
+    requested_samples_per_star = Column('requested_samples_per_star',
+                                        types.Integer, nullable=False)
+    max_prior_samples = Column('max_prior_samples', types.Integer,
+                               nullable=False)
+
+    def __repr__(self):
+        return ("<JokerRun(name='{0}', date='{0}')>"
+                .format(self.name, self.date.isoformat()))
+
+    def get_joker_params(self, anomaly_tol=1E-10):
+
+        if self.jitter is None or np.isnan(self.jitter):
+            jitter_kwargs = dict(jitter=(float(self.jitter_mean),
+                                         float(self.jitter_stddev)),
+                                 jitter_unit=u.Unit(self.jitter_unit))
+
+        else:
+            jitter_kwargs = dict(jitter=self.jitter)
+
+        return JokerParams(P_min=self.P_min, P_max=self.P_max,
+                           anomaly_tol=anomaly_tol1, **jitter_kwargs)
+
+
+# OLD
 
 class RedClump(Base):
     __tablename__ = 'redclump'
@@ -650,67 +702,3 @@ class RedClump(Base):
     def apogeervdata(self):
         """Return a `twoface.data.APOGEERVData` instance for this star."""
         return star_to_apogeervdata(self.star)
-
-JitterType = QuantityTypeClassFactory(u.m/u.s)
-PeriodType = QuantityTypeClassFactory(u.day)
-class JokerRun(Base):
-    __tablename__ = 'jokerrun'
-
-    id = Column(types.Integer, primary_key=True)
-    date = Column('date', types.DateTime, default=datetime.datetime.utcnow)
-    name = Column('name', types.String, nullable=False)
-    notes = Column('notes', types.String)
-    config_file = Column('config_file', types.String, nullable=False)
-    # cache_path = Column('cache_path', types.String, nullable=False) # named after joker run name
-    prior_samples_file = Column('prior_samples_file', types.String,
-                                nullable=False)
-
-    stars = relationship("AllStar", secondary="starresult",
-                         back_populates="joker_runs")
-
-    # The Joker parameters:
-    jitter = Column('jitter', JitterType, default=float('nan')) # nan=not fixed
-    jitter_mean = Column('jitter_mean', types.Numeric, default=float('nan'))
-    jitter_stddev = Column('jitter_stddev', types.Numeric, default=float('nan'))
-    jitter_unit = Column('jitter_unit', types.String, default="")
-
-    P_min = Column('P_min', PeriodType, nullable=False)
-    P_max = Column('P_max', PeriodType, nullable=False)
-    requested_samples_per_star = Column('requested_samples_per_star',
-                                        types.Integer, nullable=False)
-    max_prior_samples = Column('max_prior_samples', types.Integer,
-                               nullable=False)
-
-    def __repr__(self):
-        return ("<JokerRun(name='{0}', date='{0}')>"
-                .format(self.name, self.date.isoformat()))
-
-class NessRG(Base):
-    __tablename__ = 'nessrg'
-
-    id = Column(types.Integer, primary_key=True)
-
-    allstar_id = Column('allstar_id', types.Integer,
-                        ForeignKey('allstar.id', ondelete='CASCADE'),
-                        index=True)
-    star = relationship("AllStar", backref=backref("ness_rg", uselist=False))
-
-    # Melissa Ness' masses and ages from:
-    # http://iopscience.iop.org/article/10.3847/0004-637X/823/2/114/meta
-
-    # strip ()[], replace / with _
-    Type = Column('Type', types.Integer)
-    Teff = Column('Teff', types.REAL)
-    logg = Column('logg', types.REAL)
-    Fe_H = Column('Fe_H', types.REAL)
-    a_Fe = Column('a_Fe', types.REAL)
-    lnM = Column('lnM', types.REAL)
-    lnAge = Column('lnAge', types.REAL)
-    chi2 = Column('chi2', types.REAL)
-
-    e_Teff = Column('e_Teff', types.REAL)
-    e_logg = Column('e_logg', types.REAL)
-    e_Fe_H = Column('e_Fe_H', types.REAL)
-    e_a_Fe = Column('e_a_Fe', types.REAL)
-    e_logM = Column('e_logM', types.REAL)
-    e_logAge = Column('e_logAge', types.REAL)
