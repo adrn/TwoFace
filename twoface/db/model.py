@@ -10,6 +10,7 @@ from sqlalchemy import Table, Column, types
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.hybrid import hybrid_property
+from thejoker.sampler import JokerParams
 
 # Project
 from ..mass import get_martig_vec
@@ -20,7 +21,7 @@ from . import numpy_adapt # just need to execute code
 
 
 __all__ = ['AllStar', 'AllVisit', 'RedClump', 'JokerRun', 'StarResult',
-           'Status', 'AllVisitToAllStar', 'NessRG']
+           'Status', 'AllVisitToAllStar']
 
 
 class Status(Base):
@@ -498,7 +499,7 @@ class JokerRun(Base):
             jitter_kwargs = dict(jitter=self.jitter)
 
         return JokerParams(P_min=self.P_min, P_max=self.P_max,
-                           anomaly_tol=anomaly_tol1, **jitter_kwargs)
+                           anomaly_tol=anomaly_tol, **jitter_kwargs)
 
 
 # OLD

@@ -13,7 +13,7 @@ from ..util import Timer
 from ..log import log as logger
 from .connect import db_connect, Base
 from .model import (AllStar, AllVisit, AllVisitToAllStar, Status, RedClump,
-                    StarResult, NessRG)
+                    StarResult)
 from .query_helpers import paged_query
 
 __all__ = ['initialize_db', 'load_red_clump', 'load_nessrg']
