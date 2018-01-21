@@ -95,23 +95,18 @@
 Repeat radial-velocity measurements of stars can be used to identify stellar-,
 sub-stellar, and planetary-mass companions.
 Even few observations are useful for detecting companions, though such data are
-difficult to use for constraining the physical properties of companions because
-permitted orbital solutions are highly degenerate.
+difficult to use for constraining physical properties because permitted orbital
+solutions are highly degenerate.
 % Aims
-Here we perform a search for secondary companions of red giant branch (\RGB)
-stars using data from the \apogee\ survey (\DR), which has measured multi-epoch
-($\geq 3$) but sparse radial velocities for $> 80,000$ \RGB\ stars.
+Here we perform a search for secondary companions of stars observed by the
+\apogee\ survey (\DR), which has measured multi-epoch ($\geq 3$) but sparse
+radial velocities for close to 100,000 stars.
+% Methods
+We use a custom-built Monte Carlo sampler (\thejoker) to deliver (often highly
+multi-modal) posterior beliefs about companion orbital parameters.
 In some cases, where the primary-star masses are known, the mass-function
 degeneracy is broken and the secondary-companion masses ($m_2\,\sin i$) can be
 inferred.
-% Methods
-We use a custom-built Monte Carlo sampler (\thejoker) combined with stellar
-parameters and primary mass estimates to deliver (often highly multi-modal)
-posterior beliefs about companion mass, pericenter distance, and other orbital
-parameters for the stars.
-We compare the companion populations of red clump (\RC) versus \RGB\ stars at
-similar surface gravity and temperature, and study the metallicity dependence
-of companion properties.
 % Results
 We provide a catalog of \ncompanions\ companions for which the companion
 properties can be confidently determined, along with posterior samplings for all
@@ -120,6 +115,10 @@ properties can be confidently determined, along with posterior samplings for all
 stars that are in/consistent with the theoretical prediction that
 stellar companions should not survive the common-envelope \RGB\ phase.}
 \todo{We additionally find trends in XX with chemical abundances.}
+
+We compare the companion populations of red clump (\RC) versus \RGB\ stars at
+similar surface gravity and temperature, and study the metallicity dependence
+of companion properties.
 
 \end{abstract}
 
@@ -351,7 +350,7 @@ Examples of outputs and etc.
 
 For each $n$ of $N$ RGB stars in APOGEE, we obtain $K$ posterior samples over
 primary orbital parameters $\bs{w} = (P, e, \omega, \phi_0, K, v_0)$ and the
-jitter parameter, $y = \ln s^2$, using {\it The Joker}.
+jitter parameter, $y = \ln s^2$, using \textit{The Joker}.
 To obtain this sampling, we use an interim prior on the jitter parameter
 parametrized by a mean and root-variance $\alpha_0 = (\mu_{y,0}, \sigma_{y,0})$.
 
