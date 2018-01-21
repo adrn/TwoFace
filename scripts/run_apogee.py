@@ -45,6 +45,7 @@ from thejoker.sampler import TheJoker
 import yaml
 
 # Project
+from twoface import unimodal_P
 from twoface.log import log as logger
 from twoface.db import db_connect, get_run
 from twoface.db import JokerRun, AllStar, StarResult, Status
