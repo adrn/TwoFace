@@ -67,7 +67,8 @@ def main(config_file, pool, seed, overwrite=False):
     rnd = np.random.RandomState(seed=seed)
     logger.debug("Creating TheJoker instance with {0}, {1}".format(rnd, pool))
     params = run.get_joker_params()
-    joker = TheJoker(params, random_state=rnd, pool=pool)
+    joker = TheJoker(params, random_state=rnd, pool=pool,
+                     n_batches=8 * pool.size) # HACK: magic number
 
     # TODO: a temporary hack for the end-of-2017 apogee-jitter run: we need to
     # make sure a 2nd prior cache exists with even more samples!
