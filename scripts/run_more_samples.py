@@ -103,7 +103,7 @@ def main(config_file, pool, seed, overwrite=False):
 
     count = 0 # how many stars we've processed in this star batch
     batch_size = 16 # MAGIC NUMBER: how many stars to process before committing
-    for star in star_query.limit(4).all():
+    for star in star_query.limit(1).all(): # HACK: REMOVE
 
         if result_query.filter(AllStar.apogee_id == star.apogee_id).count() < 1:
             logger.debug('Star {0} has no result object!'
