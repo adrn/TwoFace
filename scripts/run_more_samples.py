@@ -79,9 +79,12 @@ def main(config_file, pool, seed, overwrite=False):
                          max_batch_size=2**24) # MAGIC NUMBER
 
     # Get all stars in this JokerRun that need more prior samples
+    # TODO HACK: because I suck, some got mis-labeled "needs mcmc" - so re-run
+    # on all of those too:
     star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
                                        .filter(JokerRun.name == run.name)\
-                                       .filter(Status.id == 1)
+                                       .filter(Status.id.in_([1, 2]))
+    #                                    .filter(Status.id == 1)
 
     # Base query to get a StarResult for a given Star so we can update the
     # status, etc.
@@ -99,7 +102,7 @@ def main(config_file, pool, seed, overwrite=False):
 
     count = 0 # how many stars we've processed in this star batch
     batch_size = 16 # MAGIC NUMBER: how many stars to process before committing
-    for star in star_query.all():
+    for star in star_query.limit(4).all():
 
         if result_query.filter(AllStar.apogee_id == star.apogee_id).count() < 1:
             logger.debug('Star {0} has no result object!'
@@ -124,6 +127,11 @@ def main(config_file, pool, seed, overwrite=False):
                 # HACK: data=data, prior_cache_file=run.prior_samples_file,
                 data=data, prior_cache_file=new_path,
                 return_logprobs=True)
+
+            samples, ln_prior = joker.iterative_rejection_sample(
+                data=data, n_requested_samples=run.requested_samples_per_star,
+                # HACK: prior_cache_file=run.prior_samples_file,
+                prior_cache_file=new_path, return_logprobs=True)
 
         except Exception as e:
             logger.warning("\t Failed sampling for star {0} \n Error: {1}"
