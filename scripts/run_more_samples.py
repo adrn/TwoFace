@@ -124,11 +124,6 @@ def main(config_file, pool, seed, overwrite=False):
         logger.log(1, "\t visits loaded ({:.2f} seconds)"
                    .format(time.time()-t0))
         try:
-            samples, ln_prior = joker.rejection_sample(
-                # HACK: data=data, prior_cache_file=run.prior_samples_file,
-                data=data, prior_cache_file=new_path,
-                return_logprobs=True)
-
             samples, ln_prior = joker.iterative_rejection_sample(
                 data=data, n_requested_samples=run.requested_samples_per_star,
                 # HACK: prior_cache_file=run.prior_samples_file,
