@@ -10,3 +10,5 @@
 *Notes.bib
 *.png
 gitstuff.tex
+*.fdb_latexmk
+*.fls

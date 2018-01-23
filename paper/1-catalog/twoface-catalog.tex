@@ -33,7 +33,7 @@
 
 % define macros for text
 \newcommand{\apogee}{\project{\acronym{APOGEE}}}
-\newcommand{\sdssiii}{\project{\acronym{SDSS-III}}}
+\newcommand{\sdssiv}{\project{\acronym{SDSS-IV}}}
 \newcommand{\thejoker}{\project{The~Joker}}
 \newcommand{\thecannon}{\project{The~Cannon}}
 \newcommand{\DR}{\acronym{DR14}}
@@ -140,11 +140,9 @@ of companion properties.
 
 \todo{Intro is missing many citations}
 
-Stars typically have companions.
-
-Main sequence stars in the solar neighborhood more often appear in binary or
-multiple star systems rather than as solitary stars
-(\citealt{ragavhan,tokovinin,todo}).
+Stars typically have companions. Main sequence stars in the solar neighborhood
+more often appear in binary or multiple star systems rather than as solitary
+stars (\citealt{ragavhan,tokovinin,todo}).
 This is likely a generic outcome of star formation: turbulent fragmentation in
 collapsing protostellar clouds tends to produce multiplets of stars within
 length-scales comparable to their spheres of influence (e.g.,
@@ -155,27 +153,29 @@ about star formation processes (\citealt{todo}), stellar parameters and
 evolution (\citealt{todo}), and the dynamics of multi-body systems
 (\citealt{todo}).
 
-Even without stellar or sub-stellar companions, single stars likely have
-planetary-mass companions (\citealt{todo}).
-\todo{Planetary systems are interesting because...yadda yadda}
-Differences between the population of stellar companions and that of
-planetary-mass companions likely relate directly to the different formation
-channels for these objects.
+% Even without stellar or sub-stellar companions, the vast majority of stars have
+% planetary-mass companions (\citealt{todo}).
+% \todo{Planetary systems are interesting because...blah}
+% Differences between the population of stellar companions and that of
+% planetary-mass companions likely relate directly to the different formation
+% channels for these objects.
 
-\todo{should we name ``stars with companions'' something like ``stellar
-systems''?}
-Stars with companions have a large dynamic range of constituent and orbital
+Most of what is known about stellar companions comes from studies of
+main-sequence (MS) stars.
+MS stars with companions have a large dynamic range of constituent and orbital
 characteristics.
-For example, for binary main sequence stars, mass-ratios span from XX to 1 and
-periods from XX to YY years.
-For planetary companions of main sequence stars, \todo{}.
-- Some indication of trends (e.g., with metallicity) -> star and
-  planet formation processes
+For example, binary stars have mass-ratios that span from $\approx 10^-3$
+\todo{citation because this is made up} to 1, and have periods from days to
+millions of years.
+\todo{Describe distributions over these quantities}
+\todo{multiplicity in general: abundance, numbers, etc.}
+\todo{some other stats from Moe and Di Stefano}
 
-Most of what is known about stellar companions comes from main sequence stars.
-- Some evolved stars have special roles in exotic systems like cataclysmic
-  variables (donor stars)
-- But less is known about the population of companions to evolved stars.
+Some evolved stars have special roles in well-studied exotic multiple systems
+like dwarf novae or cataclysmic variables \todo{are those examples correct?},
+but by-in-large, less is known about the population of companions to evolved
+stars.
+
 - Expect differences in evolved star pop. from main sequence populations:
   - mass loss
   - envelope -> engulfment?
@@ -185,6 +185,10 @@ Most of what is known about stellar companions comes from main sequence stars.
 - Eclipsing companions good, but low mass companions stars -> hard to find
   (giants are big)
 - Need large sample of stars with time-domain spectroscopy
+
+% For planetary companions of main sequence stars, \todo{}.
+% - Some indication of trends (e.g., with metallicity) -> star and
+%   planet formation processes
 
 Time-domain radial-velocity measurements of stars contain information about
 massive companions: even with two successive observations of a single star, a
@@ -223,47 +227,63 @@ more below), with \thejoker\ (\citealt{Price-Whelan:2017}).
 but probabilistically righteous:
 It delivers independent posterior pdf samples for single-companion binary
 orbital parameters, given any number of radial-velocity measurements.
-Here we use \thejoker\ to generate posterior pdf samples for \todo{which?} stars
-observed by the \apogee\ surveys (see \sectionname~\ref{sec:data};
-\citealt{Majewski:2015}).
+Here we use \thejoker\ to generate posterior pdf samples for stars observed by
+the \apogee\ survey (see \sectionname~\ref{sec:data}; \citealt{Majewski:2015}).
 
 The \apogee\ surveys primarily target red-giant-branch (\RGB) stars, which are
 ideal for the study of single-line binary systems.
 For one, because they are so luminous, they are unlikely (in general) to have
 equally-bright companions, and their spectra are therefore well-approximated or
 fit as single-line objects.
+When this constraint is not met, \thejoker\ will in general fail, and a model
+that fits for a mixture of stellar spectra is more appropriate (e.g.,
+\citealt{Kareem}).
 The subset of \RGB\ stars in the ``red clump'' (\RC) are even more powerful as
 they are standard candles and have masses that can be estimated using
 spectroscopy (using dredged-up elements; \citealt{Martig:2016,Ness:2016}).
 With primary-star mass estimates, the binary-orbit fitting will return
-$m_2\,\sin i$ estimates for the secondary, and not just estimates of the
-mass-function.
+$m_2\,\sin i$ (minimum mass) estimates for the secondary, and not just estimates
+of the so-called ``binary mass function.''
 Additionally, the \apogee\ pipelines (\citealt{Garcia-Perez:2016}) and also
 \thecannon\ (\citealt{Ness:2015}) produce detailed abundance estimates for \RGB\
 and \RC\ stars.
 If there are causal relationships between chemical abundances and binary
-companions---as are expected---these should be measurable here.
+companions---as are expected---these should be measurable.
 
 By making cuts on this library of posterior pdf samples (described in detail in
 \sectionname~\ref{sec:whatever}), we deliver a catalog of binary-star systems
-from the \apogee\ survey with no cuts or constraints on data quality or volume.
+from the \apogee\ survey \todo{with ... (tease some statistics)}.
 We additionally highlight the subset of this catalog with \RC\ star primaries,
 for which we can compute companion mass and pericentric distance.
 
 \section{Data} \label{sec:data}
 
-\todo{HOGG: fill in this ish}
+All data used in this work comes from the publicly-available data release 14
+(\DR) of the \apogee\ survey (\citealt{apogeedr14}), a component of the Sloan
+Digital Sky Survey IV (\sdssiv; \citealt{sdss,Blanton:2017}).
+\apogee\ is an infrared spectroscopic survey designed to map \RGB\ stars across
+much of the Milky Way.
+Targets are selected with simple color and brightness cuts, but the survey uses
+fiber-plugged plates with a maximum of \todo{100?} fibers and a $\approx
+1.5~{\rm deg}^2$ field of view, leading to ``pencil-beam''-like sampling of the
+stellar distribution.
+Data taken as part of the \apogee\ survey is reduced with the \todo{APOGEE
+spectral parameter...} (\acronym{ASPCAP}; \citealt{Garcia-Perez:2016}), which
+measures stellar parameters, chemical abundances, and radial velocities for each
+target.
+\todo{talk about visits, how the velocities measured...}
 
-HOGG: Why and how does \apogee\ rock it?
-
-ASPCAP: \citealt{Garcia-Perez:2016}
-SDSSIV: \citealt{Blanton:2017}
-
-Overview of what \apogee\ is, and what data we are using.
-
-How we updated the individual-visit radial velocity measurements.
-
-What we did (if anything) with the missing visits.
+From the \apogee\ \DR\ data products (the \texttt{allStar} and \texttt{allVisit}
+files), we select all stars with $\geq 3$ visits that each pass a set of quality
+cuts.
+For each visit, we require that the following bits are not set in the
+\texttt{STARFLAGS} bitmask: \texttt{TODO}.
+For each star, we require that the following bits are not set in the
+\texttt{ASPCAPFLAGS} bitmask: \texttt{TODO}.
+After these cuts, and the requirement of $\geq 3$ visits for a given star, we
+are left with \todo{XX} visits for \todo{XX} unique stars (unique
+\texttt{APOGEE\_ID}).
+\todo{add numpy code for exact filter?}
 
 \section{Methods}
 
