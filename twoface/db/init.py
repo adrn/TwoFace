@@ -65,7 +65,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
 
     # Remove bad velocities and flagged bad visits:
     skip_mask = np.sum(2 ** np.array([9, 12, 13, # PERSIST_HIGH, PERSIST_JUMP_POS, PERSIST_JUMP_NEG
-                                      3, 4]) # VERY_BRIGHT_NEIGHBOR, LOW_SNR
+                                      3, 4])) # VERY_BRIGHT_NEIGHBOR, LOW_SNR
     allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO']) &
                                 np.isfinite(allvisit_tbl['VRELERR']) &
                                 (allvisit_tbl['VRELERR'] < 100.) & # MAGIC NUMBER
