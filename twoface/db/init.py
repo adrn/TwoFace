@@ -73,7 +73,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
 
     # Remove STAR_BAD stars:
     skip_mask = 2 ** np.array([23.])
-    allstar_tbl = allstar_tbl[((allvisit_tbl['ASPCAPFLAG'] & skip_mask) == 0)]
+    allstar_tbl = allstar_tbl[((allstar_tbl['ASPCAPFLAG'] & skip_mask) == 0)]
 
     # Only load visits for stars that we're loading
     allvisit_tbl = allvisit_tbl[np.isin(allvisit_tbl['APOGEE_ID'],
