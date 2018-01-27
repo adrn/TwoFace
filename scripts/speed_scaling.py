@@ -26,8 +26,10 @@ def main(pool):
                                  ensure_db_exists=False)
     session = Session()
 
-    star = session.query(AllStar).filter((AllStar.logg > 2) & (AllStar.logg < 3))\
-                  .having(func.count(AllVisit.id) >= 3).order_by(AllStar.id)\
+    apogee_id = '2M04171719+4724006' # needs more prior samples
+    # apogee_id = '2M01320817+0120301' # needs mcmc
+    # apogee_id = '2M02123870+4942289' # completed
+    star = session.query(AllStar).filter(AllStar.apogee_id == apogee_id)\
                   .limit(1).one()
     data = star.apogeervdata()
 
@@ -41,7 +43,7 @@ def main(pool):
     print("Pool size: {0}".format(pool.size))
 
     n_iter = 4
-    for max_prior_samples in 2 ** np.arange(7, 29+1, 2):
+    for max_prior_samples in 2 ** np.arange(7, 25+1, 2):
         t0 = time.time()
         for k in range(n_iter):
             try:
