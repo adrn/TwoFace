@@ -38,6 +38,8 @@ def main(pool):
     prior_cache_file = path.join(TWOFACE_CACHE_PATH,
                                  'P8-32768_prior_samples.hdf5')
 
+    print("Pool size: {0}".format(pool.size))
+
     n_iter = 4
     for max_prior_samples in 2 ** np.arange(7, 29+1, 2):
         t0 = time.time()
@@ -53,7 +55,7 @@ def main(pool):
                 continue
 
         dt = (time.time() - t0) / n_iter
-        logger.debug("{0}, {1:.3f}".format(max_prior_samples, dt))
+        print("{0}, {1:.3f}".format(max_prior_samples, dt))
 
     pool.close()
     session.close()
