@@ -12,7 +12,7 @@ __all__ = ['plot_data_orbits']
 
 def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
                      xlim_choice='wide', n_times=4096, title=None,
-                     ax=None):
+                     ax=None, highlight_P_extrema=True):
     """
     Plot the APOGEE RV data vs. time and orbits computed from The Joker samples.
 
@@ -71,20 +71,18 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
                    plot_kwargs=dict(color='#aaaaaa', alpha=0.25, linewidth=0.5),
                    data_plot_kwargs=dict(zorder=5, elinewidth=1,))
 
-    # Darken the shortest period sample
-    dark_style = dict(color='#333333', alpha=0.5, linewidth=1, zorder=10)
+    if highlight_P_extrema:
+        # Darken the shortest period sample
+        dark_style = dict(color='#333333', alpha=0.5, linewidth=1, zorder=10)
 
-    P_min_samples = samples[samples['P'].argmin()]
-    plot_rv_curves(P_min_samples, t_grid, rv_unit=u.km/u.s, ax=ax,
-                   n_plot=1, plot_kwargs=dark_style)
+        P_min_samples = samples[samples['P'].argmin()]
+        plot_rv_curves(P_min_samples, t_grid, rv_unit=u.km/u.s, ax=ax,
+                       n_plot=1, plot_kwargs=dark_style)
 
-    # Darken the longest period sample
-    P_max_samples = samples[samples['P'].argmax()]
-    plot_rv_curves(P_max_samples, t_grid, rv_unit=u.km/u.s, ax=ax,
-                   n_plot=1, plot_kwargs=dark_style)
-
-    # if now.mjd < t_grid.max():
-    #     ax.axvline(now.mjd, zorder=-10, color='#31a354', alpha=0.4)
+        # Darken the longest period sample
+        P_max_samples = samples[samples['P'].argmax()]
+        plot_rv_curves(P_max_samples, t_grid, rv_unit=u.km/u.s, ax=ax,
+                       n_plot=1, plot_kwargs=dark_style)
 
     ax.set_xlim(t_grid.min(), t_grid.max())
 
