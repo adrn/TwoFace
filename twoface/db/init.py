@@ -71,9 +71,17 @@ def initialize_db(allVisit_file, allStar_file, database_file,
                                 (allvisit_tbl['VRELERR'] < 100.) & # MAGIC NUMBER
                                 ((allvisit_tbl['STARFLAG'] & skip_mask) == 0)]
 
+    v_apogee_ids, counts = np.unique(allvisit_tbl['APOGEE_ID'],
+                                     return_counts=True)
+    star_mask = np.isin(allstar_tbl['APOGEE_ID'], v_apogee_ids[counts >= 3])
+
     # Remove STAR_BAD stars:
     skip_mask = 2 ** np.array([23])
-    allstar_tbl = allstar_tbl[((allstar_tbl['ASPCAPFLAG'] & skip_mask) == 0)]
+    star_mask &= ((allstar_tbl['ASPCAPFLAG'] & skip_mask) == 0)
+
+    # Remove stars with bad logg measurements, or dwarfs
+    star_mask &= (allstar_tbl['logg'] > 0) & (allstar_tbl['logg'] < 3.5)
+    allstar_tbl = allstar_tbl[star_mask]
 
     # Only load visits for stars that we're loading
     allvisit_tbl = allvisit_tbl[np.isin(allvisit_tbl['APOGEE_ID'],
