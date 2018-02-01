@@ -31,6 +31,8 @@
 % adjust AAS-TEX shit
 % \setlength{\parindent}{1.1\baselineskip}
 
+\graphicspath{{figures/}}
+
 % define macros for text
 \newcommand{\apogee}{\project{\acronym{APOGEE}}}
 \newcommand{\sdssiv}{\project{\acronym{SDSS-IV}}}
@@ -273,17 +275,35 @@ measures stellar parameters, chemical abundances, and radial velocities for each
 target.
 \todo{talk about visits, how the velocities measured...}
 
-From the \apogee\ \DR\ data products (the \texttt{allStar} and \texttt{allVisit}
-files), we select all stars with $\geq 3$ visits that each pass a set of quality
-cuts.
-For each visit, we require that the following bits are not set in the
-\texttt{STARFLAGS} bitmask: \texttt{TODO}.
-For each star, we require that the following bits are not set in the
-\texttt{ASPCAPFLAGS} bitmask: \texttt{TODO}.
+We use the primary data products from \apogee\ \DR\ (i.e. the \texttt{allStar}
+and \texttt{allVisit} files) which contain 258475 unique source IDs
+(\texttt{APOGEE\_ID}) and 1054381 unique visits.
+We select all stars with $\geq 3$ visits that each pass a set of quality cuts,
+described below.
+For each visit, we require that the visit velocity uncertainty is $< 100~\kms$
+(\texttt{VRELERR}) and the following bits are not set in the \texttt{STARFLAGS}
+bitmask: \texttt{PERSIST\_HIGH}, \texttt{PERSIST\_JUMP\_POS},
+\texttt{PERSIST\_JUMP\_NEG}, \texttt{VERY\_BRIGHT\_NEIGHBOR}, \texttt{LOW\_SNR}.
+For each star, we require that $0 < \log g < 3.5$ and the following bits are not
+set in the \texttt{ASPCAPFLAGS} bitmask: \texttt{STAR\_BAD}.
 After these cuts, and the requirement of $\geq 3$ visits for a given star, we
 are left with \todo{XX} visits for \todo{XX} unique stars (unique
 \texttt{APOGEE\_ID}).
 \todo{add numpy code for exact filter?}
+\figurename~\ref{fig:nvisits} shows the number of stars in several bins of
+number of visits that pass the above quality cuts: \todo{XX}\% of the stars in
+\DR\ have $< 8$ visits.
+
+% Notebook: "Numbers after cuts"
+\begin{figure}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{nvisits.pdf}
+\end{center}
+\caption{%
+TODO: \label{fig:nvisits}
+}
+\end{figure}
+
 
 \section{Methods}
 
