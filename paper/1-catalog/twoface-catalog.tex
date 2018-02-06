@@ -42,10 +42,8 @@
 \newcommand{\RC}{\acronym{RC}}
 \newcommand{\RGB}{\acronym{RGB}}
 
-\newcommand{\nRC}{XX}
-\newcommand{\nRGB}{XX}
-\newcommand{\ntotal}{XX}
-\newcommand{\ncompanions}{XX}
+\newcommand{\nprior}{536,870,912}
+\newcommand{\nposterior}{256}
 
 % define macros for math
 \newcommand{\hyperpars}{\gamma}
@@ -263,17 +261,22 @@ for which we can compute companion mass and pericentric distance.
 All data used in this work comes from the publicly-available data release 14
 (\DR) of the \apogee\ survey (\citealt{apogeedr14}), a component of the Sloan
 Digital Sky Survey IV (\sdssiv; \citealt{sdss,Blanton:2017}).
-\apogee\ is an infrared spectroscopic survey designed to map \RGB\ stars across
-much of the Milky Way.
+\apogee\ is designed to map stars across much of the Milky Way by obtaining
+high-resolution ($R \sim 22500$) infrared ($H$-band) spectroscopy of primarily
+\RGB\ stars.
 Targets are selected with simple color and brightness cuts, but the survey uses
-fiber-plugged plates with a maximum of \todo{100?} fibers and a $\approx
-1.5~{\rm deg}^2$ field of view, leading to ``pencil-beam''-like sampling of the
-stellar distribution.
-Data taken as part of the \apogee\ survey is reduced with the \todo{APOGEE
-spectral parameter...} (\acronym{ASPCAP}; \citealt{Garcia-Perez:2016}), which
-measures stellar parameters, chemical abundances, and radial velocities for each
-target.
-\todo{talk about visits, how the velocities measured...}
+fiber-plugged plates with a maximum of 300 fibers per each $\approx 1.5~{\rm
+deg}^2$ field of view, leading to ``pencil-beam''-like sampling of the stellar
+distribution.
+Data taken as part of the \apogee\ survey is reduced with the \apogee\ Stellar
+Parameters and Chemical Abundances Pipeline (\acronym{ASPCAP};
+\citealt{Garcia-Perez:2016}), which measures stellar parameters, chemical
+abundances, and radial velocities for each target.
+In order to meet signal-to-noise ratio requirements, most \apogee\ stars are
+observed multiple times in a series of ``visits,'' typically with at least one
+visit separated by a month or more in order to help identify binary stars.
+\acronym{ASPCAP} iteratively solves for the relative velocities of each visit
+spectrum while determining the optimal co-addition of the visit spectra.
 
 We use the primary data products from \apogee\ \DR\ (i.e. the \texttt{allStar}
 and \texttt{allVisit} files) which contain 258475 unique source IDs
@@ -287,9 +290,7 @@ bitmask: \texttt{PERSIST\_HIGH}, \texttt{PERSIST\_JUMP\_POS},
 For each star, we require that $0 < \log g < 3.5$ and the following bits are not
 set in the \texttt{ASPCAPFLAGS} bitmask: \texttt{STAR\_BAD}.
 After these cuts, and the requirement of $\geq 3$ visits for a given star, we
-are left with \todo{XX} visits for \todo{XX} unique stars (unique
-\texttt{APOGEE\_ID}).
-\todo{add numpy code for exact filter?}
+are left with \todo{XX} visits for \todo{XX} unique sources.
 \figurename~\ref{fig:nvisits} shows the number of stars in several bins of
 number of visits that pass the above quality cuts: \todo{XX}\% of the stars in
 \DR\ have $< 8$ visits.
@@ -300,14 +301,17 @@ number of visits that pass the above quality cuts: \todo{XX}\% of the stars in
 \includegraphics[width=\textwidth]{nvisits.pdf}
 \end{center}
 \caption{%
-TODO: \label{fig:nvisits}
+Number of \apogee\ stars in logarithmic bins of number of visits that pass the
+quality cuts described in \sectionname~\ref{sec:data}.
+In total, this work uses \todo{XX} visits and \todo{XX} unique sources.
+\label{fig:nvisits}
 }
 \end{figure}
 
 
 \section{Methods}
 
-\subsection{Orbit fitting and velocity modeling}\label{sec:fitting}
+\subsection{Orbit inference and velocity modeling}\label{sec:fitting}
 
 For every source in the sample of \apogee\ stars defined in
 \sectionname~\ref{sec:data}, we obtain a posterior sampling in binary-system
@@ -331,49 +335,55 @@ samplings---under the following assumptions:
   hierarchical so that the period of the inner binary is typically much shorter
   than the orbital period of the outer body (\todo{CITATION NEEDED}).
   At present, we ignore the possibility of higher-order multiple systems.
-  \todo{revisit this - do we want to also sample over a long-term trend?}
+  % \todo{revisit this - do we want to also sample over a long-term trend?}
 \item[Kepler] Related to the first point, all velocity variations of the primary
-  are gravitational, and we therefore ignore the possibility of intrinsic
-  variation from, e.g., stellar oscillations.
+  are gravitational, and we therefore ignore the possibility of coherent intrinsic variation from, e.g., stellar oscillations.
 \item[SB1] All spectra are single-lined; that is, we assume that the secondary
   is significantly fainter and is thus undetected in the spectra.
   This assumption is motivated by the fact that we expect \RGB\ stars to be
   substantially more luminous than their typical companion.
   However, there are known double-lined binary stars in the \apogee\ catalog
-  (El-Badry et al., in prep.), and an unknown fraction of \RGB--\RGB\ binaries.
+  \citealt{El-Badry:2017}, and an expected but unknown fraction of \RGB--\RGB\
+  binaries.
 \item[simple noise model] Measurements are unbiased and noise estimates are
-  correct up to an \todo{unknown} extra variance (the ``jitter'').
+  correct up to an unknown extra variance.
   All noise contributions result in Gaussian uncertainties on the individual
   radial-velocity measurements.
+  We often refer to the extra variance as a ``jitter'' parameter because for
+  upper \RGB\ stars the inferred extra variance will be a combination of extra
+  uncertainty and true astrophysical surface jitter (\todo{CITATION NEEDED}).
 \end{description}
 
 \thejoker\ is a custom-built Monte Carlo sampler designed to produce independent
-posterior samples in orbital parameters, given radial-velocity measurements
-under the assumptions above.
-Our parametrization is similar to the notation in \citet{Murray:2010}:
+posterior samples in Keplerian orbital parameters, given radial-velocity
+measurements under the assumptions listed above.
+Our parametrization of the orbital elements is similar to the notation in
+\citet{Murray:2010}:
 The radial velocity $v$ at time $t$ is given by
 \begin{equation}
-  v(t;\bs{\theta}) = v_0 + K\,[\cos\left(\omega + f(t; e, P, \phi_0)\right) +
+  v(t;\bs{\theta}) = v_0 + K\,[\cos\left(\omega + f(t; e, P, M_0)\right) +
     e\,\cos\omega]
 \end{equation}
-where $\bs{\theta} = (P,e,\phi_0,\omega,K,v_0)$---period, eccentricity, initial
-phase, argument of pericenter, velocity semi-amplitude, Barycentric velocity---
-and the true anomaly, $f$, is a function of the specified parameters (see
-\sectionname~2 of \citealt{Price-Whelan:2017} or \eqname~63 in
-\citealt{Murray:2010}).
+where $\bs{\theta} = (P,e,M_0,\omega,K,v_0)$---period, eccentricity, mean
+anomaly at a reference time $t_0$, argument of pericenter, velocity
+semi-amplitude, Barycentric velocity---and the true anomaly, $f$, is a function
+of time and the specified parameters (see \sectionname~2 of
+\citealt{Price-Whelan:2017} or \eqname~63 in \citealt{Murray:2010}).
 
 \thejoker\ was designed for the extremely multi-modal pdfs expected when the
-number of radial-velocity measurements of a source is small, or the data have
-low signal-to-noise.
+number of radial-velocity measurements of a source is small, or the data are
+sparse (in phase-coverage) or noisy.
 While other Markov Chain Monte Carlo (MCMC) methods have difficulty producing
-independent samples with such data, \thejoker\ succeeds by brute force.
+independent samples with such data, \thejoker\ succeeds by brute force:
 After generating an initial (very large) library of prior samples from an
 assumed prior pdf (see below), the (typically multi-modal) likelihood is
 evaluated at each sample and used to rejection sample.
 In practice, given a number of requested samples for each star, the sampling
 proceeds iteratively: since it is easier to accept samples when the data is
-sparse or noisy, far more prior sample draws (and thus likelihood
-evaluations) must occur under very constraining data.
+sparse or noisy, far more prior sample draws (and thus likelihood evaluations)
+must occur under very constraining data.
+
+\subsection{Model selection}
 
 In addition to generating posterior samples for each source, we also compute the
 fully marginalized likelihood (FML) under two other models: (1) a model in which
@@ -386,13 +396,84 @@ samples to produce a catalog of companions.
 
 Examples of outputs and etc.
 
-\subsection{Infer the jitter}
+\section{Results}
 
+\subsection{Initial inidivual-system posterior samplings}
+\label{sec:initsampling}
+
+For all \todo{XX} \apogee\ stars with $\geq 3$ good visits (see
+\sectionname~\ref{sec:data}), we use \thejoker\ to generate posterior samplings
+for each star under the assumptions listed above (see
+\sectionname~\ref{sec:fitting}).
+We start by generating a library of \nprior\ prior samples generated under the
+prior defined in \citet{Price-Whelan:2017}: uniform or isotropic in angle
+parameters, uniform in log-period over the domain $[1, 32768]~{\rm day}$, and a
+beta distribution over eccentricity with fixed parameters
+(\citealt{Kipping:2013}).
+For the prior over the extra variance or jitter parameter, $s$, we initially use
+a Gaussian over the transformed parameter $y = \ln s^2$ with the mean and
+standard deviation of the initial distribution set to $(\mu_{y,0}, \sigma_{y,0})
+= (10.6, 3)$ in units of ${\rm m}~{\rm s}^{-1}$.
+
+We request \nposterior\ posterior samples for each source, and generate the
+samples using an iterative procedure that adapts to the \todo{informativeness}
+of the data to more efficiently generate posterior samples.
+For sources with very constraining data, \thejoker\ may return fewer than the
+requested number of samples.
+When this happens, we proceed in one of two ways:
+\begin{enumerate}
+    \item \emph{needs MCMC}: If just 1 posterior sample is returned after
+    exhausting the full library of prior samples, or if multiple (but fewer than
+    \nposterior) are returned that all lie within a single mode of the posterior
+    pdf, the orbit-space that is consistent with the data is treated as
+    effectively unimodal. In this case, we use the location of the returned
+    sample, or the median over returned samples to generate a small ball of
+    initial conditions and use the ensemble MCMC sampler (\citealt{Goodman:})
+    implemented in \python\ (\citealt{Foreman-Mackey:}) to continue sampling
+    until we obtain \nposterior\ samples.
+    \item \emph{needs more prior samples}: If more than 1 posterior sample is
+    returned after exhausting the full library of prior samples and the samples
+    lie in multiple modes of the posterior pdf, the star is flagged. In this
+    case, the only way forward is to generate more prior samples and continue
+    running \thejoker\ for these sources to generate more posterior samples.
+\end{description}
+
+A full run of \thejoker\ on all \todo{XX} \apogee\ stars used in this work took
+approximately 300 hours on a compute cluster with 448 cores, with the time
+dominated by sources with many ($\gtrsim 10$) visits.
+
+
+\subsection{Inferring the extra variance distribution}
+\label{sec:inferjitter}
+
+We use the per-source posterior samplings under the default prior described
+above to infer the parameters of the assumed Gaussian distribution over the
+log-jitter: $(\mu_y, \sigma_y)$.
+This inference serves as a test-case for future work, where we intend to use the
+independent posterior samplings to construct a hierarchical inference over
+companion property distributions, and is also a test of the visit velocity
+uncertainties reported in the \apogee\ data products.
+If the catalog uncertainties are significantly underestimated, we expect the
+inferred log-jitter distribution parameters to tend towards larger values.
+
+To update the log-jitter distribution parameters, we maximize the marginal
+likelihood of these population-level parameters.
+We compute this marginal likelihood using the per-object posterior samples
+re-weighted by the ratio of the value of the hyperprior evaluated at a new
+location over the value of the default prior (see
+\sectionname~\ref{sec:initsampling}).
+This trick has been used in other hierarchical inferences as a way to
+marginalize over the per-object parameters
+(\citealt{Hogg:2008,Foreman-Mackey:...}), and we describe how to compute the
+marginal likelihood in detail below.
+
+\todo{Notation relative to above...}
 For each $n$ of $N$ RGB stars in APOGEE, we obtain $K$ posterior samples over
-primary orbital parameters $\bs{w} = (P, e, \omega, \phi_0, K, v_0)$ and the
-jitter parameter, $y = \ln s^2$, using \textit{The Joker}.
-To obtain this sampling, we use an interim prior on the jitter parameter
-parametrized by a mean and root-variance $\alpha_0 = (\mu_{y,0}, \sigma_{y,0})$.
+primary orbital parameters $\bs{w} = (P, e, \omega, M_0, K, v_0)$ and the
+jitter parameter, $y = \ln s^2$, using \thejoker.
+To obtain this sampling, we use an interim (Gaussian) prior on the jitter
+parameter parametrized by a mean and standard deviation $\alpha_0 = (\mu_{y,0},
+\sigma_{y,0})$.
 
 \begin{eqnarray}
     \bs{\theta}_{k} &=& (\bs{w}, y)_{k}\\
@@ -416,18 +497,14 @@ where
       p(\theta_n \given \alpha)\\
     &=& \int \dd \theta_n \, p(D_n \given \theta_n) \, p(\theta_n \given \alpha) \,
       \frac{p(\theta_n \given D_n, \alpha_0)}{p(\theta_n \given D_n, \alpha_0)}\\
-    &=& \int \dd \theta_n \, p(D_n \given \theta_n) \, p(\theta_n \given \alpha) \,
-      p(\theta_n \given D_n, \alpha_0) \,
-      \frac{p(D_n \given \alpha_0)}{p(D_n \given \theta_n) \,
-      p(\theta_n \given \alpha_0)}\\
     &=& p(D_n \given \alpha_0) \, \int \dd \theta_n \,
       \frac{p(\theta_n \given \alpha)}{p(\theta_n \given \alpha_0)} \,
       p(\theta_n \given D_n, \alpha_0)\\
-    &\approx& \mathcal{Z}_n \, \frac{1}{K_n} \,
-      \sum_k^{K_n} \frac{p(\theta_{nk} \given \alpha)}{p(\theta_{nk} \given \alpha_0)}\\
-    &=& \frac{\mathcal{Z}_n}{K_n} \,
+    &\approx& \frac{\mathcal{Z}_n}{K_n} \,
       \sum_k^{K_n} \frac{p(y_{nk} \given \alpha)}{p(y_{nk} \given \alpha_0)}
 \end{eqnarray}
+
+Factor y from theta, so most priors cancel. Up to multiplicative constant all we need. Above just for one source, full population:
 
 \begin{eqnarray}
     p(\{D_n\} \given \alpha) &\propto& \prod_n^N \frac{1}{K_n} \,
@@ -440,11 +517,15 @@ where
       - \ln K_n\right]
 \end{eqnarray}
 
-\section{Results}
+TODO: apply to all stars with $>10$ visits
 
-\subsection{Catalog / posterior samples whatever} \label{sec:full-catalog}
 
-\todo{APW}
+\subsection{Catalog of posterior samplings for APOGEE DR14 RGB stars}
+\label{sec:fullcatalog}
+
+TODO: re-do exactly \sectionname~\ref{sec:initsampling}, but with $(\mu_{y}, \sigma_{y}) = (9.5, 1.6)$ again in units of ${\rm m}~{\rm s}^{-1}$.
+
+TODO: how many hit each category (flag) after the initial run
 
 \subsection{A catalog of confident companions} \label{sec:conf-companions}
 
