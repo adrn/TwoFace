@@ -47,10 +47,6 @@
 \newcommand{\nstars}{98,758}
 \newcommand{\nvisits}{388,196}
 
-% define macros for math
-\newcommand{\hyperpars}{\gamma}
-\newcommand{\pars}{\theta}
-
 % for response to referee
 % \renewcommand{\resp}[1]{#1}
 
@@ -298,9 +294,9 @@ number of visits that pass the above quality cuts: \todo{XX}\% of the stars in
 \DR\ have $< 8$ visits.
 
 % Notebook: "Numbers after cuts"
-\begin{figure}[hp]
+\begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{nvisits.pdf}
+\includegraphics[width=0.7\textwidth]{nvisits.pdf}
 \end{center}
 \caption{%
 \todo{Update with new apogee db file}
@@ -492,7 +488,7 @@ the distribution
 where $D$ represents the data for a given object.
 
 We want to compute the likelihood of all data from all $N$ stars, $\{D_n\}$,
-given a new set of hyper-parameters $\bs{\alpha}$
+given a new set of hyperparameters $\bs{\alpha}$
 \begin{equation}
     p(\{D_n\} \given \bs{\alpha}) = \prod_n^N p(D_n \given \bs{\alpha})
 \end{equation}
@@ -509,29 +505,56 @@ The per-source marginal likelihood in the above expression is given by
       p(\bs{w}_n \given D_n, \bs{\alpha}_0) \label{eq:marglike} \quad .
 \end{align}
 Using the Monte Carlo integration approximation, \eqname~\ref{eq:marglike} can
-be simplified to a sum over prior value ratios of the $K$ posterior samples for
-each $n$ star
+be simplified to a sum over prior value ratios of the $K$ posterior samples in
+the log-jitter parameter for each $n$ star
 \begin{equation}
-    \approx \frac{\mathcal{Z}_n}{K_n} \,
-      \sum_k^{K_n} \frac{p(y_{nk} \given \bs{\alpha})}{p(y_{nk} \given \bs{\alpha}_0)}
-      \quad .
+    \approx \frac{\mathcal{Z}_n}{K} \,
+      \sum_k^{K} \frac{p(y_{nk} \given \bs{\alpha})}{p(y_{nk} \given \bs{\alpha}_0)}
 \end{equation}
+where we have canceled the other priors (over $\bs{\theta}$), and all
+normalization constants appear in the constant scale factor $\mathcal{Z}_n$.
 
-Factor y from theta, so most priors cancel. Up to multiplicative constant all we need. Above just for one source, full population:
+The above expresion gives the marginal likelihood of the velocity data for a single source given new hyperparameters $\bs{\alpha}$.
+The full marginal likelihood is then the product of these individual likelihoods
+\begin{align}
+    p(\{D_n\} \given \alpha) &\propto \prod_n^N \frac{1}{K} \,
+      \sum_k^{K} \frac{p(y_{nk} \given \alpha)}{p(y_{nk} \given \alpha_0)}
+      \quad .
+\end{align}
+In practice, we evaluate the log-marginal-likelihood
+\begin{align}
+    \ln p(\{D_n\} \given \alpha) &\propto \sum_n^N \left[
+      \ln\left( \sum_k^{K} \frac{p(y_{nk} \given \alpha)}{p(y_{nk} \given \alpha_0)} \right)
+      - \ln K\right]\label{eq:lnlike}\\
+    &\propto \sum_n^N \left[
+      \underset{k}{\textrm{logsumexp}}\left[ \ln{p(y_{nk} \given \alpha)} - \ln{p(y_{nk} \given \alpha_0)} \right]
+      - \ln K\right]
+\end{align}
+where $\textrm{logsumexp}$ (the log-sum-exp trick) provides a more stable
+estimate of the sum in \eqname~\ref{eq:lnlike}.
 
-\begin{eqnarray}
-    p(\{D_n\} \given \alpha) &\propto& \prod_n^N \frac{1}{K_n} \,
-      \sum_k^{K_n} \frac{p(y_{nk} \given \alpha)}{p(y_{nk} \given \alpha_0)}\\
-    \ln p(\{D_n\} \given \alpha) &\propto& \sum_n^N \left[
-      \ln\left( \sum_k^{K_n} \frac{p(y_{nk} \given \alpha)}{p(y_{nk} \given \alpha_0)} \right)
-      - \ln K_n\right]\\
-    &\propto& \sum_n^N \left[
-      \underset{k}{\rm logsumexp}\left[ \ln{p(y_{nk} \given \alpha)} - \ln{p(y_{nk} \given \alpha_0)} \right]
-      - \ln K_n\right]
-\end{eqnarray}
+We use 1,825 stars with $>10$ visits and $\log g < 2$ (to avoid upper RGB stars
+that have large intrinsic jitter) and maximize the above likelihood to determine
+better hyperparameters for the log-jitter parameter distribution.
+\figurename~\ref{fig:infer-jitter} shows the distribution corresponding to the
+maximum-likelihood hyperparameters, $\alpha^* = (\mu_y^*, \sigma_y^*) = (9.50,
+1.64)$.
+\todo{discussion about this}
+\todo{some discussion of how this relates to empirical bayes?}
 
-TODO: apply to all stars with $>10$ visits
-
+% Notebook: "Infer jitter"
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{infer-jitter}
+\end{center}
+\caption{%
+\todo{move notebook to figures path, re-do with "run2" or "run1" samples...}
+Inferred prior over log-jitter parameter ($y = \ln s^2$) using posterior samples
+for 1,825 lower-RGB stars with $>10$ visits.
+Left panel shows the ... Right panel shows the ...
+\label{fig:infer-jitter}
+}
+\end{figure}
 
 \subsection{Catalog of posterior samplings for APOGEE DR14 RGB stars}
 \label{sec:fullcatalog}
