@@ -136,7 +136,7 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
     # this for efficiency, but the argument for this is somewhat made up...
 
     count = 0 # how many stars we've processed in this star batch
-    batch_size = 1 # MAGIC NUMBER: how many stars to process before committing
+    batch_size = 16 # MAGIC NUMBER: how many stars to process before committing
     for star in star_query.all():
 
         if result_query.filter(AllStar.apogee_id == star.apogee_id).count() < 1:
@@ -178,12 +178,11 @@ def main(config_file, pool, seed, overwrite=False, _continue=False):
 
         # Write the samples that pass to the results file
         with h5py.File(results_filename, 'r+') as f:
-            if star.apogee_id not in f:
-                g = f.create_group(star.apogee_id)
+            if star.apogee_id in f:
+                del f[star.apogee_id]
 
-            else:
-                g = f[star.apogee_id]
-
+            # HACK: this will overwrite the past samples!
+            g = f.create_group(star.apogee_id)
             samples.to_hdf5(g)
 
             if 'ln_prior_probs' in g:
