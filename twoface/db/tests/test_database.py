@@ -37,7 +37,8 @@ class TestDB(object):
         s = self.session
 
         # a target in both test FITS files included in the repo
-        test_target_ID = "4264.2M00000032+5737103"
+        star = s.query(AllStar).filter(AllStar.apogee_id == "2M00000068+5710233").one()
+        test_target_ID = star.target_id
 
         # get star entry and check total num of visits
         star = s.query(AllStar).filter(AllStar.target_id == test_target_ID).one()
@@ -45,7 +46,7 @@ class TestDB(object):
 
         # get a visit and check that it has one star
         visit = s.query(AllVisit).filter(AllVisit.target_id == test_target_ID).limit(1).one()
-        assert len(visit.stars) == 2
+        assert len(visit.stars) == 1
 
     def test_jokerrun_cascade(self):
         """
