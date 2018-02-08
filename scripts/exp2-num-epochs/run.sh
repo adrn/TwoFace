@@ -8,7 +8,7 @@
 #SBATCH --mail-type=begin       # email me when the job starts
 #SBATCH --mail-type=end         # email me when the job finishes
 
-cd /tigress/adrianp/projects/twoface/scripts/exp2/
+cd /tigress/adrianp/projects/twoface/scripts/exp2-num-epochs/
 
 module load openmpi/gcc/1.10.2/64
 
