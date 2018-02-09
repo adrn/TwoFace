@@ -112,18 +112,19 @@ def make_caches(N, joker, circ=False, overwrite=False):
 
 def main(pool, overwrite=False):
 
+    # HACK: hard-set circ
+    circ = True
+
     pars = JokerParams(P_min=1*u.day, P_max=1024*u.day)
     joker = TheJoker(pars, pool=pool)
 
     # make the prior cache file
-    # HACK: hard-set circ
-    # cache_file = make_prior_cache(2**28, joker, circ=False)
-    prior_file, samples_file = make_caches(2**20, joker, circ=False,
+    prior_file, samples_file = make_caches(2**28, joker, circ=circ,
                                            overwrite=overwrite)
 
     n_epochs = np.arange(3, 12+1, 1)
     for n_epoch, i, data in make_data(n_epochs, n_per_epochs=128,
-                                      time_sampling='uniform', circ=True):
+                                      time_sampling='uniform', circ=circ):
         logger.debug("N epochs: {0}, orbit {1}".format(n_epoch, i))
 
         key = '{0}-{1}'.format(n_epoch, i)
