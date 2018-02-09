@@ -38,7 +38,7 @@ def random_orbit(circ=False):
     return KeplerOrbit(**kw)
 
 
-def make_data(n_epochs, n_per_epochs=128, time_sampling='uniform', circ=False):
+def make_data(n_epochs, n_orbits=128, time_sampling='uniform', circ=False):
     """
     time_sampling can be 'uniform' or 'log'
     """
@@ -63,7 +63,7 @@ def make_data(n_epochs, n_per_epochs=128, time_sampling='uniform', circ=False):
         raise ValueError('invalid time_sampling value')
 
     for N in n_epochs:
-        for i in range(n_per_epochs):
+        for i in range(n_orbits):
             orb = random_orbit(circ=circ)
             t = Time(t_func(N), format='mjd')
             rv = K * orb.unscaled_radial_velocity(t)
@@ -114,7 +114,8 @@ def make_caches(N, joker, circ=False, overwrite=False):
 def main(pool, overwrite=False):
 
     # HACK: hard-set circ
-    circ = True
+    # circ = True
+    circ = False
 
     pars = JokerParams(P_min=1*u.day, P_max=1024*u.day)
     joker = TheJoker(pars, pool=pool)
@@ -124,7 +125,7 @@ def main(pool, overwrite=False):
                                            overwrite=overwrite)
 
     n_epochs = np.arange(3, 12+1, 1)
-    for n_epoch, i, data, P in make_data(n_epochs, n_per_epochs=128,
+    for n_epoch, i, data, P in make_data(n_epochs, n_orbits=512,
                                          time_sampling='uniform', circ=circ):
         logger.debug("N epochs: {0}, orbit {1}".format(n_epoch, i))
 
@@ -144,8 +145,6 @@ def main(pool, overwrite=False):
             g = f.create_group(key)
             samples.to_hdf5(g)
             g.attrs['P'] = P
-
-        break
 
 
 if __name__ == "__main__":
