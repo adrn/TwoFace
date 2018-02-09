@@ -1,11 +1,9 @@
+# Standard library
 import os
 from os import path
 import sys
-import time
 
 # Third-party
-from astropy.io import fits
-from astropy.table import Table, join
 from astropy.time import Time
 import astropy.units as u
 import h5py
@@ -16,12 +14,31 @@ import schwimmbad
 
 from twobody import KeplerOrbit
 
-from thejoker import RVData, JokerParams, TheJoker, JokerSamples
-from thejoker.plot import plot_rv_curves
-from thejoker.log import log as logger
+from thejoker import RVData, JokerParams, TheJoker
+from thejoker.log import log as joker_logger
+from thejoker.sampler import pack_prior_samples
+
+from twoface.log import log as logger
 
 
-def make_data(n_epochs, n_per_epochs=1024, time_sampling='uniform', circ=False):
+def random_orbit(circ=False):
+    kw = dict()
+    # kw['P'] = 2 ** np.random.uniform(2, 10) * u.day # 4 to 1024 days
+    kw['P'] = 128. * u.day # MAGIC NUMBER
+    kw['M0'] = np.random.uniform(0, 2*np.pi) * u.rad
+    kw['e'] = 0.
+    kw['omega'] = 0 * u.deg
+
+    if not circ:
+        kw['e'] = 10 ** np.random.uniform(-4, -0.001)
+        kw['omega'] = np.random.uniform(0, 2*np.pi) * u.rad
+        kw['Omega'] = np.random.uniform(0, 2*np.pi) * u.rad
+        kw['i'] = np.arccos(np.random.uniform(0, 1)) * u.rad
+
+    return KeplerOrbit(**kw)
+
+
+def make_data(n_epochs, n_per_epochs=128, time_sampling='uniform', circ=False):
     """
     time_sampling can be 'uniform' or 'log'
     """
@@ -45,36 +62,86 @@ def make_data(n_epochs, n_per_epochs=1024, time_sampling='uniform', circ=False):
     else:
         raise ValueError('invalid time_sampling value')
 
-    # TODO: handle circ == False
-
     for N in n_epochs:
-        orb = KeplerOrbit(P=150.*u.day, e=0., omega=0*u.deg, M0=0*u.deg)
+        for i in range(n_per_epochs):
+            t = Time(t_func(N), format='mjd')
+            rv = K * random_orbit(circ=circ).unscaled_radial_velocity(t)
+            rv = np.random.normal(rv.to(u.km/u.s).value,
+                                  err.to(u.km/u.s).value) * u.km/u.s
+            data = RVData(t, rv, stddev=np.ones_like(rv.value) * err)
+            yield N, i, data
 
-        t = Time(t_func(N), format='mjd')
-        rv = K * orb.unscaled_radial_velocity(t)
-        data = RVData(t, rv, stddev=np.ones_like(rv.value) * err)
 
+def make_caches(N, joker, circ=False, overwrite=False):
+    if not path.exists('exp2.py'):
+        raise RuntimeError('This script must be run from inside '
+                           'scripts/exp2-num-epochs')
 
+    cache_path = path.abspath(path.join(os.getcwd(), 'cache'))
+    if not path.exists(cache_path):
+        os.makedirs(cache_path)
 
-def make_prior_cache(N, circ=False):
-    samples, ln_probs = thejoker.sample_prior(N, return_logprobs=True)
-    packed_samples, units = pack_prior_samples(samples, u.km/u.s)
+    if circ:
+        prior_filename = path.join(cache_path, 'circ-prior-samples.hdf5')
+        post_filename = path.join(cache_path, 'circ-samples.hdf5')
+    else:
+        prior_filename = path.join(cache_path, 'ecc-prior-samples.hdf5')
+        post_filename = path.join(cache_path, 'ecc-samples.hdf5')
 
-    batch_size, K = packed_samples.shape
+    if not path.exists(prior_filename) and not overwrite:
+        samples, ln_probs = joker.sample_prior(N, return_logprobs=True)
+        packed_samples, units = pack_prior_samples(samples, u.km/u.s)
 
-    with h5py.File(filename, 'r+') as f:
-        if 'samples' not in f:
+        if circ:
+            packed_samples[:, 2] = 0. # eccentricity
+            packed_samples[:, 3] = 0. # omega
+
+        with h5py.File(prior_filename, 'w') as f:
             # make the HDF5 file with placeholder datasets
-            f.create_dataset('samples', shape=(N, K), dtype=np.float32)
-            f.create_dataset('ln_prior_probs', shape=(N,), dtype=np.float32)
+            f.create_dataset('samples', data=packed_samples)
             f.attrs['units'] = np.array([str(x)
                                          for x in units]).astype('|S6')
 
+    if not path.exists(post_filename) and not overwrite:
+        # ensure prior cache file exists
+        with h5py.File(post_filename, 'w') as f:
+            pass
+
+    return prior_filename, post_filename
+
+
 def main(pool, overwrite=False):
-    n_epochs = np.arange(3, 12+1, 1)
-    filename = make_data()
 
     pars = JokerParams(P_min=1*u.day, P_max=1024*u.day)
+    joker = TheJoker(pars, pool=pool)
+
+    # make the prior cache file
+    # HACK: hard-set circ
+    # cache_file = make_prior_cache(2**28, joker, circ=False)
+    prior_file, samples_file = make_caches(2**20, joker, circ=False,
+                                           overwrite=overwrite)
+
+    n_epochs = np.arange(3, 12+1, 1)
+    for n_epoch, i, data in make_data(n_epochs, n_per_epochs=128,
+                                      time_sampling='uniform', circ=True):
+        logger.debug("N epochs: {0}, orbit {1}".format(n_epoch, i))
+
+        key = '{0}-{1}'.format(n_epoch, i)
+        with h5py.File(samples_file, 'r') as f:
+            if key in f:
+                logger.debug('-- already done! skipping...')
+                continue
+
+        samples = joker.iterative_rejection_sample(n_requested_samples=256,
+                                                   prior_cache_file=prior_file,
+                                                   data=data)
+        logger.debug("-- done sampling - {0} samples returned"
+                     .format(len(samples)))
+
+        with h5py.File(samples_file) as f:
+            g = f.create_group(key)
+            samples.to_hdf5(g)
+
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
@@ -111,12 +178,14 @@ if __name__ == "__main__":
             logger.setLevel(logging.DEBUG)
         else: # anything >= 2
             logger.setLevel(1)
+            joker_logger.setLevel(logging.DEBUG)
 
     elif args.quietness != 0:
         if args.quietness == 1:
             logger.setLevel(logging.WARNING)
         else: # anything >= 2
             logger.setLevel(logging.ERROR)
+            joker_logger.setLevel(logging.ERROR)
 
     else: # default
         logger.setLevel(logging.INFO)
@@ -125,4 +194,12 @@ if __name__ == "__main__":
         np.random.seed(args.seed)
 
     pool = schwimmbad.choose_pool(mpi=args.mpi, processes=args.n_cores)
-    main(pool=pool, overwrite=args.overwrite)
+
+    try:
+        main(pool=pool, overwrite=args.overwrite)
+
+    except Exception as e:
+        raise e
+
+    finally:
+        pool.close()
