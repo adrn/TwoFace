@@ -64,12 +64,13 @@ def make_data(n_epochs, n_per_epochs=128, time_sampling='uniform', circ=False):
 
     for N in n_epochs:
         for i in range(n_per_epochs):
+            orb = random_orbit(circ=circ)
             t = Time(t_func(N), format='mjd')
-            rv = K * random_orbit(circ=circ).unscaled_radial_velocity(t)
+            rv = K * orb.unscaled_radial_velocity(t)
             rv = np.random.normal(rv.to(u.km/u.s).value,
                                   err.to(u.km/u.s).value) * u.km/u.s
             data = RVData(t, rv, stddev=np.ones_like(rv.value) * err)
-            yield N, i, data
+            yield N, i, data, orb.P.to(u.day).value
 
 
 def make_caches(N, joker, circ=False, overwrite=False):
@@ -123,8 +124,8 @@ def main(pool, overwrite=False):
                                            overwrite=overwrite)
 
     n_epochs = np.arange(3, 12+1, 1)
-    for n_epoch, i, data in make_data(n_epochs, n_per_epochs=128,
-                                      time_sampling='uniform', circ=circ):
+    for n_epoch, i, data, P in make_data(n_epochs, n_per_epochs=128,
+                                         time_sampling='uniform', circ=circ):
         logger.debug("N epochs: {0}, orbit {1}".format(n_epoch, i))
 
         key = '{0}-{1}'.format(n_epoch, i)
@@ -142,6 +143,9 @@ def main(pool, overwrite=False):
         with h5py.File(samples_file) as f:
             g = f.create_group(key)
             samples.to_hdf5(g)
+            g.attrs['P'] = P
+
+        break
 
 
 if __name__ == "__main__":
