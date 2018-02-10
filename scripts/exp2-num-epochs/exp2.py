@@ -73,7 +73,7 @@ def make_data(n_epochs, n_orbits=128, time_sampling='uniform', circ=False):
             yield N, i, data, orb.P.to(u.day).value
 
 
-def make_caches(N, joker, circ=False, overwrite=False):
+def make_caches(N, joker, time_sampling, circ=False, overwrite=False):
     if not path.exists('exp2.py'):
         raise RuntimeError('This script must be run from inside '
                            'scripts/exp2-num-epochs')
@@ -84,10 +84,12 @@ def make_caches(N, joker, circ=False, overwrite=False):
 
     if circ:
         prior_filename = path.join(cache_path, 'circ-prior-samples.hdf5')
-        post_filename = path.join(cache_path, 'circ-samples.hdf5')
+        post_filename = path.join(cache_path, 'circ-samples-{0}.hdf5')
     else:
         prior_filename = path.join(cache_path, 'ecc-prior-samples.hdf5')
-        post_filename = path.join(cache_path, 'ecc-samples.hdf5')
+        post_filename = path.join(cache_path, 'ecc-samples-{0}.hdf5')
+
+    post_filename = post_filename.format(time_sampling)
 
     if not path.exists(prior_filename) and not overwrite:
         samples, ln_probs = joker.sample_prior(N, return_logprobs=True)
@@ -111,22 +113,24 @@ def make_caches(N, joker, circ=False, overwrite=False):
     return prior_filename, post_filename
 
 
-def main(pool, overwrite=False):
+def main(pool, circ, overwrite=False):
 
-    # HACK: hard-set circ
-    # circ = True
-    circ = False
+    # HACK: hard-set time-sampling
+    # time_sampling = 'uniform'
+    time_sampling = 'log'
 
     pars = JokerParams(P_min=1*u.day, P_max=1024*u.day)
     joker = TheJoker(pars, pool=pool)
 
     # make the prior cache file
     prior_file, samples_file = make_caches(2**28, joker, circ=circ,
-                                           overwrite=overwrite)
+                                           overwrite=overwrite,
+                                           time_sampling=time_sampling)
 
     n_epochs = np.arange(3, 12+1, 1)
     for n_epoch, i, data, P in make_data(n_epochs, n_orbits=512,
-                                         time_sampling='uniform', circ=circ):
+                                         time_sampling=time_sampling,
+                                         circ=circ):
         logger.debug("N epochs: {0}, orbit {1}".format(n_epoch, i))
 
         key = '{0}-{1}'.format(n_epoch, i)
@@ -174,6 +178,9 @@ if __name__ == "__main__":
                         dest='overwrite', default=False,
                         help='Destroy everything.')
 
+    parser.add_argument('--circ', action='store_true',
+                        dest='circ', default=False)
+
     args = parser.parse_args()
 
     # Set logger level based on verbose flags
@@ -200,7 +207,7 @@ if __name__ == "__main__":
     pool = schwimmbad.choose_pool(mpi=args.mpi, processes=args.n_cores)
 
     try:
-        main(pool=pool, overwrite=args.overwrite)
+        main(pool=pool, circ=args.circ, overwrite=args.overwrite)
 
     except Exception as e:
         raise e
