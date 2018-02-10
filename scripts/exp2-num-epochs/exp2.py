@@ -21,10 +21,11 @@ from thejoker.sampler import pack_prior_samples
 from twoface.log import log as logger
 
 
-def random_orbit(circ=False):
+def random_orbit(P, circ=False):
     kw = dict()
     # kw['P'] = 2 ** np.random.uniform(2, 10) * u.day # 4 to 1024 days
-    kw['P'] = 128. * u.day # MAGIC NUMBER
+    # kw['P'] = 128. * u.day # MAGIC NUMBER
+    kw['P'] = P * u.day
     kw['M0'] = np.random.uniform(0, 2*np.pi) * u.rad
     kw['e'] = 0.
     kw['omega'] = 0 * u.deg
@@ -38,7 +39,7 @@ def random_orbit(circ=False):
     return KeplerOrbit(**kw)
 
 
-def make_data(n_epochs, n_orbits=128, time_sampling='uniform', circ=False):
+def make_data(n_epochs, P, n_orbits=128, time_sampling='uniform', circ=False):
     """
     time_sampling can be 'uniform' or 'log'
     """
@@ -64,7 +65,7 @@ def make_data(n_epochs, n_orbits=128, time_sampling='uniform', circ=False):
 
     for N in n_epochs:
         for i in range(n_orbits):
-            orb = random_orbit(circ=circ)
+            orb = random_orbit(P=P, circ=circ)
             t = Time(t_func(N), format='mjd')
             rv = K * orb.unscaled_radial_velocity(t)
             rv = np.random.normal(rv.to(u.km/u.s).value,
@@ -73,7 +74,7 @@ def make_data(n_epochs, n_orbits=128, time_sampling='uniform', circ=False):
             yield N, i, data, orb.P.to(u.day).value
 
 
-def make_caches(N, joker, time_sampling, circ=False, overwrite=False):
+def make_caches(N, joker, time_sampling, P, circ=False, overwrite=False):
     if not path.exists('exp2.py'):
         raise RuntimeError('This script must be run from inside '
                            'scripts/exp2-num-epochs')
@@ -84,12 +85,12 @@ def make_caches(N, joker, time_sampling, circ=False, overwrite=False):
 
     if circ:
         prior_filename = path.join(cache_path, 'circ-prior-samples.hdf5')
-        post_filename = path.join(cache_path, 'circ-samples-{0}.hdf5')
+        post_filename = path.join(cache_path, 'circ-samples-{0}-{1}.hdf5')
     else:
         prior_filename = path.join(cache_path, 'ecc-prior-samples.hdf5')
-        post_filename = path.join(cache_path, 'ecc-samples-{0}.hdf5')
+        post_filename = path.join(cache_path, 'ecc-samples-{0}-{1}.hdf5')
 
-    post_filename = post_filename.format(time_sampling)
+    post_filename = post_filename.format(time_sampling, int(P))
 
     if not path.exists(prior_filename) and not overwrite:
         samples, ln_probs = joker.sample_prior(N, return_logprobs=True)
@@ -108,27 +109,25 @@ def make_caches(N, joker, time_sampling, circ=False, overwrite=False):
     if not path.exists(post_filename) and not overwrite:
         # ensure prior cache file exists
         with h5py.File(post_filename, 'w') as f:
-            pass
+            f.attrs['P'] = P
 
     return prior_filename, post_filename
 
 
-def main(pool, circ, overwrite=False):
-
-    # HACK: hard-set time-sampling
-    # time_sampling = 'uniform'
-    time_sampling = 'log'
+def main(pool, circ, P, time_sampling, overwrite=False):
 
     pars = JokerParams(P_min=1*u.day, P_max=1024*u.day)
     joker = TheJoker(pars, pool=pool)
 
     # make the prior cache file
-    prior_file, samples_file = make_caches(2**28, joker, circ=circ,
+    prior_file, samples_file = make_caches(2**28, joker, circ=circ, P=P,
                                            overwrite=overwrite,
                                            time_sampling=time_sampling)
 
+    logger.info('Files: {0}, {1}'.format(prior_file, samples_file))
+
     n_epochs = np.arange(3, 12+1, 1)
-    for n_epoch, i, data, P in make_data(n_epochs, n_orbits=512,
+    for n_epoch, i, data, P in make_data(n_epochs, n_orbits=512, P=P,
                                          time_sampling=time_sampling,
                                          circ=circ):
         logger.debug("N epochs: {0}, orbit {1}".format(n_epoch, i))
@@ -180,6 +179,10 @@ if __name__ == "__main__":
 
     parser.add_argument('--circ', action='store_true',
                         dest='circ', default=False)
+    parser.add_argument('-P', default=128, type=int,
+                        dest='P')
+    parser.add_argument('--time_sampling', type=str, default='uniform',
+                        dest='time_sampling')
 
     args = parser.parse_args()
 
@@ -207,7 +210,8 @@ if __name__ == "__main__":
     pool = schwimmbad.choose_pool(mpi=args.mpi, processes=args.n_cores)
 
     try:
-        main(pool=pool, circ=args.circ, overwrite=args.overwrite)
+        main(pool=pool, circ=args.circ, P=args.P,
+             time_sampling=args.time_sampling, overwrite=args.overwrite)
 
     except Exception as e:
         raise e

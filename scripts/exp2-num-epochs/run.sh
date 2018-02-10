@@ -16,7 +16,17 @@ source activate twoface
 
 date
 
-srun python exp2.py -v --mpi
-srun python exp2.py -v --mpi --circ
+srun python exp2.py -v --mpi --circ --time_sampling='uniform' -P 128
+
+srun python exp2.py -v --mpi --time_sampling='uniform' -P 8
+srun python exp2.py -v --mpi --circ --time_sampling='uniform' -P 8
+srun python exp2.py -v --mpi --time_sampling='log' -P 8
+srun python exp2.py -v --mpi --circ --time_sampling='log' -P 8
+
+srun python exp2.py -v --mpi --time_sampling='uniform' -P 2
+srun python exp2.py -v --mpi --circ --time_sampling='uniform' -P 2
+srun python exp2.py -v --mpi --time_sampling='log' -P 2
+srun python exp2.py -v --mpi --circ --time_sampling='log' -P 2
+
 
 date
