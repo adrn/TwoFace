@@ -342,7 +342,13 @@ class AllStar(Base):
 
     @hybrid_property
     def martig_filter(self):
-        return None
+        return ((self.fparam3 > -0.8) &
+                (self.fparam0 > 4000) & (self.fparam0 < 5000) &
+                (self.fparam1 > 1.8) & (self.fparam1 < 3.3) &
+                (self.fparam4 > -0.25) & (self.fparam4 < 0.15) &
+                (self.fparam5 > -0.1) & (self.fparam5 < 0.45) &
+                (((self.fparam4+8.39) - (self.fparam5+7.78)) > -0.6) &
+                (((self.fparam4+8.39) - (self.fparam5+7.78)) < 0.2))
 
     @martig_filter.expression
     def martig_filter(cls):
