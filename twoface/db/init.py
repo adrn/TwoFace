@@ -80,7 +80,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     star_mask &= ((allstar_tbl['ASPCAPFLAG'] & skip_mask) == 0)
 
     # Remove stars with bad logg measurements, or dwarfs
-    star_mask &= (allstar_tbl['logg'] > 0) & (allstar_tbl['logg'] < 3.5)
+    star_mask &= (allstar_tbl['logg'] > 0) & (allstar_tbl['logg'] < 4.)
     allstar_tbl = allstar_tbl[star_mask]
 
     # Only load visits for stars that we're loading
