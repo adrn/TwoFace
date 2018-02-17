@@ -101,8 +101,7 @@ def main(config_file, pool, seed, overwrite=False):
     rnd = np.random.RandomState(seed=seed)
     logger.debug("Creating TheJoker instance with {0}, {1}".format(rnd, pool))
     params = run.get_joker_params()
-    joker = TheJoker(params, random_state=rnd, pool=pool,
-                     n_batches=8 * pool.size) # HACK: magic number
+    joker = TheJoker(params, random_state=rnd, pool=pool)
 
     # TODO: we should make sure a 2nd prior cache exists, but because I'm only
     # going to deal with "needs mcmc", ignore this
