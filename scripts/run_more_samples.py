@@ -182,10 +182,8 @@ def main(config_file, pool, seed, overwrite=False):
 
             n_walkers = 2 * run.requested_samples_per_star
             model, samples, sampler = joker.mcmc_sample(data, samples0,
-                                                        # n_burn=1024,
-                                                        # n_steps=8192*8,
-                                                        n_burn=1,
-                                                        n_steps=1,
+                                                        n_burn=1024,
+                                                        n_steps=65536,
                                                         n_walkers=n_walkers,
                                                         return_sampler=True)
 
