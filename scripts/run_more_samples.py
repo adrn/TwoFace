@@ -180,22 +180,21 @@ def main(config_file, pool, seed, overwrite=False):
             with h5py.File(results_filename, 'r') as f:
                 samples0 = JokerSamples.from_hdf5(f[star.apogee_id])
 
-            n_walkers = run.requested_samples_per_star
-            samples, sampler = joker.mcmc_sample(data, samples0,
-                                                 n_burn=2048, n_steps=8192,
-                                                 n_walkers=n_walkers,
-                                                 return_sampler=True)
+            n_walkers = 2 * run.requested_samples_per_star
+            model, samples, sampler = joker.mcmc_sample(data, samples0,
+                                                        # n_burn=1024,
+                                                        # n_steps=8192*8,
+                                                        n_burn=1,
+                                                        n_steps=1,
+                                                        n_walkers=n_walkers,
+                                                        return_sampler=True)
 
-            ndim = sampler.chain.shape[-1]
-            import matplotlib.pyplot as plt
-            fig, axes = plt.subplots(ndim, 1, figsize=(6, 16))
-            for k in range(ndim):
-                ax = axes[k]
-                for walker in sampler.chain[..., k]:
-                    ax.plot(walker, marker='', drawstyle='steps-mid', alpha=0.1)
+            sampler.pool = None
+            import pickle
+            with open('test-mcmc.pickle', 'wb') as f:
+                pickle.dump(sampler, f)
 
-            plt.show()
-
+        pool.close()
         import sys
         sys.exit(0)
 
