@@ -60,3 +60,5 @@ cache
 mpi
 data
 plots
+*.png
+*.pickle
