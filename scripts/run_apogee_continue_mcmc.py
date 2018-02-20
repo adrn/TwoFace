@@ -86,7 +86,7 @@ def main(config_file, pool, seed, overwrite=False):
     rnd = np.random.RandomState(seed=seed)
     logger.debug("Creating TheJoker instance with {0}, {1}".format(rnd, pool))
     params = run.get_joker_params()
-    joker = TheJoker(params, random_state=rnd, pool=pool)
+    joker = TheJoker(params, random_state=rnd)
 
     # Get all stars in this JokerRun that "need mcmc"
     star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
