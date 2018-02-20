@@ -344,9 +344,6 @@ samplings---under the following assumptions:
   correct up to an unknown excess variance.
   All noise contributions result in Gaussian uncertainties on the individual
   radial-velocity measurements.
-  For upper \RGB\ stars the inferred excess variance will be a combination of
-  extra systematic uncertainty and true astrophysical surface jitter
-  (\todo{CITATION NEEDED}).
 \end{description}
 
 \thejoker\ is a custom-built Monte Carlo sampler designed to produce independent
@@ -356,7 +353,7 @@ Our parametrization of the orbital elements is similar to the notation in
 \citet{Murray:2010}:
 The radial velocity $v$ at time $t$ is given by
 \begin{equation}
-  v(t;\bs{\theta}) = v_0 + K\,[\cos\left(\omega + f(t; e, P, M_0)\right) +
+  v(t;\bs{\theta}) = v_0 + K\,[\cos\left(\omega + f(t; e, P, M_0, t_0)\right) +
     e\,\cos\omega]
 \end{equation}
 where $\bs{\theta} = (P,e,M_0,\omega,K,v_0)$---period, eccentricity, mean
@@ -364,6 +361,14 @@ anomaly at a reference time $t_0$, argument of pericenter, velocity
 semi-amplitude, Barycentric velocity---and the true anomaly, $f$, is a function
 of time and the specified parameters (see \sectionname~2 of
 \citealt{Price-Whelan:2017} or \eqname~63 in \citealt{Murray:2010}).
+In addition to the orbital parameters listed above, \thejoker\ can also generate
+samples in an ``excess variance'' parameter, $s^2$, that is added to the
+per-visit measurement variances.
+This parameter allows us to test whether the visit RV uncertainties are
+underestimated
+For upper \RGB\ stars the inferred excess variance will be a combination of
+extra systematic uncertainty and true astrophysical surface jitter
+(\todo{CITATION NEEDED}).
 
 \thejoker\ was designed for the extremely multi-modal pdfs expected when the
 number of radial-velocity measurements of a source is small, or the data are
@@ -391,9 +396,7 @@ must occur under very constraining data.
 %
 % Examples of outputs and etc.
 
-\section{Results}
-
-\subsection{Initial inidivual-system posterior samplings}
+\subsection{Initial individual-system posterior samplings}
 \label{sec:initsampling}
 
 For all \nstars\ \apogee\ stars with $\geq 3$ good visits (see
@@ -407,28 +410,62 @@ prior similar to that defined in \citet{Price-Whelan:2017}:
     \item uniform in log-period over the domain $[1,32768]~\textrm{day}$,
     \item a beta distribution over eccentricity with fixed parameters (\citealt{Kipping:2013}).
 \end{itemize}
-For the prior over the excess variance parameter, $s$, we initially use
+For the prior over the excess variance parameter, $s^2$, we initially use
 a Gaussian over the transformed parameter $y = \ln s^2$ with the mean and
 standard deviation of the initial distribution set to $(\mu_{y,0}, \sigma_{y,0})
 = (10.6, 3)$ in units of $\textrm{m}~\textrm{s}^{-1}$.
+The reference time for each star is set to the minimum visit epoch; $M_0$ then
+becomes the mean anomaly at the first visit observation.
+See \tablename~\ref{tbl:params} for a description of all parameters and priors
+used.
 
-We request \nposterior\ posterior samples for each source, and generate the
-samples using an iterative procedure that adapts to the \todo{informativeness}
-of the data to more efficiently generate posterior samples.
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{ r c l }
+    \hline
+    name & prior & description \\
+    \hline
+    $P$ & $\ln P \sim \mathcal{U}(1, 32768)~\textrm{day}$ & period \\
+    $e$ & $e \sim \textrm{Beta}(0.867, 3.03)$ & eccentricity \\
+    $t_0$ & fixed & reference time \\
+    $M_0$ & $M_0 \sim \mathcal{U}(0, 2\pi)~\textrm{rad}$ & mean anomaly at reference time \\
+    $\omega$ & $\omega \sim \mathcal{U}(0, 2\pi)~\textrm{rad}$ & argument of pericenter \\
+    $s^2$ & $\ln s^2 \sim \mathcal{N}(\mu_y, \sigma_y^2)$ & extra variance added to each visit variance \\
+    $K$ & TODO & velocity semi-amplitude \\
+    $v_0$ & TODO & system barycentric velocity \\
+    \hline
+    \end{tabular}
+    \caption{Summary and description of parameters. $\textrm{Beta}(a, b)$ is the beta distribution with \todo{a, b}, $\mathcal{U}(a, b)$ the uniform distribution over the domain $(a, b)$, and $\mathcal{N}(\mu, \sigma^2)$ is the normal distribution with mean $\mu$ and variance $\sigma^2$.}
+    \label{tbl:params}
+\end{table}
+
+We request \nposterior\ posterior samples for each source.
+Depending on the data quality and phase coverage of the visits, \thejoker\ will
+require different numbers of prior samples in order to rejection sample down to
+the requested number of posterior samples: For few-epoch or noisy RV data, many
+prior samples will pass the rejection step, whereas for very precise or
+many-epoch RV data, \thejoker\ may need to go process the full library of prior
+samples.
+We therefore generate the posterior samples using an iterative procedure that
+adaptively predicts how many prior samples to test for each star.
 For sources with very constraining data, \thejoker\ may return fewer than the
-requested number of samples.
+requested number of samples (as few as one sample).
 When this happens, we proceed in one of two ways:
 \begin{enumerate}
     \item \emph{needs MCMC}: If just 1 posterior sample is returned after
     exhausting the full library of prior samples, or if multiple (but fewer than
     \nposterior) are returned that all lie within a single mode of the posterior
-    pdf, the orbit-space that is consistent with the data is treated as
-    effectively unimodal. In this case, we use the location of the returned
-    sample, or the median over returned samples to generate a small ball of
-    initial conditions and use standard MCMC to continue sampling until we obtain \nposterior\ samples. In detail, we use an ensemble sampler
-    (\citealt{Goodman:}) implemented in \python\ (\citealt{Foreman-Mackey:}),
-    run with \todo{XX} walkers for \todo{XX} steps, and downsample the resulting
-    MCMC chains until we have \nposterior\ samples.
+    pdf, the posterior pdf over orbital parameters is treated as effectively
+    unimodal.
+    In this case, we use the location of the returned sample, or the median over
+    returned samples to generate a small ball of initial conditions and use
+    standard MCMC to continue sampling until we obtain \nposterior\ samples.
+    In detail, we use an ensemble sampler (\citealt{Goodman:2010}) implemented
+    in \python\ (\citealt{Foreman-Mackey:2013}) for this step.
+    We run with 1024 walkers for 16384 steps, take the final walker positions,
+    and downsample until we have \nposterior\ samples.
+    We compute convergence statistics for each run and report whether the chains
+    appear converged or not.
     \item \emph{needs more prior samples}: If more than 1 posterior sample is
     returned after exhausting the full library of prior samples and the samples
     lie in multiple modes of the posterior pdf, the star is flagged. In this
@@ -439,7 +476,10 @@ When this happens, we proceed in one of two ways:
 A full run of \thejoker\ on all \nstars\ \apogee\ stars used in this work took
 approximately 300 hours on a compute cluster with 448 cores, with the time
 dominated by sources with many ($\gtrsim 10$) visits.
+\todo{XX} stars were flagged as \emph{needs MCMC}, \todo{YY} were flagged as
+\emph{needs more prior samples}, and the remaining \todo{ZZ} stars completed normally.
 
+\section{Results}
 
 \subsection{Inferring the excess variance distribution}
 \label{sec:inferjitter}
