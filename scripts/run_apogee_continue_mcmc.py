@@ -34,6 +34,12 @@ def emcee_worker(task):
     cache_path, results_filename, apogee_id, data, joker = task
     n_walkers = 1024
 
+    chain_path = path.join(cache_path, '{0}.npy'.format(apogee_id))
+
+    if path.exists(chain_path):
+        logger.debug('{0} already done'.format(apogee_id))
+        return
+
     with h5py.File(results_filename, 'r') as f:
         samples0 = JokerSamples.from_hdf5(f[apogee_id])
 
@@ -43,7 +49,7 @@ def emcee_worker(task):
                                                 n_walkers=n_walkers,
                                                 return_sampler=True)
 
-    np.save(path.join(cache_path, '{0}.npy'.format(apogee_id)), sampler.chain)
+    np.save(chain_path, sampler.chain)
 
     model_path = path.join(cache_path, 'model.pickle')
     if not path.exists(model_path):
@@ -103,7 +109,7 @@ def main(config_file, pool, seed, overwrite=False):
 
     tasks = [(cache_path, results_filename, star.apogee_id,
               star.apogeervdata(), joker)
-             for star in star_query.all()][:1]
+             for star in star_query.all()]
     session.close()
 
     for r in pool.map(emcee_worker, tasks):
