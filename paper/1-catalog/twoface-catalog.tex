@@ -479,17 +479,22 @@ dominated by sources with many ($\gtrsim 10$) visits.
 \todo{XX} stars were flagged as \emph{needs MCMC}, \todo{YY} were flagged as
 \emph{needs more prior samples}, and the remaining \todo{ZZ} stars completed normally.
 
+\subsection{Implementation notes}
+
+\todo{Nontrivial computation - details about running on cluster, TheJoker vs. emcee}
+
 \section{Results}
 
 \subsection{Inferring the excess variance distribution}
 \label{sec:inferjitter}
 
 As an initial use of the per-source posterior samplings, we use a hierarchical
-Bayesian model to infer the parameters of the (assumed Gaussian) distribution
-over the log-excess-variance parameter: $(\mu_y, \sigma_y)$.
+Bayesian model to infer the parameters of the (assumed Gaussian) prior over the
+log-excess-variance parameter, $(\mu_y, \sigma_y)$ (see
+\tablename~\ref{tbl:params}).
 This inference serves as a test-case for future work, where we intend to use the
 independent posterior samplings to construct a hierarchical inference over
-companion property distributions.
+companion population properties.
 This is also a test of the visit velocity uncertainties reported in the \apogee\
 data products: If the catalog uncertainties are significantly underestimated, we
 expect the inferred log-excess-variance distribution parameters to tend towards
@@ -504,7 +509,7 @@ assumed values, $\bs{\alpha}_0 = (\mu_{y,0}, \sigma_{y,0})$ (see
 \sectionname~\ref{sec:initsampling}).
 This trick has been used in other hierarchical inferences as a way to
 marginalize over the per-object parameters
-(\citealt{Hogg:2008,Foreman-Mackey:...}); we describe how to compute the
+(\citealt{Hogg:2010,Foreman-Mackey:2014}); we describe how to compute the
 marginal likelihood in detail below.
 
 For each $n$ of $N$ RGB stars in APOGEE, we obtain $K$ posterior samples over
@@ -577,8 +582,8 @@ better hyperparameters for the log-excess-variance parameter distribution.
 \figurename~\ref{fig:infer-jitter} shows the distribution corresponding to the
 maximum-likelihood hyperparameters, $\alpha^* = (\mu_y^*, \sigma_y^*) = (9.50,
 1.64)$.
-\todo{discussion about this}
-\todo{some discussion of how this relates to empirical bayes?}
+\todo{Reactions to the inferred parameters?}
+\todo{Discuss how this relates to empirical Bayes?}
 
 % Notebook: "Infer jitter"
 \begin{figure}[h]
