@@ -62,3 +62,5 @@ data
 plots
 *.png
 *.pickle
+*.e*
+*.o*
