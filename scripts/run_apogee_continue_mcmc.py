@@ -1,21 +1,19 @@
 """
-Given output from the initial run, finish sampling by either further rejection
-sampling from the prior cache (needs more samples), or running emcee
-(needs mcmc).
-
-TODO: for now, this only operates on "needs mcmc" stars!
-
-How to use
-==========
+Given output from the initial run, finish sampling by running emcee (needs
+mcmc).
 
 This script must be run *after* run_apogee.py
+
+TODO:
+- For now, this script doesn't update the database. It just writes the chains
+  out to files.
 
 """
 
 # Standard library
 from os import path
 import os
-import time
+import pickle
 
 # Third-party
 import h5py
@@ -26,44 +24,31 @@ from thejoker.sampler import TheJoker, JokerSamples
 import yaml
 
 # Project
-from twoface import unimodal_P
 from twoface.log import log as logger
 from twoface.db import db_connect, get_run
 from twoface.db import JokerRun, AllStar, StarResult, Status
 from twoface.config import TWOFACE_CACHE_PATH
-from twoface.sample_prior import make_prior_cache
 
 
-def get_past_samples(star, results_filename):
-    with h5py.File(results_filename) as f:
-        samples = JokerSamples.from_hdf5(f[star.apogee_id])
+def emcee_worker(task):
+    cache_path, results_filename, apogee_id, data, joker = task
+    n_walkers = 1024
 
-    return samples
+    with h5py.File(results_filename, 'r') as f:
+        samples0 = JokerSamples.from_hdf5(f[apogee_id])
 
+    model, samples, sampler = joker.mcmc_sample(data, samples0,
+                                                n_burn=0,
+                                                n_steps=16384,
+                                                n_walkers=n_walkers,
+                                                return_sampler=True)
 
-def get_status_id(samples, data, n_requested):
-    n_samples = len(samples)
+    np.save(path.join(cache_path, '{0}.npy'.format(apogee_id)), sampler.chain)
 
-    if n_samples >= n_requested:
-        return 4 # completed
-
-    elif n_samples == 1:
-        # Only one sample was returned - this is probably unimodal, so this
-        # star needs MCMC
-        return 2 # needs mcmc
-
-    else:
-
-        if unimodal_P(samples, data):
-            # Multiple samples were returned, but they look unimodal
-            return 2 # needs mcmc
-
-        else:
-            # Multiple samples were returned, but not enough to satisfy the
-            # number requested in the config file
-            return 1 # needs more samples
-
-    return 5
+    model_path = path.join(cache_path, 'model.pickle')
+    if not path.exists(model_path):
+        with open(model_path, 'wb') as f:
+            pickle.dump(model, f)
 
 
 def main(config_file, pool, seed, overwrite=False):
@@ -103,128 +88,28 @@ def main(config_file, pool, seed, overwrite=False):
     params = run.get_joker_params()
     joker = TheJoker(params, random_state=rnd, pool=pool)
 
-    # TODO: we should make sure a 2nd prior cache exists, but because I'm only
-    # going to deal with "needs mcmc", ignore this
-    # _path, ext = path.splitext(run.prior_samples_file)
-    # new_path = '{0}_moar{1}'.format(_path, ext)
-    # if not path.exists(new_path):
-    #     make_prior_cache(new_path, joker,
-    #                      N=8 * config['prior']['num_cache'], # OMG: ~100 GB
-    #                      max_batch_size=2**24) # MAGIC NUMBER
-
-    # Get all stars in this JokerRun that need more prior samples
-    # TODO HACK: this query only selects "needs mcmc" stars!
+    # Get all stars in this JokerRun that "need mcmc"
     star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
                                        .filter(JokerRun.name == run.name)\
                                        .filter(Status.id == 2)
-                                       # .filter(Status.id == 1)
-
-    # Base query to get a StarResult for a given Star so we can update the
-    # status, etc.
-    result_query = session.query(StarResult).join(AllStar, JokerRun)\
-                                            .filter(JokerRun.name == run.name)
 
     n_stars = star_query.count()
     logger.info("{0} stars left to process for run more samples '{1}'"
                 .format(n_stars, run.name))
 
-    # --------------------------------------------------------------------------
-    # Here is where we do the actual processing of the data for each star. We
-    # loop through all stars that still need processing and continue with
-    # rejection sampling.
+    cache_path = path.join(TWOFACE_CACHE_PATH, 'emcee')
+    logger.debug('Will write emcee chains to {0}'.format(cache_path))
+    os.makedirs(cache_path, exist_ok=True)
 
-    count = 0 # how many stars we've processed in this star batch
-    batch_size = 16 # MAGIC NUMBER: how many stars to process before committing
-    for star in star_query.all():
+    tasks = [(cache_path, results_filename, star.apogee_id,
+              star.apogeervdata(), joker)
+             for star in star_query.all()][:1]
+    session.close()
 
-        if result_query.filter(AllStar.apogee_id == star.apogee_id).count() < 1:
-            logger.debug('Star {0} has no result object!'
-                         .format(star.apogee_id))
-            continue
-
-        # Retrieve existing StarResult from database. We limit(1) because the
-        # APOGEE_ID isn't unique, but we attach all visits for a given star to
-        # all rows, so grabbing one of them is fine.
-        result = result_query.filter(AllStar.apogee_id == star.apogee_id)\
-                             .limit(1).one()
-
-        logger.log(1, "Starting star {0}".format(star.apogee_id))
-        logger.log(1, "Current status: {0}".format(str(result.status)))
-        t0 = time.time()
-
-        data = star.apogeervdata()
-        logger.log(1, "\t visits loaded ({:.2f} seconds)"
-                   .format(time.time()-t0))
-
-        if result.status.id == 1: # needs more prior samples
-
-            try:
-                samples, ln_prior = joker.iterative_rejection_sample(
-                    data=data,
-                    n_requested_samples=run.requested_samples_per_star,
-                    # HACK: prior_cache_file=run.prior_samples_file,
-                    prior_cache_file=new_path, return_logprobs=True)
-
-            except Exception as e:
-                logger.warning("\t Failed sampling for star {0} \n Error: {1}"
-                               .format(star.apogee_id, str(e)))
-                continue
-
-            logger.debug("\t done sampling ({:.2f} seconds)"
-                         .format(time.time()-t0))
-
-        elif result.status.id == 2: # needs mcmc
-            logger.debug('Firing up MCMC:')
-
-            with h5py.File(results_filename, 'r') as f:
-                samples0 = JokerSamples.from_hdf5(f[star.apogee_id])
-
-            n_walkers = 2 * run.requested_samples_per_star
-            model, samples, sampler = joker.mcmc_sample(data, samples0,
-                                                        n_burn=1024,
-                                                        n_steps=65536,
-                                                        n_walkers=n_walkers,
-                                                        return_sampler=True)
-
-            sampler.pool = None
-            import pickle
-            with open('test-mcmc.pickle', 'wb') as f:
-                pickle.dump(sampler, f)
-
-        pool.close()
-        import sys
-        sys.exit(0)
-
-        # For now, it's sufficient to write the run results to an HDF5 file
-        n = run.requested_samples_per_star
-        all_ln_probs = ln_prior[:n]
-        samples = samples[:n]
-
-        # Write the samples that pass to the results file
-        with h5py.File(results_filename, 'r+') as f:
-            if star.apogee_id in f:
-                del f[star.apogee_id]
-
-            g = f.create_group(star.apogee_id)
-            samples.to_hdf5(g)
-            g.create_dataset('ln_prior_probs', data=all_ln_probs)
-
-        logger.debug("\t saved samples ({:.2f} seconds)".format(time.time()-t0))
-
-        result.status_id = get_status_id(samples, data, run.n_requested_samples)
-
-        logger.debug("...done with star {} ({:.2f} seconds)"
-                     .format(star.apogee_id, time.time()-t0))
-
-        if count % batch_size == 0 and count > 0:
-            session.commit()
-
-        count += 1
+    for r in pool.map(emcee_worker, tasks):
+        pass
 
     pool.close()
-
-    session.commit()
-    session.close()
 
 
 if __name__ == "__main__":
