@@ -78,46 +78,34 @@
              162 Fifth Avenue,
              New York, NY 10010, USA}
 
-\author{Hans-Walter~Rix}
+\author[0000-0003-4996-9069]{Hans-Walter~Rix}
 \affiliation{Max-Planck-Institut f\"ur Astronomie,
              K\"onigstuhl 17, D-69117 Heidelberg, Germany}
 
-% \author{Jason~Cao}
-% \affiliation{Center for Cosmology and Particle Physics,
-%              Department of Physics,
-%              New York University, 726 Broadway,
-%              New York, NY 10003, USA}
+\author{APOGEE Team}
 
 \begin{abstract}\noindent % trust me
 % Context
-Repeat radial-velocity measurements of stars can be used to identify stellar-,
+Repeat radial-velocity measurements of stars can be used to identify stellar,
 sub-stellar, and planetary-mass companions.
-Even few observations are useful for detecting companions, though such data are
-difficult to use for constraining physical properties because permitted orbital
-solutions are highly degenerate.
+Even sparse or few-epoch observations are useful for detecting companions,
+though such data are difficult to use for measuring physical properties of
+individual systems because permitted orbital solutions can be highly degenerate.
 % Aims
-Here we perform a search for secondary companions of stars observed by the
-\apogee\ survey (\DR), which has measured multi-epoch ($\geq 3$) but sparse
-radial velocities for close to 100,000 stars.
+Using a custom-built Monte Carlo sampler (\thejoker) to deliver (often highly
+multi-modal) posterior beliefs about companion orbital parameters, here we
+perform a search for secondary companions of over 100,000 stars observed by the
+\apogee\ survey (\DR) with $\geq 3$ epochs.
 % Methods
-We use a custom-built Monte Carlo sampler (\thejoker) to deliver (often highly
-multi-modal) posterior beliefs about companion orbital parameters.
-In some cases, where the primary-star masses are known, the mass-function
-degeneracy is broken and the secondary-companion masses ($m_2\,\sin i$) can be
-inferred.
+We select stars with probable companions by \todo{how?}.
 % Results
-We provide a catalog of \ncompanions\ companions for which the companion
-properties can be confidently determined, along with posterior samplings for all
-\ntotal\ stars in the parent sample.
-\todo{We find differences between the companions around \RC\ and \RGB\
-stars that are in/consistent with the theoretical prediction that
-stellar companions should not survive the common-envelope \RGB\ phase.}
-\todo{We additionally find trends in XX with chemical abundances.}
-
-We compare the companion populations of red clump (\RC) versus \RGB\ stars at
-similar surface gravity and temperature, and study the metallicity dependence
-of companion properties.
-
+We provide (1) a catalog of \ncompanions\ companions for which the companion
+properties can be confidently determined, (2) a catalog of stars that likely
+have companions, but for  which more observations are needed to uniquely
+determine the orbital properties, and (3) posterior samplings for all \ntotal\
+stars in the parent sample.
+We highlight interesting systems and show the characteristics of stars with
+confidently determined companion properties.
 \end{abstract}
 
 \keywords{
@@ -138,9 +126,10 @@ of companion properties.
 
 \todo{Intro is missing many citations}
 
-Stars typically have companions. Main sequence stars in the solar neighborhood
-more often appear in binary or multiple star systems rather than as solitary
-stars (e.g., \citealt{Duquennoy:1991,Raghavan:2010,Tokovinin:2014}).
+Stars typically have companions.
+Main sequence stars in the solar neighborhood more often appear in binary or
+multiple star systems rather than as solitary stars (e.g.,
+\citealt{Duquennoy:1991,Raghavan:2010,Tokovinin:2014}).
 This is likely a generic outcome of star formation: For example, turbulent
 fragmentation in collapsing protostellar clouds can produce stellar multiplets
 within length-scales comparable to their spheres of influence (e.g.,
@@ -151,42 +140,26 @@ about star formation processes, stellar parameters and evolution, and the
 dynamics of multi-body systems (for recent reviews, see
 \citealt{Duchene:2013,Moe:2017}).
 
-% Even without stellar or sub-stellar companions, the vast majority of stars have
-% planetary-mass companions (\citealt{todo}).
-% \todo{Planetary systems are interesting because...blah}
-% Differences between the population of stellar companions and that of
-% planetary-mass companions likely relate directly to the different formation
-% channels for these objects.
-
 Most of what is known about stellar companions comes from studies of
-main-sequence (MS) stars.
+nearby main-sequence (MS) stars.
 MS stars with companions have a large dynamic range of constituent and orbital
 characteristics.
-For example, binary stars have mass-ratios that span from $\approx 10^-3$
-\todo{citation because this is made up} to 1, and have periods from days to
-millions of years.
-\todo{Describe distributions over these quantities}
-\todo{multiplicity in general: abundance, numbers, etc.}
-\todo{some other stats from Moe and Di Stefano}
+For example, binary stars have mass-ratios that span from $\approx 0.03$
+to 1 (e.g., \citealt{Kraus:2008}), and have periods from days to
+millions of years (e.g., \citealt{Raghavan:2010}).
+\todo{multiplicity in general: occurrence rates}
 
-Some evolved stars have special roles in well-studied exotic multiple systems
-like dwarf novae or cataclysmic variables \todo{are those examples correct?},
-but by-in-large, less is known about the population of companions to evolved
-stars.
-
-- Expect differences in evolved star pop. from main sequence populations:
-  - mass loss
-  - envelope -> engulfment?
-- Current samples limited in dynamical range of chemical properties, location,
-  age (local to sun)
-- Brighter, but typically larger distances, direct imaging not feasible
-- Eclipsing companions good, but low mass companions stars -> hard to find
-  (giants are big)
-- Need large sample of stars with time-domain spectroscopy
-
-% For planetary companions of main sequence stars, \todo{}.
-% - Some indication of trends (e.g., with metallicity) -> star and
-%   planet formation processes
+Less is known about uninteracting or detached companions to evolved stars.
+Such systems are interesting because they enable studying extreme outcomes or
+conditions of star formation and multiplicity.
+For example, evolved stars are typically much brighter than their MS
+counterparts, which enables characterizing the stellar companion population
+throughout the Galactic disk over a wide range of chemical abundances.
+They also provide a means to study the outcomes of stellar engulfment or
+common-envelope evolution: Do short-period companions exist around evolved
+stars, and do their statistics constrain stellar evolution on the red giant
+branch (RGB)?
+\todo{motivate time-domain spectroscopy}
 
 Time-domain radial-velocity measurements of stars contain information about
 massive companions: even with two successive observations of a single star, a
@@ -202,8 +175,7 @@ Most prior searches for companions using survey RV data have therefore
 restricted their searches to only sources with many, high-precision epochs, so
 that the orbital solution can be unambiguously determined (e.g.,
 \citealt{Troup:2016}), or have used simple statistics computed from the data to
-study multiplicity (e.g., $\textrm{RV}_\textrm{max} - \textrm{RV}_\textrm{min}$;
-\citealt{Badenes:2017}).
+study multiplicity (e.g., $\textrm{RV}_\textrm{max}$; \citealt{Badenes:2017}).
 
 If there are only a few radial-velocity measurements made per star, and the
 companion spectrum is not observed, any measured radial-velocity values will be
@@ -226,7 +198,7 @@ but probabilistically righteous:
 It delivers independent posterior pdf samples for single-companion binary
 orbital parameters, given any number of radial-velocity measurements.
 Here we use \thejoker\ to generate posterior pdf samples for stars observed by
-the \apogee\ survey (see \sectionname~\ref{sec:data}; \citealt{Majewski:2015}).
+the \apogee\ survey (see \sectionname~\ref{sec:data}; \citealt{Majewski:2017}).
 
 The \apogee\ surveys primarily target red-giant-branch (\RGB) stars, which are
 ideal for the study of single-line binary systems.
@@ -257,24 +229,32 @@ for which we can compute companion mass and pericentric distance.
 \section{Data} \label{sec:data}
 
 All data used in this work comes from the publicly-available data release 14
-(\DR) of the \apogee\ survey (\citealt{apogeedr14}), a component of the Sloan
-Digital Sky Survey IV (\sdssiv; \citealt{sdss,Blanton:2017}).
+(\DR) of the \apogee\ survey (\citealt{Majewski:2017,Abolfathi:2017}), a
+component of the Sloan Digital Sky Survey IV (\sdssiv;
+\citealt{Gunn:2006,Blanton:2017}).
 \apogee\ is designed to map stars across much of the Milky Way by obtaining
-high-resolution ($R \sim 22500$) infrared ($H$-band) spectroscopy of primarily
+high-resolution ($R \sim 22,500$) infrared ($H$-band) spectroscopy of primarily
 \RGB\ stars.
 Targets are selected with simple color and brightness cuts, but the survey uses
 fiber-plugged plates with a maximum of 300 fibers per each $\approx
 1.5~\textrm{deg}^2$ field of view, leading to ``pencil-beam''-like sampling of
 the stellar distribution.
-Data taken as part of the \apogee\ survey is reduced with the \apogee\ Stellar
-Parameters and Chemical Abundances Pipeline (\acronym{ASPCAP};
-\citealt{Garcia-Perez:2016}), which measures stellar parameters, chemical
-abundances, and radial velocities for each target.
 In order to meet signal-to-noise ratio requirements, most \apogee\ stars are
 observed multiple times in a series of ``visits,'' typically with at least one
 visit separated by a month or more in order to help identify binary stars.
-\acronym{ASPCAP} iteratively solves for the relative velocities of each visit
-spectrum while determining the optimal co-addition of the visit spectra.
+
+Data taken as part of the \apogee\ survey is reduced with a multi-step data
+reduction pipeline that ultimately solves for the stellar parameters, chemical
+abundances, and radial velocities for each target
+(\citealt{Nidever:2015}).
+Most relevant for this work, the visit radial velocities (RVs) are determined
+using an iterative scheme: the individual visit spectra are combined using
+initial guesses for the relative RVs into a coadded spectrum, which is then used
+to re-derive the relative visit velocities.
+The stellar parameters---surface gravity, $\log g$, and effective temperature,
+$T_{\textrm{eff}}$---and the chemical abundances are determined from the coadded
+spectrum as a part of the \apogee\ Stellar Parameters and Chemical Abundances
+Pipeline (\acronym{ASPCAP}; \citealt{ASPCAP}).
 
 We use the primary data products from \apogee\ \DR\ (i.e. the \texttt{allStar}
 and \texttt{allVisit} files) which contain 258,475 unique source IDs
@@ -285,25 +265,41 @@ For each visit, we require that the visit velocity uncertainty is $< 100~\kms$
 (\texttt{VRELERR}) and the following bits are not set in the \texttt{STARFLAGS}
 bitmask: \texttt{PERSIST\_HIGH}, \texttt{PERSIST\_JUMP\_POS},
 \texttt{PERSIST\_JUMP\_NEG}, \texttt{VERY\_BRIGHT\_NEIGHBOR}, \texttt{LOW\_SNR}.
-For each star, we require that $0 < \log g < 3.5$ and the following bits are not
+For each star, we require that $0 < \log g < 4$ and the following bits are not
 set in the \texttt{ASPCAPFLAGS} bitmask: \texttt{STAR\_BAD}.
 After these cuts, and the requirement of $\geq 3$ visits for a given star, we
 are left with \nvisits\ visits for \nstars\ unique sources.
 \figurename~\ref{fig:nvisits} shows the number of stars in several bins of
 number of visits that pass the above quality cuts: \todo{XX}\% of the stars in
 \DR\ have $< 8$ visits.
+\figurename~\ref{fig:loggteff} ...
 
-% Notebook: "Numbers after cuts"
+% Notebook: "Numbers of visits and sample overview"
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=0.7\textwidth]{nvisits.pdf}
 \end{center}
 \caption{%
-\todo{Update with new apogee db file}
 Number of \apogee\ stars in logarithmic bins of number of visits that pass the
 quality cuts described in \sectionname~\ref{sec:data}.
 In total, this work uses \nvisits\ visits and \nstars\ unique sources.
 \label{fig:nvisits}
+}
+\end{figure}
+
+% Notebook: "Numbers of visits and sample overview"
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{logg_teff_feh.pdf}
+\end{center}
+\caption{%
+\textit{Left panel}: Number of stars in bins of iron abundance,
+$[\textrm{Fe}/\textrm{H}]$, that pass the quality cuts described in
+\sectionname~\ref{sec:data}.
+\textit{Right panel}: Distribution of stars in our sample in stellar parameters
+log-surface-gravity, $\log g$, and effective temperature, $T_{\textrm{eff}}$,
+with points colored by the iron abundance.
+\label{fig:loggteff}
 }
 \end{figure}
 
@@ -341,16 +337,16 @@ samplings---under the following assumptions:
   is significantly fainter and is thus undetected in the spectra.
   This assumption is motivated by the fact that we expect \RGB\ stars to be
   substantially more luminous than their typical companion.
-  However, there are known double-lined binary stars in the \apogee\ catalog
-  \citealt{El-Badry:2017}, and an expected but unknown fraction of \RGB--\RGB\
-  binaries.
+  However, there are known main-sequence double-lined binary stars in the
+  \apogee\ catalog \citealt{El-Badry:2018}, and an expected but unknown fraction
+  of \RGB--\RGB\ binaries.
 \item[simple noise model] Measurements are unbiased and noise estimates are
-  correct up to an unknown extra variance.
+  correct up to an unknown excess variance.
   All noise contributions result in Gaussian uncertainties on the individual
   radial-velocity measurements.
-  We often refer to the extra variance as a ``jitter'' parameter because for
-  upper \RGB\ stars the inferred extra variance will be a combination of extra
-  uncertainty and true astrophysical surface jitter (\todo{CITATION NEEDED}).
+  For upper \RGB\ stars the inferred excess variance will be a combination of
+  extra systematic uncertainty and true astrophysical surface jitter
+  (\todo{CITATION NEEDED}).
 \end{description}
 
 \thejoker\ is a custom-built Monte Carlo sampler designed to produce independent
@@ -382,18 +378,18 @@ proceeds iteratively: since it is easier to accept samples when the data is
 sparse or noisy, far more prior sample draws (and thus likelihood evaluations)
 must occur under very constraining data.
 
-\subsection{Model selection}
-
-In addition to generating posterior samples for each source, we also compute the
-fully marginalized likelihood (FML) under two other models: (1) a model in which
-the radial velocity of the source is constant, and (2) a model in which the
-radial-velocity variations are purely linear.
-We later use these FML values to define cuts on our full catalog of posterior
-samples to produce a catalog of companions.
-
-\todo{equations?}
-
-Examples of outputs and etc.
+% \subsection{Model selection}
+%
+% In addition to generating posterior samples for each source, we also compute the
+% fully marginalized likelihood (FML) under two other models: (1) a model in which
+% the radial velocity of the source is constant, and (2) a model in which the
+% radial-velocity variations are purely linear.
+% We later use these FML values to define cuts on our full catalog of posterior
+% samples to produce a catalog of companions.
+%
+% \todo{equations?}
+%
+% Examples of outputs and etc.
 
 \section{Results}
 
@@ -405,11 +401,13 @@ For all \nstars\ \apogee\ stars with $\geq 3$ good visits (see
 for each star under the assumptions listed above (see
 \sectionname~\ref{sec:fitting}).
 We start by generating a library of \nprior\ prior samples generated under a
-prior similar to that defined in \citet{Price-Whelan:2017}: uniform or isotropic
-in angle parameters, uniform in log-period over the domain $[1,
-32768]~\textrm{day}$, and a beta distribution over eccentricity with fixed
-parameters (\citealt{Kipping:2013}).
-For the prior over the extra variance or jitter parameter, $s$, we initially use
+prior similar to that defined in \citet{Price-Whelan:2017}:
+\begin{itemize}
+    \item uniform or isotropic in angle parameters,
+    \item uniform in log-period over the domain $[1,32768]~\textrm{day}$,
+    \item a beta distribution over eccentricity with fixed parameters (\citealt{Kipping:2013}).
+\end{itemize}
+For the prior over the excess variance parameter, $s$, we initially use
 a Gaussian over the transformed parameter $y = \ln s^2$ with the mean and
 standard deviation of the initial distribution set to $(\mu_{y,0}, \sigma_{y,0})
 = (10.6, 3)$ in units of $\textrm{m}~\textrm{s}^{-1}$.
@@ -443,19 +441,19 @@ approximately 300 hours on a compute cluster with 448 cores, with the time
 dominated by sources with many ($\gtrsim 10$) visits.
 
 
-\subsection{Inferring the extra variance distribution}
+\subsection{Inferring the excess variance distribution}
 \label{sec:inferjitter}
 
 As an initial use of the per-source posterior samplings, we use a hierarchical
 Bayesian model to infer the parameters of the (assumed Gaussian) distribution
-over the log-jitter parameter: $(\mu_y, \sigma_y)$.
+over the log-excess-variance parameter: $(\mu_y, \sigma_y)$.
 This inference serves as a test-case for future work, where we intend to use the
 independent posterior samplings to construct a hierarchical inference over
 companion property distributions.
 This is also a test of the visit velocity uncertainties reported in the \apogee\
 data products: If the catalog uncertainties are significantly underestimated, we
-expect the inferred log-jitter distribution parameters to tend towards larger
-values.
+expect the inferred log-excess-variance distribution parameters to tend towards
+larger values.
 
 In detail, we maximize the marginal likelihood of the population-level
 parameters $\bs{\alpha} = (\mu_y, \sigma_y)$.
@@ -471,15 +469,15 @@ marginal likelihood in detail below.
 
 For each $n$ of $N$ RGB stars in APOGEE, we obtain $K$ posterior samples over
 primary orbital parameters $\bs{\theta} = (P, e, \omega, M_0, K, v_0)$ and the
-jitter parameter, $y = \ln s^2$, using \thejoker; For brevity in expressions
-below, we will use the vector
+excess-variance parameter, $y = \ln s^2$, using \thejoker; For brevity in
+expressions below, we will use the vector
 \begin{equation}
     \bs{w} = (\bs{\theta}, y)
 \end{equation}
 to represent the full set of parameters.
-To obtain this sampling, we use an interim (Gaussian) prior on the jitter
-parameter parametrized by a mean and standard deviation, i.e. $\alpha_0 =
-(\mu_{y,0}, \sigma_{y,0})$ as described above.
+To obtain this sampling, we use an interim (Gaussian) prior on the
+excess-variance parameter parametrized by a mean and standard deviation, i.e.
+$\alpha_0 = (\mu_{y,0}, \sigma_{y,0})$ as described above.
 For a given source, the posterior samples in the above parameters are drawn from
 the distribution
 \begin{equation}
@@ -506,7 +504,7 @@ The per-source marginal likelihood in the above expression is given by
 \end{align}
 Using the Monte Carlo integration approximation, \eqname~\ref{eq:marglike} can
 be simplified to a sum over prior value ratios of the $K$ posterior samples in
-the log-jitter parameter for each $n$ star
+the log-excess-variance parameter for each $n$ star
 \begin{equation}
     \approx \frac{\mathcal{Z}_n}{K} \,
       \sum_k^{K} \frac{p(y_{nk} \given \bs{\alpha})}{p(y_{nk} \given \bs{\alpha}_0)}
@@ -535,7 +533,7 @@ estimate of the sum in \eqname~\ref{eq:lnlike}.
 
 We use 1,825 stars with $>10$ visits and $\log g < 2$ (to avoid upper RGB stars
 that have large intrinsic jitter) and maximize the above likelihood to determine
-better hyperparameters for the log-jitter parameter distribution.
+better hyperparameters for the log-excess-variance parameter distribution.
 \figurename~\ref{fig:infer-jitter} shows the distribution corresponding to the
 maximum-likelihood hyperparameters, $\alpha^* = (\mu_y^*, \sigma_y^*) = (9.50,
 1.64)$.
