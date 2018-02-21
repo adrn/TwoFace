@@ -547,7 +547,9 @@ class NessRG(Base):
         return np.exp(self.lnAge) * u.Gyr
 
     def get_mass_samples(self, size=1):
-        return np.random.normal(self.lnM, self.e_logM, size=size) * u.Msun
+        return np.exp(np.random.normal(self.lnM, self.e_logM,
+                                       size=size)) * u.Msun
 
     def get_age_samples(self, size=1):
-        return np.random.normal(self.lnAge, self.e_logAge, size=size) * u.Gyr
+        return np.exp(np.random.normal(self.lnAge, self.e_logAge,
+                                       size=size)) * u.Gyr
