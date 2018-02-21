@@ -18,7 +18,6 @@ then initialize the database by loading these data files:
     % python initdb.py \
     > --allstar="$APOGEE_PATH/allStar-l31c.2.fits" \
     > --allvisit="$APOGEE_PATH/allVisit-l31c.2.fits" \
-    > --redclump="$APOGEE_PATH/apogee-rc-DR13.fits" \
     > --nessrg="$APOGEE_PATH/NessRG.fits" \
     > -vv
 

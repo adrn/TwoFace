@@ -12,7 +12,7 @@ from ..config import TWOFACE_CACHE_PATH
 from ..util import Timer
 from ..log import log as logger
 from .connect import db_connect, Base
-from .model import (AllStar, AllVisit, AllVisitToAllStar, Status, RedClump,
+from .model import (AllStar, AllVisit, AllVisitToAllStar, Status, NessRG,
                     StarResult)
 from .query_helpers import paged_query
 
@@ -64,11 +64,12 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     allstar_tbl = fits.getdata(norm(allStar_file))
 
     # Remove bad velocities and flagged bad visits:
-    skip_mask = np.sum(2 ** np.array([9, 12, 13, # PERSIST_HIGH, PERSIST_JUMP_POS, PERSIST_JUMP_NEG
+    # PERSIST_HIGH, PERSIST_JUMP_POS, PERSIST_JUMP_NEG
+    skip_mask = np.sum(2 ** np.array([9, 12, 13,
                                       3, 4])) # VERY_BRIGHT_NEIGHBOR, LOW_SNR
     allvisit_tbl = allvisit_tbl[np.isfinite(allvisit_tbl['VHELIO']) &
                                 np.isfinite(allvisit_tbl['VRELERR']) &
-                                (allvisit_tbl['VRELERR'] < 100.) & # MAGIC NUMBER
+                                (allvisit_tbl['VRELERR'] < 100.) & # MAGIC
                                 ((allvisit_tbl['STARFLAG'] & skip_mask) == 0)]
 
     v_apogee_ids, counts = np.unique(allvisit_tbl['APOGEE_ID'],
@@ -234,7 +235,7 @@ def initialize_db(allVisit_file, allStar_file, database_file,
 
     q = session.query(AllStar).order_by(AllStar.id)
 
-    for i,sub_q in enumerate(paged_query(q, page_size=batch_size)):
+    for i, sub_q in enumerate(paged_query(q, page_size=batch_size)):
         for star in sub_q:
             if len(star.visits) > 0:
                 continue
@@ -416,7 +417,7 @@ def load_nessrg(filename, database_file, overwrite=False, batch_size=4096):
             # Retrieve the parent AllStar record
             try:
                 star = session.query(AllStar).filter(
-                    AllStar.apogee_id == row['2MASS']).one()
+                    AllStar.apogee_id == row['2MASS']).limit(1).one()
             except sqlalchemy.orm.exc.NoResultFound:
                 logger.log(1, 'Star not found in AllStar - skipping')
                 continue

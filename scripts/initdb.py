@@ -3,18 +3,17 @@ import sys
 
 # Project
 from twoface.log import log as logger
-from twoface.db.init import initialize_db, load_red_clump, load_nessrg
+from twoface.db.init import initialize_db, load_nessrg
+
 
 def main(allVisit_file, allStar_file, rc_file, nessrg_file, **_):
     database_name = 'apogee.sqlite' # TODO: should this be enforced?
 
     initialize_db(allVisit_file, allStar_file, database_name)
 
-    if rc_file is not None:
-        load_red_clump(rc_file, database_name, overwrite=False) # HACK
-
     if nessrg_file is not None:
         load_nessrg(nessrg_file, database_name, overwrite=False) # HACK
+
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
