@@ -28,6 +28,7 @@ from twoface.log import log as logger
 from twoface.db import db_connect, get_run
 from twoface.db import JokerRun, AllStar, StarResult, Status
 from twoface.config import TWOFACE_CACHE_PATH
+from twoface.plot import plot_mcmc_diagnostic
 
 
 def emcee_worker(task):
@@ -35,26 +36,35 @@ def emcee_worker(task):
     n_walkers = 1024
 
     chain_path = path.join(cache_path, '{0}.npy'.format(apogee_id))
+    plot_path = path.join(cache_path, '{0}.png'.format(apogee_id))
 
-    if path.exists(chain_path):
-        logger.debug('{0} already done'.format(apogee_id))
-        return
+    sampler = None
+    if not path.exists(chain_path):
+        logger.debug('Running MCMC for {0}'.format(apogee_id))
 
-    with h5py.File(results_filename, 'r') as f:
-        samples0 = JokerSamples.from_hdf5(f[apogee_id])
+        with h5py.File(results_filename, 'r') as f:
+            samples0 = JokerSamples.from_hdf5(f[apogee_id])
 
-    model, samples, sampler = joker.mcmc_sample(data, samples0,
-                                                n_burn=0,
-                                                n_steps=16384,
-                                                n_walkers=n_walkers,
-                                                return_sampler=True)
+        model, samples, sampler = joker.mcmc_sample(data, samples0,
+                                                    n_burn=0,
+                                                    n_steps=16384,
+                                                    n_walkers=n_walkers,
+                                                    return_sampler=True)
 
-    np.save(chain_path, sampler.chain)
+        np.save(chain_path, sampler.chain)
 
-    model_path = path.join(cache_path, 'model.pickle')
-    if not path.exists(model_path):
-        with open(model_path, 'wb') as f:
-            pickle.dump(model, f)
+        model_path = path.join(cache_path, 'model.pickle')
+        if not path.exists(model_path):
+            with open(model_path, 'wb') as f:
+                pickle.dump(model, f)
+
+    if not path.exists(plot_path):
+        if sampler is None:
+            chain = np.load(chain_path)
+            
+        fig = plot_mcmc_diagnostic(chain)
+        fig.savefig(plot_path, dpi=250)
+        del fig
 
 
 def main(config_file, pool, seed, overwrite=False):
