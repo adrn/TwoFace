@@ -159,19 +159,21 @@ def main(config_file, pool, seed, overwrite=False):
     pool.close()
 
     # Now go through all of the output files and collect them!
-    with open(path.join(cache_path, 'model.pickle')) as f:
+    with open(path.join(cache_path, 'model.pickle'), 'rb') as f:
         model = pickle.load(f)
 
     with h5py.File(mcmc_filename) as f:
         for star in base_query.all():
             if star.apogee_id in f:
+                logger.debug('Star {0} already in MCMC cache file'.format(star.apogee_id))
                 continue
 
             tmp_file = path.join(cache_path, '{0}.npy'.format(star.apogee_id))
             chain = np.load(tmp_file)
 
             g = f.create_group(star.apogee_id)
-
+            
+            logger.debug('Adding star {0} to MCMC cache'.format(star.apogee_id))
             try:
                 g2 = g.create_group('chain-stats')
 
