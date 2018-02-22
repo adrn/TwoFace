@@ -620,15 +620,64 @@ Some highlights from this catalog.
 Return to our various assumptions and make sure that we discuss them
 \emph{by name} here.
 
-\subsection{Comparison to previous work} \label{sec:compare-troup}
+\subsection{Comparison to other APOGEE companion catalogs}
+\label{sec:compare-troup}
 
-Stuff.
+There are at least two other recent catalogs of stellar systems and companions
+based on \apogee\ data.
+
+One of these studies focused on decomposing spectra of MS stars into mixtures of
+stellar spectra (\citealt{El-Badry:2018}).
+Conceptually, this method works because (a) for two unequal-mass stars,
+unexpected absorption lines will appear superimposed on the brighter star's
+spectrum, and (b) for close to equal-mass stars, the line depths and ratios will
+not be well-matched by a single stellar model.
+Using this technique, they identified thousands of candidate MS binaries and
+trinaries, but did not consider giant stars ($\log g > 4$).
+This sample is therefore complimentary to and non-overlapping with the catalog
+presented in this work.
+
+The other recent catalog searched for stellar and substellar companions to all
+stars in \apogee\ \acronym{DR12} (including the RGB) that passed a series of
+quality cuts, and had $\geq 8$ visits (\citealt{Troup:2016}).
+For each star in the sample, orbits were fit to the visit RVs using a multi-step
+orbit-fitting procedure: it starts by identifying significant periods and a few
+harmonics of those periods, then fits a Keplerian orbit at each of these
+harmonics using least-squares fitting (\citealt{De-Lee:2013}) with a modified
+$\chi^2$ statistic that penalizes fits in which the phase coverage of the data
+is poor.
+This procedure is not guaranteed to provide a unique orbit solution.
+
+Of the 382 companions released as a part of this previous search, only 188 of
+the host stars passed the stellar parameter and quality cuts used to define the
+parent sample in this work (see \sectionname~\ref{sec:data}).
+We have looked at all of the overlapping stars to compare the previously derived
+companion orbital properties to the posterior samplings derived with \thejoker.
+We find that the comparisons fall in three categories:
+(1) the parameters reported in \citet{Troup:2016} agree with the posterior
+samplings, and the period distribution appears unimodal,
+(2) the parameters reported in \citet{Troup:2016} identify one possible mode of
+a likely multi-modal posterior pdf over orbital parameters, and
+(3) the data changed significantly between \apogee\ \acronym{DR12} and \DR, so
+no meaningful comparisons can be made; Roughly 1/3 of the comparison sample
+falls into each class.
+\figurename~\ref{fig:troup-unimodal} shows a few representative cases in which
+the \citet{Troup:2016} orbital parameters (orbit shown as orange line in left
+panels, parameters shown as orange + in right panels) is consistent with the
+orbit samples from \thejoker.
+\figurename~\ref{fig:troup-multimodal} shows a few representative cases in which
+we find that the posterior pdf over orbital parameters is multimodal, and the
+\citet{Troup:2016} orbit identifies one of these modes.
+For completeness, \figurename~\ref{fig:troup-datachanged} shows two instances in
+which the orbital parameters from \citet{Troup:2016} no longer make sense,
+likely because the data changed between data releases.
 
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{unimodal.pdf}
 \end{center}
 \caption{%
+TODO:
 \label{fig:troup-unimodal}
 }
 \end{figure}
@@ -638,6 +687,7 @@ Stuff.
 \includegraphics[width=\textwidth]{multimodal.pdf}
 \end{center}
 \caption{%
+TODO:
 \label{fig:troup-multimodal}
 }
 \end{figure}
@@ -647,6 +697,7 @@ Stuff.
 \includegraphics[width=\textwidth]{data-changed.pdf}
 \end{center}
 \caption{%
+TODO:
 \label{fig:troup-datachanged}
 }
 \end{figure}
