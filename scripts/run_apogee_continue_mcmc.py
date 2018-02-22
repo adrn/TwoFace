@@ -62,6 +62,8 @@ def emcee_worker(task):
                 pickle.dump(model, f)
 
     if not path.exists(plot_path):
+        logger.debug('Making plots for {0}'.format(apogee_id))
+
         if sampler is None:
             chain = np.load(chain_path)
         else:
