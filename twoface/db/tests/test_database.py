@@ -10,7 +10,8 @@ import yaml
 from ...config import TWOFACE_CACHE_PATH
 from ..connect import db_connect
 from ..model import AllStar, AllVisit, StarResult, Status, JokerRun
-from ..init import initialize_db, load_red_clump
+from ..init import initialize_db
+
 
 class TestDB(object):
 
@@ -28,8 +29,6 @@ class TestDB(object):
                       allStar_file=get_pkg_data_filename('test-allStar.fits'),
                       database_file=self.db_path,
                       drop_all=True)
-
-        load_red_clump(get_pkg_data_filename('test-rc.fits'), self.db_path)
 
         self.session = Session()
 

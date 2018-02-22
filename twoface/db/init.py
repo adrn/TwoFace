@@ -12,11 +12,11 @@ from ..config import TWOFACE_CACHE_PATH
 from ..util import Timer
 from ..log import log as logger
 from .connect import db_connect, Base
-from .model import (AllStar, AllVisit, AllVisitToAllStar, Status, NessRG,
-                    StarResult)
+from .model import AllStar, AllVisit, Status, NessRG
 from .query_helpers import paged_query
 
-__all__ = ['initialize_db', 'load_red_clump', 'load_nessrg']
+__all__ = ['initialize_db', 'load_nessrg']
+
 
 def tblrow_to_dbrow(tblrow, colnames, varchar_cols=[]):
     row_data = dict()
@@ -258,108 +258,6 @@ def initialize_db(allVisit_file, allStar_file, database_file,
     session.commit()
     session.close()
 
-def load_red_clump(filename, database_file, overwrite=False, batch_size=4096):
-    """Load the red clump catalog stars into the database.
-
-    Information about this catalog can be found here:
-    http://www.sdss.org/dr13/data_access/vac/
-
-    Parameters
-    ----------
-    filename : str
-        Full path to APOGEE red clump FITS file.
-    database_file : str
-        Filename (not path) of database file in cache path.
-    overwrite : bool (optional)
-        Overwrite any data already loaded into the database.
-    batch_size : int (optional)
-        How many rows to create before committing.
-    """
-
-    database_path = join(TWOFACE_CACHE_PATH, database_file)
-
-    norm = lambda x: abspath(expanduser(x))
-    rc_tbl = Table.read(norm(filename), format='fits', hdu=1)
-
-    Session, engine = db_connect(database_path)
-    logger.debug("Connected to database at '{}'".format(database_path))
-    session = Session()
-
-    # What columns do we load?
-    rc_skip = ['ID', 'ALLSTAR_ID']
-    rc_colnames = []
-    rc_varchar = []
-    for x in RedClump.__table__.columns:
-        col = str(x).split('.')[1].upper()
-        if col in rc_skip:
-            continue
-
-        if str(x.type) == 'VARCHAR':
-            rc_varchar.append(col)
-
-        rc_colnames.append(col)
-
-    # What APOGEE IDs are already loaded as RC stars?
-    rc_ap_ids = session.query(AllStar.apstar_id).join(RedClump).all()
-    rc_ap_ids = [x[0] for x in rc_ap_ids]
-
-    rcstars = []
-    with Timer() as t:
-        for i,row in enumerate(rc_tbl):
-            # Only data for columns that exist in the table
-            row_data = tblrow_to_dbrow(row, rc_colnames, rc_varchar)
-
-            # Retrieve the parent AllStar record
-            try:
-                star = session.query(AllStar).filter(
-                    AllStar.apstar_id == row['APSTAR_ID']).one()
-            except sqlalchemy.orm.exc.NoResultFound:
-                logger.debug('Red clump star not found in AllStar - skipping')
-                continue
-
-            if row['APSTAR_ID'] in rc_ap_ids:
-                q = session.query(RedClump).join(AllStar).filter(
-                    AllStar.apstar_id == row['APSTAR_ID'])
-
-                if overwrite:
-                    q.delete()
-                    session.commit()
-
-                    rc = RedClump(**row_data)
-                    rc.star = star
-                    rcstars.append(rc)
-
-                    logger.log(1, 'Overwriting rc {0} in database'
-                                  .format(rc))
-
-                else:
-                    rc = q.one()
-                    logger.log(1, 'Loaded rc {0} from database'.format(rc))
-
-            else:
-                rc = RedClump(**row_data)
-                rc.star = star
-                rcstars.append(rc)
-                logger.log(1, 'Adding rc {0} to database'.format(rc))
-
-            if i % batch_size == 0 and i > 0:
-                session.add_all(rcstars)
-                session.commit()
-                logger.debug("Loaded rc batch {} ({:.2f} seconds)"
-                             .format(i, t.elapsed()))
-                t.reset()
-                rcstars = []
-
-    if len(rcstars) > 0:
-        session.add_all(rcstars)
-        session.commit()
-
-    logger.debug("tables loaded in {:.2f} seconds".format(t.elapsed()))
-
-    session.close()
-
-# ----------------------------------------------------------------------------
-# Ness RG masses
 
 def ness_tblrow_to_dbrow(tblrow, colnames):
     row_data = dict()
