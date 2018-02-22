@@ -16,6 +16,7 @@ import os
 import pickle
 
 # Third-party
+from astropy.time import Time
 import h5py
 import numpy as np
 from schwimmbad import choose_pool
@@ -72,6 +73,7 @@ def emcee_worker(task):
         with open(model_path, 'rb') as f:
             model = pickle.load(f)
         samples = model.unpack_samples_mcmc(chain[:, -1])
+        samples.t0 = Time(data._t0_bmjd, format='mjd', scale='tcb')
         fig = plot_data_orbits(data, samples)
         fig.savefig(orbits_plot_path, dpi=250)
         del fig
