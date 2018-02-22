@@ -16,6 +16,7 @@ import os
 import pickle
 
 # Third-party
+from astropy.stats import median_absolute_deviation
 from astropy.time import Time
 import h5py
 import numpy as np
@@ -110,16 +111,32 @@ def main(config_file, pool, seed, overwrite=False):
                       "you sure you ran `run_apogee.py`?"
                       .format(results_filename))
 
+    # The file to write the MCMC samples to:
+    mcmc_filename = path.join(TWOFACE_CACHE_PATH,
+                              "{0}-mcmc.hdf5".format(run.name))
+
+    if not path.exists(mcmc_filename): # ensure it exists
+        with h5py.File(mcmc_filename, 'w') as f:
+            pass
+
     # Create TheJoker sampler instance with the specified random seed and pool
     rnd = np.random.RandomState(seed=seed)
     logger.debug("Creating TheJoker instance with {0}, {1}".format(rnd, pool))
     params = run.get_joker_params()
+
+    # HACK: test
+    params.jitter = (8.5, 0.9)
     joker = TheJoker(params, random_state=rnd)
 
-    # Get all stars in this JokerRun that "need mcmc"
-    star_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
+    # Get all stars in this JokerRun that "need mcmc" that are not in the MCMC
+    # cache file already
+    with h5py.File(mcmc_filename, 'r') as f:
+        done_ids = list(f.keys())
+
+    base_query = session.query(AllStar).join(StarResult, JokerRun, Status)\
                                        .filter(JokerRun.name == run.name)\
                                        .filter(Status.id == 2)
+    star_query = base_query.filter(~AllStar.apogee_id.in_(done_ids))
 
     n_stars = star_query.count()
     logger.info("{0} stars left to process for run more samples '{1}'"
@@ -138,6 +155,48 @@ def main(config_file, pool, seed, overwrite=False):
         pass
 
     pool.close()
+
+    # Now go through all of the output files and collect them!
+    with open(path.join(cache_path, 'model.pickle')) as f:
+        model = pickle.load(f)
+
+    with h5py.File(mcmc_filename) as f:
+        for star in base_query.all():
+            if star.apogee_id in f:
+                continue
+
+            tmp_file = path.join(cache_path, '{0}.npy'.format(star.apogee_id))
+            chain = np.load(tmp_file)
+
+            g = f.create_group(star.apogee_id)
+
+            try:
+                g2 = g.create_group('chain-stats')
+
+                # compute running median, running MAD
+                all_med = []
+                all_mad = []
+                for k in range(chain.shape[-1]):
+                    all_med.append(np.median(chain[..., k], axis=0))
+                    all_mad.append(median_absolute_deviation(chain[..., k],
+                                                             axis=0))
+
+                all_med = np.vstack(all_med).T
+                all_mad = np.vstack(all_mad).T
+
+                g2.create_dataset(name='median', data=all_med)
+                g2.create_dataset(name='MAD', data=all_mad)
+
+                # take the last sample, downsample
+                end_pos = chain[:run.requested_samples_per_star, -1]
+                samples = model.unpack_samples_mcmc(end_pos)
+                samples.to_hdf5(g)
+
+            except Exception as e:
+                raise
+
+            finally:
+                del g
 
 
 if __name__ == "__main__":
