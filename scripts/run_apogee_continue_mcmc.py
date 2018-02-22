@@ -62,6 +62,8 @@ def emcee_worker(task):
     if not path.exists(plot_path):
         if sampler is None:
             chain = np.load(chain_path)
+        else:
+            chain = sampler.chain
 
         fig = plot_mcmc_diagnostic(chain)
         fig.savefig(plot_path, dpi=250)
