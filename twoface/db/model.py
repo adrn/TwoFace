@@ -360,7 +360,8 @@ class AllStar(Base):
                 (((cls.fparam4+8.39) - (cls.fparam5+7.78)) > -0.6) &
                 (((cls.fparam4+8.39) - (cls.fparam5+7.78)) < 0.2))
 
-    def get_apogee_id(self, session, apogee_id):
+    @classmethod
+    def get_apogee_id(cls, session, apogee_id):
         return session.query(AllStar).filter(
             AllStar.apogee_id == apogee_id).limit(1).one()
 
