@@ -1,19 +1,22 @@
 # Third-party
-from astropy.time import Time
 import astropy.units as u
 from astropy.stats import median_absolute_deviation
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 import numpy as np
 
+from thejoker import JokerSamples
 from thejoker.plot import plot_rv_curves
 from thejoker.sampler.likelihood import get_ivar
 
-__all__ = ['plot_data_orbits']
+from .samples_analysis import unimodal_P
+
+__all__ = ['plot_data_orbits', 'plot_mcmc_diagnostic', 'plot_two_panel']
 
 
 def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
-                     xlim_choice='wide', n_times=4096, title=None,
-                     ax=None, highlight_P_extrema=True):
+                     xlim_choice='wide', ylim_fac=1., n_times=4096, title=None,
+                     ax=None, highlight_P_extrema=True, plot_kwargs=None):
     """
     Plot the APOGEE RV data vs. time and orbits computed from The Joker samples.
 
@@ -48,8 +51,6 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
     else:
         fig = ax.figure
 
-    now = Time.now()
-
     if xlim_choice == 'tight': # twice the span of the data
         w = np.ptp(data.t.mjd)
         t_grid = np.linspace(data.t.mjd.min() - w*0.05,
@@ -67,9 +68,15 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
         raise ValueError('Invalid xlim_choice {0}. Can be "wide" or "tight".'
                          .format(xlim_choice))
 
+    if plot_kwargs is None:
+        plot_kwargs = dict()
+
+    plot_kwargs.setdefault('color', '#aaaaaa')
+    # plot_kwargs.setdefault('alpha', 0.25)
+    plot_kwargs.setdefault('linewidth', 0.5)
     plot_rv_curves(samples, t_grid, rv_unit=u.km/u.s, data=data, ax=ax,
                    n_plot=min(len(samples['P']), n_orbits),
-                   plot_kwargs=dict(color='#aaaaaa', alpha=0.25, linewidth=0.5),
+                   plot_kwargs=plot_kwargs,
                    data_plot_kwargs=dict(zorder=5, elinewidth=1,))
 
     if highlight_P_extrema:
@@ -89,7 +96,7 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
 
     _rv = data.rv.to(u.km/u.s).value
     h = np.ptp(_rv)
-    ax.set_ylim(_rv.min()-2*h, _rv.max()+2*h)
+    ax.set_ylim(_rv.min()-ylim_fac*h, _rv.max()+ylim_fac*h)
 
     if title is not None:
         ax.set_title(title)
@@ -125,6 +132,138 @@ def plot_mcmc_diagnostic(chain):
     axes[0, 0].set_title('walkers')
     axes[0, 1].set_title('med(walkers)')
     axes[0, 2].set_title('1.5 MAD(walkers)')
+
+    fig.tight_layout()
+    return fig
+
+
+def plot_two_panel(star, samples, axes=None, tight=True, title=None,
+                   plot_data_orbits_kw=None, scatter_kw=None):
+    """Make a two-panel plot with (1) the data and orbit samples, and (2) the
+    orbit samples in period-eccentricity space.
+
+    Parameters
+    ----------
+    star : `~twoface.db.AllStar`
+    samples : `~thejoker.JokerSamples`
+    plot_data_orbits_kw : dict (optional)
+    scatter_kw : dict (optional)
+
+    Returns
+    -------
+    fig : `matplotlib.Figure`
+
+    """
+    if plot_data_orbits_kw is None:
+        plot_data_orbits_kw = dict()
+
+    if scatter_kw is None:
+        scatter_kw = dict()
+
+    data = star.apogeervdata(clean=False)
+
+    if axes is None:
+        fig = plt.figure(figsize=(12, 4.3))
+        gs = GridSpec(1, 3)
+        ax1 = fig.add_subplot(gs[:2])
+        ax2 = fig.add_subplot(gs[2])
+        axes = [ax1, ax2]
+
+    else:
+        ax1, ax2 = axes
+        fig = ax1.figure
+
+    # orbits
+    plot_data_orbits_kw['xlim_choice'] = plot_data_orbits_kw.get(
+        'xlim_choice', 'tight')
+    fig = plot_data_orbits(data, samples, ax=ax1,
+                           **plot_data_orbits_kw)
+    if title is not None:
+        ax1.set_title(title, fontsize=20)
+
+    # orbit samples
+    scatter_kw.setdefault('marker', '.')
+    scatter_kw.setdefault('alpha', 0.5)
+    scatter_kw.setdefault('linewidth', 0.)
+    ax2.scatter(samples['P'], samples['e'], **scatter_kw)
+
+    ax2.set_xscale('log', basex=2)
+    ax2.set_xlim(0.5, 2**15)
+    ax2.set_ylim(-0.02, 1.02)
+    ax2.set_xlabel('period, $P$ [day]')
+    ax2.set_ylabel('eccentricity, $e$')
+    ax2.xaxis.set_ticks(2**np.arange(0, 15+1, 3))
+
+    if tight:
+        fig.tight_layout()
+
+    return fig
+
+
+def plot_phase_fold(star, samples):
+    """Plot the data phase-folded at the median period of the input samples,
+    and the residuals as a function of phase.
+
+    Parameters
+    ----------
+    star : `~twoface.db.AllStar`
+    samples : `~thejoker.JokerSamples`
+
+    Returns
+    -------
+    fig : `matplotlib.Figure`
+    """
+    data = star.apogeervdata(clean=False)
+
+    if not unimodal_P(samples, data):
+        raise ValueError('multi-modal period distribution')
+
+    # HACK: hard-set getting the median
+    orbit = samples.median().get_orbit(0)
+    M0 = samples['M0'][0]
+    P = samples['P'][0]
+    s = samples['jitter'][0]
+    t0 = data.t0 + (P/(2*np.pi)*M0).to(u.day, u.dimensionless_angles())
+    phase = data.phase(P=P, t0=t0)
+
+    # compute chi^2 of the orbit fit
+    residual = data.rv - orbit.radial_velocity(data.t)
+    err = np.sqrt(data.stddev**2 + s**2)
+    chisq = np.sum((residual**2 / err**2).decompose())
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5), sharex=True)
+
+    # plot the phase-folded data and orbit
+    rv_unit = u.km/u.s
+    axes[0].errorbar(phase, data.rv.to(rv_unit).value,
+                     data.stddev.to(rv_unit).value,
+                     linestyle='none', marker='o', color='k', markersize=5)
+    axes[0].errorbar(phase, data.rv.to(rv_unit).value, s.to(rv_unit).value,
+                     linestyle='none', marker='', color='k',
+                     alpha=0.4, zorder=-10)
+
+    phase_grid = np.linspace(0, 1, 1024)
+    axes[0].plot(phase_grid, orbit.radial_velocity(t0 + phase_grid*P),
+                 marker='', zorder=-1, color='#aaaaaa')
+    axes[0].set_xlabel('phase')
+    axes[0].set_ylabel('radial velocity [{0:latex_inline}]'.format(rv_unit))
+    # ax.set_title(r'$\chi^2 = {0:.2f}$'.format(chisq))
+
+    # plot the residuals
+    rv_unit = u.m/u.s
+    axes[1].errorbar(phase, residual.to(rv_unit).value,
+                     data.stddev.to(rv_unit).value,
+                     linestyle='none', marker='o', color='k', markersize=5)
+    axes[1].errorbar(phase, residual.to(rv_unit).value, s.to(rv_unit).value,
+                     linestyle='none', marker='', color='k',
+                     alpha=0.4, zorder=-10)
+
+    axes[1].set_xlabel('phase')
+    axes[1].set_ylabel('residual [{0:latex_inline}]'.format(rv_unit))
+    lim = np.abs(axes[1].get_ylim()).max()
+    axes[1].set_ylim(-lim, lim)
+    axes[1].axhline(0, zorder=-100, color='tab:green', alpha=0.25)
+    # axes[1].set_title(r'$s = ${:.0f}'.format(s.to(u.m/u.s)))
 
     fig.tight_layout()
     return fig
