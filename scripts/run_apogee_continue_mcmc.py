@@ -38,6 +38,7 @@ def emcee_worker(task):
     chain_path = path.join(cache_path, '{0}.npy'.format(apogee_id))
     plot_path = path.join(cache_path, '{0}.png'.format(apogee_id))
     orbits_plot_path = path.join(cache_path, '{0}-orbits.png'.format(apogee_id))
+    model_path = path.join(cache_path, 'model.pickle')
 
     sampler = None
     if not path.exists(chain_path):
@@ -54,7 +55,6 @@ def emcee_worker(task):
 
         np.save(chain_path, sampler.chain)
 
-        model_path = path.join(cache_path, 'model.pickle')
         if not path.exists(model_path):
             with open(model_path, 'wb') as f:
                 pickle.dump(model, f)
