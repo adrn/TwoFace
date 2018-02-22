@@ -28,7 +28,7 @@ from twoface.log import log as logger
 from twoface.db import db_connect, get_run
 from twoface.db import JokerRun, AllStar, StarResult, Status
 from twoface.config import TWOFACE_CACHE_PATH
-from twoface.plot import plot_mcmc_diagnostic
+from twoface.plot import plot_mcmc_diagnostic, plot_data_orbits
 
 
 def emcee_worker(task):
@@ -37,6 +37,7 @@ def emcee_worker(task):
 
     chain_path = path.join(cache_path, '{0}.npy'.format(apogee_id))
     plot_path = path.join(cache_path, '{0}.png'.format(apogee_id))
+    orbits_plot_path = path.join(cache_path, '{0}-orbits.png'.format(apogee_id))
 
     sampler = None
     if not path.exists(chain_path):
@@ -61,9 +62,16 @@ def emcee_worker(task):
     if not path.exists(plot_path):
         if sampler is None:
             chain = np.load(chain_path)
-            
+
         fig = plot_mcmc_diagnostic(chain)
         fig.savefig(plot_path, dpi=250)
+        del fig
+
+        with open(model_path, 'rb') as f:
+            model = pickle.load(f)
+        samples = model.unpack_samples_mcmc(chain[:, -1])
+        fig = plot_data_orbits(data, samples)
+        fig.savefig(orbits_plot_path, dpi=250)
         del fig
 
 
