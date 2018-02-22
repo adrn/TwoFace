@@ -18,7 +18,7 @@ def unimodal_P(samples, data):
     """
 
     P_samples = samples['P'].to(u.day).value
-    P_min = P_samples.min()
+    P_min = np.min(P_samples)
     T = np.ptp(data.t.mjd)
     delta = 4*P_min**2 / (2*np.pi*T)
 

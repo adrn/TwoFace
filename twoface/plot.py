@@ -137,7 +137,7 @@ def plot_mcmc_diagnostic(chain):
     return fig
 
 
-def plot_two_panel(star, samples, axes=None, tight=True, title=None,
+def plot_two_panel(data, samples, axes=None, tight=True, title=None,
                    plot_data_orbits_kw=None, scatter_kw=None):
     """Make a two-panel plot with (1) the data and orbit samples, and (2) the
     orbit samples in period-eccentricity space.
@@ -159,8 +159,6 @@ def plot_two_panel(star, samples, axes=None, tight=True, title=None,
 
     if scatter_kw is None:
         scatter_kw = dict()
-
-    data = star.apogeervdata(clean=False)
 
     if axes is None:
         fig = plt.figure(figsize=(12, 4.3))
@@ -200,36 +198,38 @@ def plot_two_panel(star, samples, axes=None, tight=True, title=None,
     return fig
 
 
-def plot_phase_fold(star, samples):
+def plot_phase_fold(data, sample):
     """Plot the data phase-folded at the median period of the input samples,
     and the residuals as a function of phase.
 
     Parameters
     ----------
     star : `~twoface.db.AllStar`
-    samples : `~thejoker.JokerSamples`
+    sample : `~thejoker.JokerSamples`
 
     Returns
     -------
     fig : `matplotlib.Figure`
     """
-    data = star.apogeervdata(clean=False)
 
-    if not unimodal_P(samples, data):
+    if not unimodal_P(sample, data):
         raise ValueError('multi-modal period distribution')
 
+    if len(sample) > 1:
+        raise ValueError('can only pass a single sample to phase-fold at.')
+
     # HACK: hard-set getting the median
-    orbit = samples.median().get_orbit(0)
-    M0 = samples['M0'][0]
-    P = samples['P'][0]
-    s = samples['jitter'][0]
+    orbit = sample.get_orbit(0)
+    M0 = sample['M0'][0]
+    P = sample['P'][0]
+    s = sample['jitter'][0]
     t0 = data.t0 + (P/(2*np.pi)*M0).to(u.day, u.dimensionless_angles())
     phase = data.phase(P=P, t0=t0)
 
     # compute chi^2 of the orbit fit
     residual = data.rv - orbit.radial_velocity(data.t)
     err = np.sqrt(data.stddev**2 + s**2)
-    chisq = np.sum((residual**2 / err**2).decompose())
+    # chisq = np.sum((residual**2 / err**2).decompose())
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 5), sharex=True)
 
