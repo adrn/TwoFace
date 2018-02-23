@@ -255,6 +255,19 @@ $T_{\textrm{eff}}$---and the chemical abundances are determined from the coadded
 spectrum as a part of the \apogee\ Stellar Parameters and Chemical Abundances
 Pipeline (\acronym{ASPCAP}; \citealt{ASPCAP}).
 
+% Notebook: "Numbers of visits and sample overview"
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{nvisits.pdf}
+\end{center}
+\caption{%
+Number of \apogee\ stars in logarithmic bins of number of visits that pass the
+quality cuts described in \sectionname~\ref{sec:data}.
+In total, this work uses \nvisits\ visits and \nstars\ unique sources.
+\label{fig:nvisits}
+}
+\end{figure}
+
 We use the primary data products from \apogee\ \DR\ (i.e. the \texttt{allStar}
 and \texttt{allVisit} files) which contain 258,475 unique source IDs
 (\texttt{APOGEE\_ID}) and 1,054,381 unique visits.
@@ -272,19 +285,6 @@ are left with \nvisits\ visits for \nstars\ unique sources.
 number of visits that pass the above quality cuts: \todo{XX}\% of the stars in
 \DR\ have $< 8$ visits.
 \figurename~\ref{fig:loggteff} ...
-
-% Notebook: "Numbers of visits and sample overview"
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=0.7\textwidth]{nvisits.pdf}
-\end{center}
-\caption{%
-Number of \apogee\ stars in logarithmic bins of number of visits that pass the
-quality cuts described in \sectionname~\ref{sec:data}.
-In total, this work uses \nvisits\ visits and \nstars\ unique sources.
-\label{fig:nvisits}
-}
-\end{figure}
 
 % Notebook: "Numbers of visits and sample overview"
 \begin{figure}[h]
@@ -398,7 +398,11 @@ must occur under very constraining data.
 \subsection{Individual-system posterior samplings}
 \label{sec:samplings}
 
-\todo{Explain that this is the procedure, but two full runs described below in results...}
+Here we describe the procedure we use to generate per-target posterior samplings
+for the \apogee\ targets.
+We execute the full procedure twice for different goals (as described in
+\sectionname~\ref{sec:results}), and only here outline the key steps in the
+pipeline.
 
 For all \nstars\ \apogee\ stars with $\geq 3$ good visits (see
 \sectionname~\ref{sec:data}), we use \thejoker\ to generate posterior samplings
