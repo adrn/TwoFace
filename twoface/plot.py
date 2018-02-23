@@ -220,9 +220,9 @@ def plot_phase_fold(data, sample):
 
     # HACK: hard-set getting the median
     orbit = sample.get_orbit(0)
-    M0 = sample['M0'][0]
-    P = sample['P'][0]
-    s = sample['jitter'][0]
+    M0 = sample['M0']
+    P = sample['P']
+    s = sample['jitter']
     t0 = data.t0 + (P/(2*np.pi)*M0).to(u.day, u.dimensionless_angles())
     phase = data.phase(P=P, t0=t0)
 
