@@ -255,6 +255,19 @@ $T_{\textrm{eff}}$---and the chemical abundances are determined from the coadded
 spectrum as a part of the \apogee\ Stellar Parameters and Chemical Abundances
 Pipeline (\acronym{ASPCAP}; \citealt{ASPCAP}).
 
+% Notebook: "Numbers of visits and sample overview"
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{nvisits.pdf}
+\end{center}
+\caption{%
+Number of \apogee\ stars in logarithmic bins of number of visits that pass the
+quality cuts described in \sectionname~\ref{sec:data}.
+In total, this work uses \nvisits\ visits and \nstars\ unique sources.
+\label{fig:nvisits}
+}
+\end{figure}
+
 We use the primary data products from \apogee\ \DR\ (i.e. the \texttt{allStar}
 and \texttt{allVisit} files) which contain 258,475 unique source IDs
 (\texttt{APOGEE\_ID}) and 1,054,381 unique visits.
@@ -272,19 +285,6 @@ are left with \nvisits\ visits for \nstars\ unique sources.
 number of visits that pass the above quality cuts: \todo{XX}\% of the stars in
 \DR\ have $< 8$ visits.
 \figurename~\ref{fig:loggteff} ...
-
-% Notebook: "Numbers of visits and sample overview"
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=0.7\textwidth]{nvisits.pdf}
-\end{center}
-\caption{%
-Number of \apogee\ stars in logarithmic bins of number of visits that pass the
-quality cuts described in \sectionname~\ref{sec:data}.
-In total, this work uses \nvisits\ visits and \nstars\ unique sources.
-\label{fig:nvisits}
-}
-\end{figure}
 
 % Notebook: "Numbers of visits and sample overview"
 \begin{figure}[h]
@@ -395,8 +395,14 @@ must occur under very constraining data.
 %
 % Examples of outputs and etc.
 
-\subsection{Initial individual-system posterior samplings}
-\label{sec:initsampling}
+\subsection{Individual-system posterior samplings}
+\label{sec:samplings}
+
+Here we describe the procedure we use to generate per-target posterior samplings
+for the \apogee\ targets.
+We execute the full procedure twice for different goals (as described in
+\sectionname~\ref{sec:results}), and only here outline the key steps in the
+pipeline.
 
 For all \nstars\ \apogee\ stars with $\geq 3$ good visits (see
 \sectionname~\ref{sec:data}), we use \thejoker\ to generate posterior samplings
@@ -411,11 +417,11 @@ prior similar to that defined in \citet{Price-Whelan:2017}:
 \end{itemize}
 For the prior over the excess variance parameter, $s^2$, we initially use
 a Gaussian over the transformed parameter $y = \ln s^2$ with the mean and
-standard deviation of the initial distribution set to $(\mu_{y,0}, \sigma_{y,0})
-= (10.6, 3)$ in units of $\textrm{m}~\textrm{s}^{-1}$.
+standard deviation $(\mu_y, \sigma_y)$ indicated where the runs are described
+(see \sectionname~\ref{sec:results}).
 The reference time for each star is set to the minimum visit epoch; $M_0$ then
 becomes the mean anomaly at the first visit observation.
-See \tablename~\ref{tbl:params} for a description of all parameters and priors
+\tablename~\ref{tbl:params} contains descriptions of all parameters and priors
 used.
 
 \begin{table}[h!]
@@ -449,43 +455,57 @@ We therefore generate the posterior samples using an iterative procedure that
 adaptively predicts how many prior samples to test for each star.
 For sources with very constraining data, \thejoker\ may return fewer than the
 requested number of samples (as few as one sample).
-When this happens, we proceed in one of two ways:
-\begin{enumerate}
-    \item \emph{needs MCMC}: If just 1 posterior sample is returned after
-    exhausting the full library of prior samples, or if multiple (but fewer than
-    \nposterior) are returned that all lie within a single mode of the posterior
-    pdf, the posterior pdf over orbital parameters is treated as effectively
-    unimodal.
-    In this case, we use the location of the returned sample, or the median over
-    returned samples to generate a small ball of initial conditions and use
-    standard MCMC to continue sampling until we obtain \nposterior\ samples.
-    In detail, we use an ensemble sampler (\citealt{Goodman:2010}) implemented
-    in \python\ (\citealt{Foreman-Mackey:2013}) for this step.
-    We run with 1024 walkers for 16384 steps, take the final walker positions,
-    and downsample until we have \nposterior\ samples.
-    We compute convergence statistics for each run and report whether the chains
-    appear converged or not.
-    \item \emph{needs more prior samples}: If more than 1 posterior sample is
-    returned after exhausting the full library of prior samples and the samples
-    lie in multiple modes of the posterior pdf, the star is flagged. In this
-    case, the only way to proceed is to generate more prior samples and continue
-    running \thejoker\ for these sources to generate more posterior samples.
-\end{description}
+If just 1 posterior sample is returned after exhausting the full library of
+prior samples, or if multiple (but fewer than \nposterior) are returned that all
+lie within a single mode of the posterior pdf, the posterior pdf over orbital
+parameters is treated as effectively unimodal: these stars are flagged ``needs
+MCMC.''
+If more than 1 posterior sample is returned after exhausting the full library of
+prior samples, and the samples lie in multiple modes of the posterior pdf, the
+only way to proceed is to generate more prior samples and continue running
+\thejoker: these stars are flagged ``needs more prior samples.''
 
-A full run of \thejoker\ on all \nstars\ \apogee\ stars used in this work took
-approximately 300 hours on a compute cluster with 448 cores, with the time
-dominated by sources with many ($\gtrsim 10$) visits.
-\todo{XX} stars were flagged as \emph{needs MCMC}, \todo{YY} were flagged as
-\emph{needs more prior samples}, and the remaining \todo{ZZ} stars completed normally.
+
+\subsubsection{``Needs MCMC'': Following up \thejoker\ with MCMC}
+
+In this case, we use the location of the returned sample, or a randomly chosen
+sample from those returned to generate a small ball of initial conditions and
+use standard MCMC to continue sampling until we obtain \nposterior\ samples.
+
+We use an ensemble MCMC sampling algorithm (\citealt{Goodman:2010}) implemented
+in \python\ (\citealt{Foreman-Mackey:2013}) for this step.
+We run with 1024 walkers for 16384 steps, take the final walker positions, and
+downsample until we have \nposterior\ samples.
+\todo{We compute convergence statistics for each run and report whether the
+chains appear converged or not.}
+
+
+\subsubsection{``Needs more prior samples'': Continuing \thejoker\ sampling}
+
+We generate another equal-sized library of prior samples (a total of
+$2\times\nprior$ samples) and continue sampling.
+\todo{We note that because ... rejection sampling procedure, have to re-do
+the rejection step after computing with full library of samples...}
 
 \subsection{Implementation notes}
 
 \todo{Nontrivial computation - details about running on cluster, TheJoker vs. emcee}
 
 \section{Results}
+\label{sec:results}
 
 \subsection{Inferring the excess variance distribution}
 \label{sec:inferjitter}
+
+A full run of \thejoker\ on all \nstars\ \apogee\ stars used in this work took
+approximately 300 hours on a compute cluster with 448 cores, with the time
+dominated by sources with many ($\gtrsim 10$) visits.
+
+For this initial run, we do not follow up on stars that return $<$\nposterior\
+samples.
+
+of the initial distribution set to $(\mu_{y,0}, \sigma_{y,0})
+= (10.6, 3)$ in units of $\textrm{m}~\textrm{s}^{-1}$.
 
 As an initial use of the per-source posterior samplings, we use a hierarchical
 Bayesian model to infer the parameters of the (assumed Gaussian) prior over the
@@ -500,16 +520,179 @@ expect the inferred log-excess-variance distribution parameters to tend towards
 larger values.
 
 In detail, we maximize the marginal likelihood of the population-level
-parameters $\bs{\alpha} = (\mu_y, \sigma_y)$.
+parameters $(\mu_y, \sigma_y)$.
 We compute this marginal likelihood using the per-object posterior samples
-re-weighted by the ratio of the value of the hyperprior evaluated at a given
-vector $\bs{\alpha}$ over the value of the default prior at the previously
-assumed values, $\bs{\alpha}_0 = (\mu_{y,0}, \sigma_{y,0})$ (see
-\sectionname~\ref{sec:initsampling}).
+re-weighted by the ratio of the value of the hyperprior evaluated at a given,
+new set of parameters $(\mu_y, \sigma_y)$ over the value of the default prior at
+the previously assumed values, $(\mu_{y,0}, \sigma_{y,0})$ (see above).
 This trick has been used in other hierarchical inferences as a way to
-marginalize over the per-object parameters
+marginalize over the per-object parameters to infer population-level parameters
 (\citealt{Hogg:2010,Foreman-Mackey:2014}); we describe how to compute the
-marginal likelihood in detail below.
+marginal likelihood in detail in \sectionname~\ref{sec:hierarch}.
+
+We use 1,825 stars with $>10$ visits and $\log g < 2$ (to avoid upper RGB stars
+that have large intrinsic jitter) and maximize the above likelihood to determine
+better hyperparameters for the log-excess-variance parameter distribution.
+\figurename~\ref{fig:infer-jitter} shows the distribution corresponding to the
+maximum-likelihood hyperparameters, $\alpha^* = (\mu_y^*, \sigma_y^*) = (9.50,
+1.64)$.
+\todo{Reactions to the inferred parameters?}
+
+% Notebook: "Infer jitter"
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{infer-jitter}
+\end{center}
+\caption{%
+\todo{move notebook to figures path, re-do with "run2" or "run1" samples...}
+Inferred prior over log-jitter parameter ($y = \ln s^2$) using posterior samples
+for 1,825 lower-RGB stars with $>10$ visits.
+Left panel shows the ... Right panel shows the ...
+\label{fig:infer-jitter}
+}
+\end{figure}
+
+\subsection{Catalog of posterior samplings for APOGEE DR14 RGB stars}
+\label{sec:fullcatalog}
+
+Using the maximum-likelihood hyperparameters derived from the initial posterior
+samplings (see \sectionname~\ref{sec:initsampling}), we update and fix the
+excess variance prior distribution parameters---$(\mu_{y}, \sigma_{y}) = (9.5,
+1.6)$ in units of $\textrm{m}~\textrm{s}^{-1}$---and re-run \thejoker\ on the
+parent sample of \apogee\ \DR\ stars.
+\todo{Discuss how this relates to empirical Bayes?}
+
+From this run, 91,096 stars completed and successfully returned \nposterior\
+samples using \thejoker\ alone.
+The remaining 5,135 stars did not return \nposterior\ samples: 4,744 were
+flagged as \emph{needs more prior samples}, 391 as \emph{needs MCMC}.
+
+
+\subsection{A catalog of confident companions} \label{sec:conf-companions}
+
+\todo{Thresholding on what now?}
+
+\todo{Some highlights from this catalog.}
+
+\section{Discussion}
+
+Return to our various assumptions and make sure that we discuss them
+\emph{by name} here.
+
+\subsection{Comparison to other APOGEE companion catalogs}
+\label{sec:compare-troup}
+
+There are at least two other recent catalogs of stellar systems and companions
+based on \apogee\ data.
+
+One of these studies focused on decomposing spectra of MS stars into mixtures of
+stellar spectra (\citealt{El-Badry:2018}).
+Conceptually, this method works because (a) for two unequal-mass stars,
+unexpected absorption lines will appear superimposed on the brighter star's
+spectrum, and (b) for close to equal-mass stars, the line depths and ratios will
+not be well-matched by a single stellar model.
+Using this technique, they identified thousands of candidate MS binaries and
+trinaries, but did not consider giant stars ($\log g > 4$).
+This sample is therefore complimentary to and non-overlapping with the catalog
+presented in this work.
+
+The other recent catalog searched for stellar and substellar companions to all
+stars in \apogee\ \acronym{DR12} (including the RGB) that passed a series of
+quality cuts, and had $\geq 8$ visits (\citealt{Troup:2016}).
+For each star in the sample, orbits were fit to the visit RVs using a multi-step
+orbit-fitting procedure: it starts by identifying significant periods and a few
+harmonics of those periods, then fits a Keplerian orbit at each of these
+harmonics using least-squares fitting (\citealt{De-Lee:2013}) with a modified
+$\chi^2$ statistic that penalizes fits in which the phase coverage of the data
+is poor.
+This procedure is not guaranteed to provide a unique orbit solution.
+
+Of the 382 companions released as a part of this previous search, only 188 of
+the host stars passed the stellar parameter and quality cuts used to define the
+parent sample in this work (see \sectionname~\ref{sec:data}).
+We have looked at all of the overlapping stars to compare the previously derived
+companion orbital properties to the posterior samplings derived with \thejoker.
+We find that the comparisons fall in three categories:
+(1) the parameters reported in \citet{Troup:2016} agree with the posterior
+samplings, and the period distribution appears unimodal,
+(2) the parameters reported in \citet{Troup:2016} identify one possible mode of
+a likely multi-modal posterior pdf over orbital parameters, and
+(3) the data changed significantly between \apogee\ \acronym{DR12} and \DR, so
+no meaningful comparisons can be made; Roughly 1/3 of the comparison sample
+falls into each class.
+\figurename~\ref{fig:troup-unimodal} shows a few representative cases in which
+the \citet{Troup:2016} orbital parameters (orbit shown as orange line in left
+panels, parameters shown as orange + in right panels) is consistent with the
+orbit samples from \thejoker.
+\figurename~\ref{fig:troup-multimodal} shows a few representative cases in which
+we find that the posterior pdf over orbital parameters is multimodal, and the
+\citet{Troup:2016} orbit identifies one of these modes.
+For completeness, \figurename~\ref{fig:troup-datachanged} shows two instances in
+which the orbital parameters from \citet{Troup:2016} no longer make sense,
+likely because the data changed between data releases.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{unimodal.pdf}
+\end{center}
+\caption{%
+TODO:
+\label{fig:troup-unimodal}
+}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{multimodal.pdf}
+\end{center}
+\caption{%
+TODO:
+\label{fig:troup-multimodal}
+}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{data-changed.pdf}
+\end{center}
+\caption{%
+TODO:
+\label{fig:troup-datachanged}
+}
+\end{figure}
+
+\acknowledgements
+
+It is a pleasure to thank Keith Hawkins (Columbia), XXXXXXX.
+
+The authors are pleased to acknowledge that the work reported on in this
+paper was substantially performed at the TIGRESS high performance computer
+center at Princeton University which is jointly supported by the Princeton
+Institute for Computational Science and Engineering and the Princeton
+University Office of Information Technology's Research Computing department.
+
+\software{
+% The code used in this project is available from
+% \url{https://github.com/adrn/TwoFace} under the MIT open-source
+% software license.
+    \package{Astropy} (\citealt{Astropy-Collaboration:2013}),
+    % \package{corner} (\citealt{Foreman-Mackey:2016}),
+    \package{emcee} (\citealt{Foreman-Mackey:2013}),
+    \package{IPython} (\citealt{Perez:2007}),
+    \package{matplotlib} (\citealt{Hunter:2007}),
+    \package{numpy} (\citealt{Van-der-Walt:2011}),
+    \package{scipy} (\url{https://www.scipy.org/}),
+    \package{sqlalchemy} (\url{https://www.sqlalchemy.org/}).
+}
+
+\facility{\sdssiv, \apogee}
+
+\bibliographystyle{aasjournal}
+\bibliography{refs}
+
+\appendix
+\section{Hierarchical inference of the excess variance parameter}
+\label{sec:hierarch}
 
 For each $n$ of $N$ RGB stars in APOGEE, we obtain $K$ posterior samples over
 primary orbital parameters $\bs{\theta} = (P, e, \omega, M_0, K, v_0)$ and the
@@ -574,111 +757,5 @@ In practice, we evaluate the log-marginal-likelihood
 \end{align}
 where $\textrm{logsumexp}$ (the log-sum-exp trick) provides a more stable
 estimate of the sum in \eqname~\ref{eq:lnlike}.
-
-We use 1,825 stars with $>10$ visits and $\log g < 2$ (to avoid upper RGB stars
-that have large intrinsic jitter) and maximize the above likelihood to determine
-better hyperparameters for the log-excess-variance parameter distribution.
-\figurename~\ref{fig:infer-jitter} shows the distribution corresponding to the
-maximum-likelihood hyperparameters, $\alpha^* = (\mu_y^*, \sigma_y^*) = (9.50,
-1.64)$.
-\todo{Reactions to the inferred parameters?}
-\todo{Discuss how this relates to empirical Bayes?}
-
-% Notebook: "Infer jitter"
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{infer-jitter}
-\end{center}
-\caption{%
-\todo{move notebook to figures path, re-do with "run2" or "run1" samples...}
-Inferred prior over log-jitter parameter ($y = \ln s^2$) using posterior samples
-for 1,825 lower-RGB stars with $>10$ visits.
-Left panel shows the ... Right panel shows the ...
-\label{fig:infer-jitter}
-}
-\end{figure}
-
-\subsection{Catalog of posterior samplings for APOGEE DR14 RGB stars}
-\label{sec:fullcatalog}
-
-TODO: re-do exactly \sectionname~\ref{sec:initsampling}, but with $(\mu_{y}, \sigma_{y}) = (9.5, 1.6)$ again in units of ${\rm m}~{\rm s}^{-1}$.
-
-TODO: how many hit each category (flag) after the initial run
-
-\subsection{A catalog of confident companions} \label{sec:conf-companions}
-
-\todo{APW}
-
-Thresholding on what now?
-
-Catalog.
-
-Some highlights from this catalog.
-
-\section{Discussion}
-
-Return to our various assumptions and make sure that we discuss them
-\emph{by name} here.
-
-\subsection{Comparison to previous work} \label{sec:compare-troup}
-
-Stuff.
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{unimodal.pdf}
-\end{center}
-\caption{%
-\label{fig:troup-unimodal}
-}
-\end{figure}
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{multimodal.pdf}
-\end{center}
-\caption{%
-\label{fig:troup-multimodal}
-}
-\end{figure}
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{data-changed.pdf}
-\end{center}
-\caption{%
-\label{fig:troup-datachanged}
-}
-\end{figure}
-
-\acknowledgements
-
-It is a pleasure to thank Keith Hawkins (Columbia), XXXXXXX.
-
-The authors are pleased to acknowledge that the work reported on in this
-paper was substantially performed at the TIGRESS high performance computer
-center at Princeton University which is jointly supported by the Princeton
-Institute for Computational Science and Engineering and the Princeton
-University Office of Information Technology's Research Computing department.
-
-\software{
-The code used in this project is available from
-\url{https://github.com/adrn/TwoFace} under the MIT open-source
-software license.
-This research utilized the following open-source \python\ packages:
-    \package{Astropy} (\citealt{Astropy-Collaboration:2013}),
-    % \package{corner} (\citealt{Foreman-Mackey:2016}),
-    % \package{emcee} (\citealt{Foreman-Mackey:2013ascl}),
-    \package{IPython} (\citealt{Perez:2007}),
-    \package{matplotlib} (\citealt{Hunter:2007}),
-    \package{numpy} (\citealt{Van-der-Walt:2011}),
-    \package{scipy} (\url{https://www.scipy.org/}),
-    \package{sqlalchemy} (\url{https://www.sqlalchemy.org/}).
-}
-
-\facility{\sdssiv, \apogee}
-
-\bibliographystyle{aasjournal}
-\bibliography{refs}
 
 \end{document}

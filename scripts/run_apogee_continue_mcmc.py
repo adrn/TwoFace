@@ -33,6 +33,24 @@ from twoface.config import TWOFACE_CACHE_PATH
 from twoface.plot import plot_mcmc_diagnostic, plot_data_orbits
 
 
+def gelman_rubin(chain):
+    """
+    Implementation from http://joergdietrich.github.io/emcee-convergence.html
+    """
+    m, n, *_ = chain.shape
+
+    V = np.var(chain, axis=1, ddof=1) # variance over steps
+    W = np.mean(V, axis=0) # mean variance over walkers
+
+    θb = np.mean(chain, axis=1) # mean over steps
+    θbb = np.mean(θb, axis=0) # mean over walkers
+
+    B = n / (m - 1) * np.sum((θbb - θb)**2, axis=0)
+    var_θ = (n - 1) / n * W + 1 / n * B
+
+    return np.sqrt(var_θ / W)
+
+
 def emcee_worker(task):
     cache_path, results_filename, apogee_id, data, joker = task
     n_walkers = 1024
@@ -165,31 +183,43 @@ def main(config_file, pool, seed, overwrite=False):
     with h5py.File(mcmc_filename) as f:
         for star in base_query.all():
             if star.apogee_id in f:
-                logger.debug('Star {0} already in MCMC cache file'.format(star.apogee_id))
+                logger.debug('Star {0} already in MCMC cache file'
+                             .format(star.apogee_id))
                 continue
 
             tmp_file = path.join(cache_path, '{0}.npy'.format(star.apogee_id))
             chain = np.load(tmp_file)
+            n_walkers, n_steps, n_pars = chain.shape
 
             g = f.create_group(star.apogee_id)
-            
+
             logger.debug('Adding star {0} to MCMC cache'.format(star.apogee_id))
             try:
                 g2 = g.create_group('chain-stats')
 
-                # compute running median, running MAD
+                # compute running median, MAD, mean, stddev
                 all_med = []
                 all_mad = []
+                all_mean = []
+                all_std = []
                 for k in range(chain.shape[-1]):
                     all_med.append(np.median(chain[..., k], axis=0))
                     all_mad.append(median_absolute_deviation(chain[..., k],
                                                              axis=0))
+                    all_mean.append(np.mean(chain[..., k], axis=0))
+                    all_std.append(np.std(chain[..., k], axis=0))
 
                 all_med = np.vstack(all_med).T
                 all_mad = np.vstack(all_mad).T
+                all_mean = np.vstack(all_mean).T
+                all_std = np.vstack(all_std).T
+                Rs = gelman_rubin(chain[:, n_steps//2:])
 
                 g2.create_dataset(name='median', data=all_med)
                 g2.create_dataset(name='MAD', data=all_mad)
+                g2.create_dataset(name='mean', data=all_mean)
+                g2.create_dataset(name='std', data=all_std)
+                g2.create_dataset(name='gelman_rubin', data=Rs)
 
                 # take the last sample, downsample
                 end_pos = chain[:run.requested_samples_per_star, -1]
