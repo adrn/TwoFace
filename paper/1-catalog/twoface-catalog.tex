@@ -395,8 +395,10 @@ must occur under very constraining data.
 %
 % Examples of outputs and etc.
 
-\subsection{Initial individual-system posterior samplings}
+\subsection{Individual-system posterior samplings}
 \label{sec:initsampling}
+
+\todo{Explain that this is the procedure, but two full runs described below in results...}
 
 For all \nstars\ \apogee\ stars with $\geq 3$ good visits (see
 \sectionname~\ref{sec:data}), we use \thejoker\ to generate posterior samplings
@@ -411,11 +413,11 @@ prior similar to that defined in \citet{Price-Whelan:2017}:
 \end{itemize}
 For the prior over the excess variance parameter, $s^2$, we initially use
 a Gaussian over the transformed parameter $y = \ln s^2$ with the mean and
-standard deviation of the initial distribution set to $(\mu_{y,0}, \sigma_{y,0})
-= (10.6, 3)$ in units of $\textrm{m}~\textrm{s}^{-1}$.
+standard deviation $(\mu_y, \sigma_y)$ indicated where the runs are described
+(see \sectionname~\ref{sec:results}).
 The reference time for each star is set to the minimum visit epoch; $M_0$ then
 becomes the mean anomaly at the first visit observation.
-See \tablename~\ref{tbl:params} for a description of all parameters and priors
+\tablename~\ref{tbl:params} contains descriptions of all parameters and priors
 used.
 
 \begin{table}[h!]
@@ -449,43 +451,57 @@ We therefore generate the posterior samples using an iterative procedure that
 adaptively predicts how many prior samples to test for each star.
 For sources with very constraining data, \thejoker\ may return fewer than the
 requested number of samples (as few as one sample).
-When this happens, we proceed in one of two ways:
-\begin{enumerate}
-    \item \emph{needs MCMC}: If just 1 posterior sample is returned after
-    exhausting the full library of prior samples, or if multiple (but fewer than
-    \nposterior) are returned that all lie within a single mode of the posterior
-    pdf, the posterior pdf over orbital parameters is treated as effectively
-    unimodal.
-    In this case, we use the location of the returned sample, or the median over
-    returned samples to generate a small ball of initial conditions and use
-    standard MCMC to continue sampling until we obtain \nposterior\ samples.
-    In detail, we use an ensemble sampler (\citealt{Goodman:2010}) implemented
-    in \python\ (\citealt{Foreman-Mackey:2013}) for this step.
-    We run with 1024 walkers for 16384 steps, take the final walker positions,
-    and downsample until we have \nposterior\ samples.
-    We compute convergence statistics for each run and report whether the chains
-    appear converged or not.
-    \item \emph{needs more prior samples}: If more than 1 posterior sample is
-    returned after exhausting the full library of prior samples and the samples
-    lie in multiple modes of the posterior pdf, the star is flagged. In this
-    case, the only way to proceed is to generate more prior samples and continue
-    running \thejoker\ for these sources to generate more posterior samples.
-\end{description}
+If just 1 posterior sample is returned after exhausting the full library of
+prior samples, or if multiple (but fewer than \nposterior) are returned that all
+lie within a single mode of the posterior pdf, the posterior pdf over orbital
+parameters is treated as effectively unimodal: these stars are flagged ``needs
+MCMC.''
+If more than 1 posterior sample is returned after exhausting the full library of
+prior samples, and the samples lie in multiple modes of the posterior pdf, the
+only way to proceed is to generate more prior samples and continue running
+\thejoker: these stars are flagged ``needs more prior samples.''
 
-A full run of \thejoker\ on all \nstars\ \apogee\ stars used in this work took
-approximately 300 hours on a compute cluster with 448 cores, with the time
-dominated by sources with many ($\gtrsim 10$) visits.
-\todo{XX} stars were flagged as \emph{needs MCMC}, \todo{YY} were flagged as
-\emph{needs more prior samples}, and the remaining \todo{ZZ} stars completed normally.
+
+\subsubsection{``Needs MCMC'': Following up \thejoker\ with MCMC}
+
+In this case, we use the location of the returned sample, or a randomly chosen
+sample from those returned to generate a small ball of initial conditions and
+use standard MCMC to continue sampling until we obtain \nposterior\ samples.
+
+We use an ensemble MCMC sampling algorithm (\citealt{Goodman:2010}) implemented
+in \python\ (\citealt{Foreman-Mackey:2013}) for this step.
+We run with 1024 walkers for 16384 steps, take the final walker positions, and
+downsample until we have \nposterior\ samples.
+\todo{We compute convergence statistics for each run and report whether the
+chains appear converged or not.}
+
+
+\subsubsection{``Needs more prior samples'': Continuing \thejoker\ sampling}
+
+We generate another equal-sized library of prior samples (a total of
+$2\times\nprior$ samples) and continue sampling.
+\todo{We note that because ... rejection sampling procedure, have to re-do
+the rejection step after computing with full library of samples...}
 
 \subsection{Implementation notes}
 
 \todo{Nontrivial computation - details about running on cluster, TheJoker vs. emcee}
 
 \section{Results}
+\label{sec:results}
 
 \subsection{Inferring the excess variance distribution}
 \label{sec:inferjitter}
+
+A full run of \thejoker\ on all \nstars\ \apogee\ stars used in this work took
+approximately 300 hours on a compute cluster with 448 cores, with the time
+dominated by sources with many ($\gtrsim 10$) visits.
+
+For this initial run, we do not follow up on stars that return $<$\nposterior\
+samples.
+
+of the initial distribution set to $(\mu_{y,0}, \sigma_{y,0})
+= (10.6, 3)$ in units of $\textrm{m}~\textrm{s}^{-1}$.
 
 As an initial use of the per-source posterior samplings, we use a hierarchical
 Bayesian model to infer the parameters of the (assumed Gaussian) prior over the
@@ -499,6 +515,7 @@ data products: If the catalog uncertainties are significantly underestimated, we
 expect the inferred log-excess-variance distribution parameters to tend towards
 larger values.
 
+\todo{Move math to appendix since we cite relevant papers that show how?}
 In detail, we maximize the marginal likelihood of the population-level
 parameters $\bs{\alpha} = (\mu_y, \sigma_y)$.
 We compute this marginal likelihood using the per-object posterior samples
@@ -582,7 +599,6 @@ better hyperparameters for the log-excess-variance parameter distribution.
 maximum-likelihood hyperparameters, $\alpha^* = (\mu_y^*, \sigma_y^*) = (9.50,
 1.64)$.
 \todo{Reactions to the inferred parameters?}
-\todo{Discuss how this relates to empirical Bayes?}
 
 % Notebook: "Infer jitter"
 \begin{figure}[h]
@@ -601,19 +617,24 @@ Left panel shows the ... Right panel shows the ...
 \subsection{Catalog of posterior samplings for APOGEE DR14 RGB stars}
 \label{sec:fullcatalog}
 
-TODO: re-do exactly \sectionname~\ref{sec:initsampling}, but with $(\mu_{y}, \sigma_{y}) = (9.5, 1.6)$ again in units of ${\rm m}~{\rm s}^{-1}$.
+Using the maximum-likelihood hyperparameters derived from the initial posterior
+samplings (see \sectionname~\ref{sec:initsampling}), we update and fix the
+excess variance prior distribution parameters---$(\mu_{y}, \sigma_{y}) = (9.5,
+1.6)$ in units of $\textrm{m}~\textrm{s}^{-1}$---and re-run \thejoker\ on the
+parent sample of \apogee\ \DR\ stars.
+\todo{Discuss how this relates to empirical Bayes?}
 
-TODO: how many hit each category (flag) after the initial run
+From this run, 91,096 stars completed and successfully returned \nposterior\
+samples using \thejoker\ alone.
+The remaining 5,135 stars did not return \nposterior\ samples: 4,744 were
+flagged as \emph{needs more prior samples}, 391 as \emph{needs MCMC}.
+
 
 \subsection{A catalog of confident companions} \label{sec:conf-companions}
 
-\todo{APW}
+\todo{Thresholding on what now?}
 
-Thresholding on what now?
-
-Catalog.
-
-Some highlights from this catalog.
+\todo{Some highlights from this catalog.}
 
 \section{Discussion}
 
@@ -713,13 +734,12 @@ Institute for Computational Science and Engineering and the Princeton
 University Office of Information Technology's Research Computing department.
 
 \software{
-The code used in this project is available from
-\url{https://github.com/adrn/TwoFace} under the MIT open-source
-software license.
-This research utilized the following open-source \python\ packages:
+% The code used in this project is available from
+% \url{https://github.com/adrn/TwoFace} under the MIT open-source
+% software license.
     \package{Astropy} (\citealt{Astropy-Collaboration:2013}),
     % \package{corner} (\citealt{Foreman-Mackey:2016}),
-    % \package{emcee} (\citealt{Foreman-Mackey:2013ascl}),
+    \package{emcee} (\citealt{Foreman-Mackey:2013}),
     \package{IPython} (\citealt{Perez:2007}),
     \package{matplotlib} (\citealt{Hunter:2007}),
     \package{numpy} (\citealt{Van-der-Walt:2011}),
