@@ -183,7 +183,8 @@ def main(config_file, pool, seed, overwrite=False):
     with h5py.File(mcmc_filename) as f:
         for star in base_query.all():
             if star.apogee_id in f:
-                logger.debug('Star {0} already in MCMC cache file'.format(star.apogee_id))
+                logger.debug('Star {0} already in MCMC cache file'
+                             .format(star.apogee_id))
                 continue
 
             tmp_file = path.join(cache_path, '{0}.npy'.format(star.apogee_id))
