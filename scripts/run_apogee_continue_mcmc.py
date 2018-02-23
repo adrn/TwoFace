@@ -55,7 +55,7 @@ def emcee_worker(task):
                                                     n_walkers=n_walkers,
                                                     return_sampler=True)
 
-        np.save(chain_path, sampler.chain)
+        np.save(chain_path, sampler.chain.astype('f4'))
 
         if not path.exists(model_path):
             with open(model_path, 'wb') as f:
