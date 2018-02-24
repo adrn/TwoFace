@@ -3,7 +3,10 @@
 # Standard library
 
 # Third-party
+from astropy.constants import G
+import astropy.units as u
 import numpy as np
+from scipy.optimize import root
 
 __all__ = ['CM_NM_to_CNM', 'CM_NM_to_CN', 'get_martig_vec', 'm2_func']
 
@@ -76,3 +79,14 @@ def get_martig_vec(Teff, logg, M_H, C_M, N_M):
 
 def m2_func(m2, m1, sini, mf):
     return (m2*sini)**3 / (m1 + m2)**2 - mf
+
+
+@u.quantity_input(m1=u.Msun, mf=u.Msun)
+def get_m2_min(m1, mf):
+    mf = mf.to(m1.unit)
+    res = root(m2_func, x0=10., args=(m1.value, 1., mf.value))
+    return res.x[0] * m1.unit
+
+
+def stellar_radius(star, mass):
+    return np.sqrt(G*mass / (10**star.logg*u.cm/u.s**2)).to(u.Rsun)
