@@ -491,10 +491,7 @@ the rejection step after computing with full library of samples...}
 
 \todo{Nontrivial computation - details about running on cluster, TheJoker vs. emcee}
 
-\section{Results}
-\label{sec:results}
-
-\subsection{Inferring the excess variance distribution}
+\section{Experiment: infer the excess variance distribution}
 \label{sec:inferjitter}
 
 A full run of \thejoker\ on all \nstars\ \apogee\ stars used in this work took
@@ -552,8 +549,8 @@ Left panel shows the ... Right panel shows the ...
 }
 \end{figure}
 
-\subsection{Catalog of posterior samplings for APOGEE DR14 RGB stars}
-\label{sec:fullcatalog}
+\section{Results: companion catalogs}
+\label{sec:results}
 
 Using the maximum-likelihood hyperparameters derived from the initial posterior
 samplings (see \sectionname~\ref{sec:initsampling}), we update and fix the
@@ -567,17 +564,32 @@ samples using \thejoker\ alone.
 The remaining 5,135 stars did not return \nposterior\ samples: 4,744 were
 flagged as \emph{needs more prior samples}, 391 as \emph{needs MCMC}.
 
+\todo{Stuff about full catalog of posterior samples, available online}
 
-\subsection{A catalog of confident companions} \label{sec:conf-companions}
+\subsection{Stars with confident companions}
+\label{sec:catalog-confident}
 
 \todo{Thresholding on what now?}
 
-\todo{Some highlights from this catalog.}
+\todo{Examples of stars with no companions at various num. epochs}
+
+\todo{Examples of stars that meet K cut at various num. epochs}
+
+\subsection{Confident companions with highly constrained orbits}
+\label{sec:catalog-multimodal}
+
+\todo{Many examples of stars that meet K cut but solutions limited to a few
+qualitatively different solutions}
+
+\subsection{Confident companions with effectively uniquely determined orbits}
+\label{sec:catalog-unimodal}
+
+\todo{Many examples of stars that are probably unimodal}
 
 \section{Discussion}
 
-Return to our various assumptions and make sure that we discuss them
-\emph{by name} here.
+\todo{Return to our various assumptions and make sure that we discuss them
+\emph{by name} here.}
 
 \subsection{Comparison to other APOGEE companion catalogs}
 \label{sec:compare-troup}
@@ -661,6 +673,18 @@ TODO:
 }
 \end{figure}
 
+\subsection{Population inference}
+
+Comment on things we could do with these samples hierarchical inference...
+
+We are SB1 only, but should do SB2 as well - no reason to restrict.
+
+\section{Conclusions}
+
+Tables available online, full code open source.\footnote{The code used in this
+project is available from \url{https://github.com/adrn/TwoFace} under the MIT
+open-source software license.}
+
 \acknowledgements
 
 It is a pleasure to thank Keith Hawkins (Columbia), XXXXXXX.
@@ -672,11 +696,7 @@ Institute for Computational Science and Engineering and the Princeton
 University Office of Information Technology's Research Computing department.
 
 \software{
-% The code used in this project is available from
-% \url{https://github.com/adrn/TwoFace} under the MIT open-source
-% software license.
     \package{Astropy} (\citealt{Astropy-Collaboration:2013}),
-    % \package{corner} (\citealt{Foreman-Mackey:2016}),
     \package{emcee} (\citealt{Foreman-Mackey:2013}),
     \package{IPython} (\citealt{Perez:2007}),
     \package{matplotlib} (\citealt{Hunter:2007}),
