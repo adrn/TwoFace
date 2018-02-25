@@ -55,7 +55,7 @@
 
 \begin{document}\sloppy\sloppypar\raggedbottom\frenchspacing % trust me
 
-\title{Binary companions of red giant stars with APOGEE DR14}
+\title{Binary companions of red giant stars in \apogee\ \DR}
 
 \author[0000-0003-0872-7098]{Adrian~M.~Price-Whelan}
 \affiliation{Department of Astrophysical Sciences,
@@ -88,21 +88,30 @@
 % Context
 Repeat radial-velocity measurements of stars can be used to identify stellar,
 sub-stellar, and planetary-mass companions.
-Even sparse or few-epoch observations are useful for detecting companions,
-though such data are difficult to use for measuring physical properties of
-individual systems because permitted orbital solutions can be highly degenerate.
+Even a very small number of observation epochs can be useful for detecting companions,
+though such data can be difficult to use for characterizing
+individual systems:
+There can be multiple qualitatively different orbital solutions that fit the data.
+For these reasons, we custom-built a Monte Carlo sampler (\thejoker)
+that delivers reliable (and often highly
+multi-modal) posterior samplings for companion orbital parameters given sparse
+radial-velocity data.
 % Aims
-Using a custom-built Monte Carlo sampler (\thejoker) to deliver (often highly
-multi-modal) posterior beliefs about companion orbital parameters, here we
-perform a search for secondary companions of over 100,000 stars observed by the
-\apogee\ survey (\DR) with $\geq 3$ epochs.
+Here we
+perform a search for secondary companions of over 100,000 red-giant
+stars observed in the
+\apogee\ survey (\DR) with $\geq 3$ spectroscopic epochs.
 % Methods
-We select stars with probable companions by \todo{how?}.
+We select stars with probable companions by making a cut on our posterior belief about
+the amplitude of the stellar radial-velocity variation induced by the orbit \todo{do we?}.
 % Results
-We provide (1) a catalog of \ncompanions\ companions for which the companion
-properties can be confidently determined, (2) a catalog of stars that likely
-have companions, but for  which more observations are needed to uniquely
-determine the orbital properties, and (3) posterior samplings for all \nstars\
+We provide (1)~a catalog of \ncompanions\ companions for which the stellar companion
+properties can be confidently determined in a posterior sense,
+(2)~a catalog of stars that likely
+have companions, but for which (in most cases) more observations
+would be needed to uniquely
+determine the orbital properties, and (3)~posterior samplings for all orbital-companion
+parameters for all \nstars\
 stars in the parent sample.
 We highlight interesting systems and show the characteristics of stars with
 confidently determined companion properties.
