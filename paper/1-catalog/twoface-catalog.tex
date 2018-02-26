@@ -517,9 +517,12 @@ of prior samples, and the samples lie in multiple modes of the posterior pdf,
 the only way to proceed is to generate more prior samples and continue running
 \thejoker: these stars are flagged ``needs more prior samples.''
 In this case, we generate another equal-sized library of prior samples (a total
-of $2\times\nprior$ samples) and continue rejection sampling.
-\todo{We note that because ... rejection sampling procedure, have to re-do
-the rejection step after computing with full library of samples...}
+of $2\times\nprior$ samples) and re-do the rejection sampling.
+We note that because of the way the rejection sampling step is done, this is not
+equivalent to concatenating the results from a second, independent run of
+\thejoker: the log-likelihood values for all of the prior samples must be used.
+If at the end of this second run the target still has fewer than \nposterior\
+samples, the sampling is flagged as ``incomplete.''
 
 \subsection{Implementation notes}
 
@@ -527,6 +530,8 @@ the rejection step after computing with full library of samples...}
 
 \section{Experiment: infer the excess variance distribution}
 \label{sec:inferjitter}
+
+\todo{Fix this bit from copy-pasting}
 
 A full run of \thejoker\ on all \nstars\ \apogee\ stars used in this work took
 approximately 300 hours on a compute cluster with 448 cores, with the time
