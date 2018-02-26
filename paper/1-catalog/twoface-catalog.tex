@@ -465,35 +465,59 @@ We therefore generate the posterior samples using an iterative procedure that
 adaptively predicts how many prior samples to test for each star.
 For sources with very constraining data, \thejoker\ may return fewer than the
 requested number of samples (as few as one sample).
-If just 1 posterior sample is returned after exhausting the full library of
-prior samples, or if multiple (but fewer than \nposterior) are returned that all
-lie within a single mode of the posterior pdf, the posterior pdf over orbital
-parameters is treated as effectively unimodal: these stars are flagged ``needs
-MCMC.''
-If more than 1 posterior sample is returned after exhausting the full library of
-prior samples, and the samples lie in multiple modes of the posterior pdf, the
-only way to proceed is to generate more prior samples and continue running
-\thejoker: these stars are flagged ``needs more prior samples.''
+When this occurs, we continue sampling either using standard MCMC, or by
+increasing the size of the prior cache and continuing rejection sampling with
+\thejoker.
 
 
 \subsubsection{``Needs MCMC'': Following up \thejoker\ with MCMC}
 
-In this case, we use the location of the returned sample, or a randomly chosen
-sample from those returned to generate a small ball of initial conditions and
-use standard MCMC to continue sampling until we obtain \nposterior\ samples.
+If just one posterior sample is returned after exhausting the full library of
+prior samples, or if multiple (but fewer than \nposterior) are returned that all
+lie within a single mode of the posterior pdf, the posterior pdf over orbital
+parameters is treated as effectively unimodal: these stars are flagged ``needs
+MCMC.''
+In this case, we use the location of the returned sample (if only one is
+returned), or a randomly chosen sample from those returned (if multiple samples
+are returned within one mode) to generate a small Gaussian ball of initial
+conditions and use standard MCMC to continue sampling until we obtain
+\nposterior\ samples.
 
 We use an ensemble MCMC sampling algorithm (\citealt{Goodman:2010}) implemented
-in \python\ (\citealt{Foreman-Mackey:2013}) for this step.
-We run with 1024 walkers for 16384 steps, take the final walker positions, and
-downsample until we have \nposterior\ samples.
-\todo{We compute convergence statistics for each run and report whether the
-chains appear converged or not.}
+in \python\ (\package{emcee}; \citealt{Foreman-Mackey:2013}) to perform the
+samplings.
+We transform the standard Keplerian orbital parameters to a safer
+parametrization, $(\ln P, \sqrt{K}\,\cos M_0, \sqrt{K}\,\sin M_0, \sqrt{e}\,\cos
+\omega, \sqrt{e}\,\cos \omega, \ln s^2, v_0)$, to sample in.
+This reparametrization is safer and more efficient for sampling with
+\package{emcee}, which expects parameters to be components of a vector so that
+linear operations can be applied (see, e.g., \citealt{Hogg:2017}); the angle
+variables $(\omega, M_0)$ don't meet this requirement in the standard
+parametrization.
+We use the same prior pdfs as in \thejoker\ when running MCMC (see
+\tablename~\ref{tbl:params}).
+
+For each star that is flagged ``needs MCMC,'' we run \package{emcee} with 1024
+walkers for 16384 steps, take the final walker positions, and downsample at
+random until we have \nposterior\ samples.
+We compute the Gelman--Rubin convergence statistic, $\hat{R}_j$,
+(\citealt{Gelman:1992}) for each parameter $j$ and include these values in the
+catalogs below when standard MCMC is run.
+We also provide a binary flag, ``converged,'' for each sampling continued with
+MCMC that is set to true if:
+\begin{equation}
+\underset{j}{\textrm{mean}}\left(\hat{R}_j\right) < 1.1 \quad .
+\end{equation}
 
 
 \subsubsection{``Needs more prior samples'': Continuing \thejoker\ sampling}
 
-We generate another equal-sized library of prior samples (a total of
-$2\times\nprior$ samples) and continue sampling.
+If more than one posterior sample is returned after exhausting the full library
+of prior samples, and the samples lie in multiple modes of the posterior pdf,
+the only way to proceed is to generate more prior samples and continue running
+\thejoker: these stars are flagged ``needs more prior samples.''
+In this case, we generate another equal-sized library of prior samples (a total
+of $2\times\nprior$ samples) and continue rejection sampling.
 \todo{We note that because ... rejection sampling procedure, have to re-do
 the rejection step after computing with full library of samples...}
 
