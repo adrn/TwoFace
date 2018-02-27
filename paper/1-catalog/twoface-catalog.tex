@@ -590,19 +590,10 @@ We don't expect there to be a large number of triple systems in our sample, but
 this is still an important consideration for future efforts.
 Second, we are sensitive to outliers and very non-Gaussian systematic error
 distributions.
-In fact, the residuals we find away from our best-fit two-body orbital solutions
-do not appear strictly Gaussian and have tails towards larger systematic errors.
-\figurename~\ref{fig:residuals} shows the distribution of normalized residuals,
-$R_{nk}$, for each visit: the $k$ visit velocities for each $n$ star, $v_{nk}$,
-minus the predicted radial velocity from the best-fitting sample returned by
-\thejoker, $\hat{v}^*_{nk}$, normalized by the excess-variance-included
-uncertainty, $\sigma_{nk}^* = \sqrt{\sigma_{nk}^2 + \hat{s}_{n}^2}$, where
-$\hat{s}_{n}$ is computed from the excess-variance parameter of the best-fitting
-sample:
-\begin{equation}
-    R_{nk} = \frac{v_{nk} - \hat{v}^*_{nk}}{\sqrt{\sigma_{nk}^2 +
-    \hat{s}_{n}^2}} \quad .
-\end{equation}
+We later assess the non-Gaussianity of the visit velocity uncertainties by
+looking at the visit velocity residuals away from the orbit samples produced by
+\thejoker\ using the updated excess variance distribution (see
+\sectionname~\ref{sec:discuss-assumptions}).
 
 % Notebook: "Infer jitter"
 \begin{figure}[h]
@@ -619,16 +610,6 @@ linear, respectively.
 }
 \end{figure}
 
-% Notebook: "Residuals-vs-metadata"
-% \begin{figure}[h]
-% \begin{center}
-% \includegraphics[width=\textwidth]{residuals}
-% \end{center}
-% \caption{%
-% \todo{stuff}
-% \label{fig:residuals}
-% }
-% \end{figure}
 
 \section{Results: companion catalogs}
 \label{sec:results}
@@ -694,8 +675,44 @@ continue")}
 
 \section{Discussion}
 
+\subsection{Assumptions}
+\label{sec:discuss-assumptions}
+
 \todo{Return to our various assumptions and make sure that we discuss them
 \emph{by name} here.}
+
+We find that the residuals away from our best-fit two-body orbital solutions
+appear close to Gaussian, indicating that the \emph{simple noise model}
+assumption may be sufficient.
+\figurename~\ref{fig:residuals} shows the distribution of normalized residuals,
+$R_{nk}$, for each visit: the $k$ visit velocities for each $n$ star, $v_{nk}$,
+minus the predicted radial velocity from the best-fitting sample returned by
+\thejoker, $\hat{v}^*_{nk}$, normalized by the excess-variance-included
+uncertainty, $\sigma_{nk}^* = \sqrt{\sigma_{nk}^2 + \hat{s}_{n}^2}$, where
+$\hat{s}_{n}$ is computed from the excess-variance parameter of the best-fitting
+sample:
+\begin{equation}
+    R_{nk} = \frac{v_{nk} - \hat{v}^*_{nk}}{\sqrt{\sigma_{nk}^2 +
+    \hat{s}_{n}^2}} \quad . \label{eq:normresid}
+\end{equation}
+
+% Notebook: "Residuals-vs-metadata"
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{residuals}
+\end{center}
+\caption{%
+Histogram shows the distribution of normalized visit residuals (see
+\eqname~\ref{eq:normresid}) for all \nvisits\ used in the final run of
+\thejoker\ (i.e. with updated excess variance distribution parameters inferred
+in \sectionname~\ref{sec:inferjitter}).
+The orange curve shows that expected for Gaussian uncertainties.
+The distribution appears mostly Gaussian over a large range of residual values,
+with slightly more populated tails and evidence of a few catastrophic outliers.
+\label{fig:residuals}
+}
+\end{figure}
+
 
 \subsection{Comparison to other APOGEE companion catalogs}
 \label{sec:compare-troup}
