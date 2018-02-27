@@ -133,8 +133,6 @@ confidently determined companion properties.
 
 \section{Introduction} \label{sec:intro}
 
-\todo{Intro is missing many citations}
-
 Stars typically have companions.
 Main sequence stars in the solar neighborhood more often appear in binary or
 multiple star systems rather than as solitary stars (e.g.,
@@ -446,11 +444,21 @@ used.
     $M_0$ & $M_0 \sim \mathcal{U}(0, 2\pi)~\textrm{rad}$ & mean anomaly at reference time \\
     $\omega$ & $\omega \sim \mathcal{U}(0, 2\pi)~\textrm{rad}$ & argument of pericenter \\
     $s^2$ & $\ln s^2 \sim \mathcal{N}(\mu_y, \sigma_y^2)$ & extra variance added to each visit variance \\
-    $K$ & TODO & velocity semi-amplitude \\
-    $v_0$ & TODO & system barycentric velocity \\
+    $K$ & $\mathcal{N}(0, \sigma_{v}^2)~\kms$ & velocity semi-amplitude \\
+    $v_0$ & $\mathcal{N}(0, \sigma_{v}^2)~\kms$ & system barycentric velocity \\
     \hline
     \end{tabular}
-    \caption{Summary and description of parameters. $\textrm{Beta}(a, b)$ is the beta distribution with \todo{a, b}, $\mathcal{U}(a, b)$ the uniform distribution over the domain $(a, b)$, and $\mathcal{N}(\mu, \sigma^2)$ is the normal distribution with mean $\mu$ and variance $\sigma^2$.}
+    \caption{Summary and description of parameters. $\textrm{Beta}(a, b)$ is the
+    beta distribution with shape parameters $(a, b)$, $\mathcal{U}(a, b)$ the
+    uniform distribution over the domain $(a, b)$, and $\mathcal{N}(\mu,
+    \sigma^2)$ is the normal distribution with mean $\mu$ and variance
+    $\sigma^2$.
+    For the systemic velocity and semi-amplitude, we use a broad Gaussian prior
+    that is formally inconsistent between \thejoker\ and follow-up MCMC sampling
+    (see \sectionname~\ref{sec:mcmc}): in \thejoker\ we assume Gaussian priors
+    with $\sigma_v$ much larger than the measurement uncertainty so they can be
+    neglected ($\sigma_v \approx \infty$), whereas when running MCMC we fix
+    $\sigma_v = 10^3~\kms$.}
     \label{tbl:params}
 \end{table}
 
@@ -471,6 +479,7 @@ increasing the size of the prior cache and continuing rejection sampling with
 
 
 \subsubsection{``Needs MCMC'': Following up \thejoker\ with MCMC}
+\label{sec:mcmc}
 
 If just one posterior sample is returned after exhausting the full library of
 prior samples, or if multiple (but fewer than \nposterior) are returned that all
