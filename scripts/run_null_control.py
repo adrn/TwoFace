@@ -138,8 +138,6 @@ def main(config_file, pool, seed, overwrite=False):
         n = run.requested_samples_per_star
         samples = samples[:n]
 
-        return
-
         # Write the samples that pass to the results file
         with h5py.File(results_filename, 'r+') as f:
             if star.apogee_id in f:
