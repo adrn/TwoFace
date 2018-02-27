@@ -6,7 +6,7 @@ from twoface.log import log as logger
 from twoface.db.init import initialize_db, load_nessrg
 
 
-def main(allVisit_file, allStar_file, rc_file, nessrg_file, **_):
+def main(allVisit_file, allStar_file, nessrg_file, **_):
     database_name = 'apogee.sqlite' # TODO: should this be enforced?
 
     initialize_db(allVisit_file, allStar_file, database_name)
@@ -34,8 +34,6 @@ if __name__ == "__main__":
     parser.add_argument("--allvisit", dest="allVisit_file", required=True,
                         type=str, help="Path to APOGEE allVisit FITS file.")
 
-    parser.add_argument("--redclump", dest="rc_file", type=str, default=None,
-                        help="Path to APOGEE Red Clump catalog FITS file.")
     parser.add_argument("--nessrg", dest="nessrg_file", type=str, default=None,
                         help="Path to Ness Red Giant masses FITS file.")
 

@@ -18,12 +18,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
 
-    warnings.filterwarnings('ignore',
-        r"^Dialect sqlite\+pysqlite does \*not\* support Decimal objects natively\, "
-        "and SQLAlchemy must convert from floating point - rounding errors and other "
-        "issues may occur\. Please consider storing Decimal numbers as strings or "
-        "integers on this platform for lossless storage\.$",
-        SAWarning, r'^sqlalchemy\.sql\.type_api$')
+    warnings.filterwarnings('ignore', ".*Decimal objects natively.*", SAWarning)
 
 def db_connect(database_path, ensure_db_exists=False):
     """

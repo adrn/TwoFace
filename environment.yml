@@ -14,6 +14,7 @@ dependencies:
   - cython
   - h5py
   - jupyter
+  - pandas
   - pip
   - pip:
     - emcee
