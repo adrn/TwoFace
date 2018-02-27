@@ -592,21 +592,39 @@ Left panel shows the ... Right panel shows the ...
 \label{sec:results}
 
 Using the maximum-likelihood hyperparameters derived from the initial posterior
-samplings (see \sectionname~\ref{sec:initsampling}), we update and fix the
+samplings (see \sectionname~\ref{sec:inferjitter}), we update and fix the
 excess variance prior distribution parameters---$(\mu_{y}, \sigma_{y}) = (9.5,
-1.6)$ in units of $\textrm{m}~\textrm{s}^{-1}$---and re-run \thejoker\ on the
+1.6)$, in units of $\textrm{m}~\textrm{s}^{-1}$---and re-run \thejoker\ on the
 parent sample of \apogee\ \DR\ stars.
 \todo{Discuss how this relates to empirical Bayes?}
 
 From this run, 91,096 stars completed and successfully returned \nposterior\
 samples using \thejoker\ alone.
 The remaining 5,135 stars did not return \nposterior\ samples: 4,744 were
-flagged as \emph{needs more prior samples}, 391 as \emph{needs MCMC}.
+flagged as \emph{needs more prior samples}, 391 as \emph{needs MCMC}; We
+continue generating samples for these stars using the methodology explained
+above (see \sectionname~\ref{sec:samplings}).
+In the end, \todo{XX} stars have completed samplings with \nposterior\ samples,
+and, after re-running \thejoker\ with twice as many prior samples, \todo{XX}
+stars still have fewer samples that are multi-modal in period.
 
-\todo{Stuff about full catalog of posterior samples, available online}
+The full catalog of posterior samples for all \apogee\ stars in our parent
+sample is available online.
+\todo{Structure of table, where to download, make a webpage with some
+information?}
+
 
 \subsection{Stars with confident companions}
 \label{sec:catalog-confident}
+
+We don't expect there to be a sharp transition in orbital parameters between
+stars with companions and stars without companions: There is a continuum of
+companion properties.
+For example, the companion masses can be brown dwarf-like, or at long periods,
+or at high inclination, all of which will make the velocity semi-amplitude, $K$,
+small for a given system.
+From the radial velocity data alone, there is therefore no way to select a
+complete sample of stars with and without companions.
 
 \todo{Thresholding on what now?}
 
@@ -614,11 +632,13 @@ flagged as \emph{needs more prior samples}, 391 as \emph{needs MCMC}.
 
 \todo{Examples of stars that meet K cut at various num. epochs}
 
+
 \subsection{Confident companions with highly constrained orbits}
 \label{sec:catalog-multimodal}
 
 \todo{Many examples of stars that meet K cut but solutions limited to a few
 qualitatively different solutions}
+
 
 \subsection{Confident companions with effectively uniquely determined orbits}
 \label{sec:catalog-unimodal}
