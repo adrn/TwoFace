@@ -345,8 +345,8 @@ samplings---under the following assumptions:
   This assumption is motivated by the fact that we expect \RGB\ stars to be
   substantially more luminous than their typical companion.
   However, there are known main-sequence double-lined binary stars in the
-  \apogee\ catalog \citealt{El-Badry:2018}, and an expected but unknown fraction
-  of \RGB--\RGB\ binaries.
+  \apogee\ catalog (\citealt{El-Badry:2018}), and an expected but unknown
+  fraction of \RGB--\RGB\ binaries.
 \item[simple noise model] Measurements are unbiased and noise estimates are
   correct up to an unknown excess variance.
   All noise contributions result in Gaussian uncertainties on the individual
@@ -533,9 +533,14 @@ equivalent to concatenating the results from a second, independent run of
 If at the end of this second run the target still has fewer than \nposterior\
 samples, the sampling is flagged as ``incomplete.''
 
-\subsection{Implementation notes}
+\subsection{Control sample}
+\label{sec:control-sample}
 
-\todo{Nontrivial computation - details about running on cluster, TheJoker vs. emcee}
+\todo{describe how we make it}
+
+% \subsection{Implementation notes}
+%
+% \todo{Nontrivial computation - details about running on cluster, TheJoker vs. emcee}
 
 \section{Experiment: infer the excess variance distribution}
 \label{sec:inferjitter}
@@ -619,13 +624,16 @@ samplings (see \sectionname~\ref{sec:inferjitter}), we update and fix the
 excess variance prior distribution parameters---$(\mu_{y}, \sigma_{y}) = (9.50,
 1.64)$, in units of $\textrm{m}~\textrm{s}^{-1}$---and re-run \thejoker\ on the
 parent sample of \apogee\ \DR\ stars.
-\todo{Discuss how this relates to empirical Bayes?}
+This methodology, in which we estimate a prior from the data and then fix it, is
+typically referred to as ``empirical Bayes''; In this case, it is an
+approximation to doing a hierarchical inference of the individual system orbital
+parameters and the excess variance distribution hyperparameters simultaneously.
 
 From this run, 91,096 stars completed and successfully returned \nposterior\
 samples using \thejoker\ alone.
 The remaining 5,135 stars did not return \nposterior\ samples: 4,744 were
-flagged as \emph{needs more prior samples}, 391 as \emph{needs MCMC}; We
-continue generating samples for these stars using the methodology explained
+flagged as \emph{needs more prior samples}, 391 as \emph{needs MCMC}.
+We continue generating samples for these stars using the methodology explained
 above (see \sectionname~\ref{sec:samplings}).
 In the end, \todo{XX} stars have completed samplings with \nposterior\ samples,
 and, after re-running \thejoker\ with twice as many prior samples, \todo{XX}
@@ -637,19 +645,29 @@ sample is available online.
 information?}
 
 
-\subsection{Stars with confident companions}
+\subsection{Stars with companions}
 \label{sec:catalog-confident}
 
 We don't expect there to be a sharp transition in orbital parameters between
 stars with companions and stars without companions: There is a continuum of
 companion properties.
-For example, the companion masses can be brown dwarf-like, or at long periods,
-or at high inclination, all of which will make the velocity semi-amplitude, $K$,
-small for a given system.
-From the radial velocity data alone, there is therefore no way to select a
-complete sample of stars with and without companions.
+For example, the companion masses can be low mass, or at long periods, or at
+high inclination, all of which will make the velocity semi-amplitude, $K$, small
+for a given system.
+From the radial velocity data alone, there is therefore no way to define a
+simple cut to select a complete sample of stars with companions.
+Nevertheless, it is possible to define a cut that selects stars with
+high-confidence companions while similarly minimizing an estimated
+false-positive rate.
 
-\todo{Thresholding on what now?}
+\todo{False-positive estimate using the null control sample.}
+
+We select a sample of stars that confidently have companions using percentiles
+computed from the posterior samples in the velocity semi-amplitude parameter,
+$K$.
+\figurename~\ref{fig:} shows distributions of percentiles in $\ln K$ computed
+for all stars with posterior samplings from \thejoker.
+\todo{percentiles figure}
 
 \todo{Examples of stars with no companions at various num. epochs}
 
@@ -680,6 +698,12 @@ continue")}
 
 \todo{Return to our various assumptions and make sure that we discuss them
 \emph{by name} here.}
+
+\todo{\emph{no multiplets} punt to future work}
+
+\todo{\emph{Kepler} evidence for coherent oscillations at the upper giant branch? companions that don't make sense}
+
+\todo{\emph{SB1} comment that there are some companions with masses large enough that they should be evolved, and therefore should contribute to the light! where are the companions? neutron stars / BHs?}
 
 We find that the residuals away from our best-fit two-body orbital solutions
 appear close to Gaussian, indicating that the \emph{simple noise model}
