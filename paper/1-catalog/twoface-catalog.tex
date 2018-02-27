@@ -432,9 +432,9 @@ becomes the mean anomaly at the first visit observation.
 \tablename~\ref{tbl:params} contains descriptions of all parameters and priors
 used.
 
-\begin{table}[h!]
+\begin{table}[h]
     \centering
-    \begin{tabular}{ r c l }
+    \begin{tabular}{ r l l }
     \hline
     name & prior & description \\
     \hline
@@ -540,18 +540,6 @@ samples, the sampling is flagged as ``incomplete.''
 \section{Experiment: infer the excess variance distribution}
 \label{sec:inferjitter}
 
-\todo{Fix this bit from copy-pasting}
-
-A full run of \thejoker\ on all \nstars\ \apogee\ stars used in this work took
-approximately 300 hours on a compute cluster with 448 cores, with the time
-dominated by sources with many ($\gtrsim 10$) visits.
-
-For this initial run, we do not follow up on stars that return $<$\nposterior\
-samples.
-
-of the initial distribution set to $(\mu_{y,0}, \sigma_{y,0})
-= (10.6, 3)$ in units of $\textrm{m}~\textrm{s}^{-1}$.
-
 As an initial use of the per-source posterior samplings, we use a hierarchical
 Bayesian model to infer the parameters of the (assumed Gaussian) prior over the
 log-excess-variance parameter, $(\mu_y, \sigma_y)$ (see
@@ -575,13 +563,46 @@ marginalize over the per-object parameters to infer population-level parameters
 (\citealt{Hogg:2010,Foreman-Mackey:2014}); we describe how to compute the
 marginal likelihood in detail in \sectionname~\ref{sec:hierarch}.
 
+We execute a full run of \thejoker\ on all \nstars\ \apogee\ stars in our parent
+sample using initial values for the excess variance distribution parameters
+chosen so that $\sqrt{e^{\mu_{y,0}}} \approx 200~\mps$: $(\mu_{y,0},
+\sigma_{y,0}) = (10.6, 3)$ in units of $\mps$.
+This run took approximately 300 hours on a compute cluster with 448 cores, with
+the time dominated by sources with many ($\gtrsim 10$) visits.  For this initial
+run, we do not follow up on stars that return $<$\nposterior\ samples.
+
 We use 1,825 stars with $>10$ visits and $\log g < 2$ (to avoid upper RGB stars
 that have large intrinsic jitter) and maximize the above likelihood to determine
 better hyperparameters for the log-excess-variance parameter distribution.
 \figurename~\ref{fig:infer-jitter} shows the distribution corresponding to the
 maximum-likelihood hyperparameters, $\alpha^* = (\mu_y^*, \sigma_y^*) = (9.50,
 1.64)$.
-\todo{Reactions to the inferred parameters?}
+These values are consistent with the estimated systematic floor of the visit
+velocity uncertainties of $\approx 100$--$200~\mps$ estimated from stars
+observed multiple times and on multiple plates (\citealt{Nidever:2015}).
+
+However, there are a number of caveats to keep in mind about this estimate of
+the excess variance distribution.
+First, we do not remove triple or other multiple systems: For any individual
+system, the radial velocity variations induced by other massive bodies will lead
+to larger preferred values for the excess variance parameter.
+We don't expect there to be a large number of triple systems in our sample, but
+this is still an important consideration for future efforts.
+Second, we are sensitive to outliers and very non-Gaussian systematic error
+distributions.
+In fact, the residuals we find away from our best-fit two-body orbital solutions
+do not appear strictly Gaussian and have tails towards larger systematic errors.
+\figurename~\ref{fig:residuals} shows the distribution of normalized residuals,
+$R_{nk}$, for each visit: the $k$ visit velocities for each $n$ star, $v_{nk}$,
+minus the predicted radial velocity from the best-fitting sample returned by
+\thejoker, $\hat{v}^*_{nk}$, normalized by the excess-variance-included
+uncertainty, $\sigma_{nk}^* = \sqrt{\sigma_{nk}^2 + \hat{s}_{n}^2}$, where
+$\hat{s}_{n}$ is computed from the excess-variance parameter of the best-fitting
+sample:
+\begin{equation}
+    R_{nk} = \frac{v_{nk} - \hat{v}^*_{nk}}{\sqrt{\sigma_{nk}^2 +
+    \hat{s}_{n}^2}} \quad .
+\end{equation}
 
 % Notebook: "Infer jitter"
 \begin{figure}[h]
@@ -589,21 +610,33 @@ maximum-likelihood hyperparameters, $\alpha^* = (\mu_y^*, \sigma_y^*) = (9.50,
 \includegraphics[width=\textwidth]{infer-jitter}
 \end{center}
 \caption{%
-\todo{move notebook to figures path, re-do with "run2" or "run1" samples...}
-Inferred prior over log-jitter parameter ($y = \ln s^2$) using posterior samples
-for 1,825 lower-RGB stars with $>10$ visits.
-Left panel shows the ... Right panel shows the ...
+Inferred prior over excess variance parameter ($y = \ln s^2$) using posterior
+samples for 1,825 lower-RGB stars with $>10$ visits.
+Left and right panels show the distribution corresponding to the
+maximum-likelihood parameters $(\mu_y, \sigma_y) = (9.50, 1.64)$ in log and
+linear, respectively.
 \label{fig:infer-jitter}
 }
 \end{figure}
+
+% Notebook: "Residuals-vs-metadata"
+% \begin{figure}[h]
+% \begin{center}
+% \includegraphics[width=\textwidth]{residuals}
+% \end{center}
+% \caption{%
+% \todo{stuff}
+% \label{fig:residuals}
+% }
+% \end{figure}
 
 \section{Results: companion catalogs}
 \label{sec:results}
 
 Using the maximum-likelihood hyperparameters derived from the initial posterior
 samplings (see \sectionname~\ref{sec:inferjitter}), we update and fix the
-excess variance prior distribution parameters---$(\mu_{y}, \sigma_{y}) = (9.5,
-1.6)$, in units of $\textrm{m}~\textrm{s}^{-1}$---and re-run \thejoker\ on the
+excess variance prior distribution parameters---$(\mu_{y}, \sigma_{y}) = (9.50,
+1.64)$, in units of $\textrm{m}~\textrm{s}^{-1}$---and re-run \thejoker\ on the
 parent sample of \apogee\ \DR\ stars.
 \todo{Discuss how this relates to empirical Bayes?}
 
