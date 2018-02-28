@@ -663,7 +663,11 @@ information?}
 
 We also run on the null control sample (see \sectionname~\ref{sec:control}) with
 the same parameters.
-\todo{summary of this run - do any stars get flagged as needs MCMC/etc?}
+From the control sample run, 13 ``stars'' are flagged as \emph{needs MCMC}, and
+1023 are flagged as ``needs more prior samples'';
+For these stars, we don't continue sampling with \thejoker\ or MCMC and only use
+the posterior samples returned from the \thejoker.
+% See: Sample K cuts.ipynb
 
 
 \subsection{Stars with companions}
