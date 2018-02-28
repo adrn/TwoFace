@@ -115,7 +115,7 @@ def main(config_file, pool, seed, overwrite=False):
         y = rnd.normal(params.jitter[0], params.jitter[1])
         s = np.exp(0.5 * y) * params._jitter_unit
         std = np.sqrt(s**2 + orig_data.stddev**2).to(orig_data.rv.unit).value
-        new_rv = np.random.normal(np.mean(orig_data.rv).value, std)
+        new_rv = rnd.normal(np.mean(orig_data.rv).value, std)
         data = APOGEERVData(t=orig_data.t, rv=new_rv * orig_data.rv.unit,
                             stddev=orig_data.stddev)
 
