@@ -314,7 +314,8 @@ with points colored by the iron abundance.
 
 \section{Methods}
 
-\subsection{Orbit inference and velocity modeling}\label{sec:fitting}
+\subsection{Orbit inference and velocity modeling}
+\label{sec:fitting}
 
 For every source in the sample of \apogee\ stars defined in
 \sectionname~\ref{sec:data}, we obtain a posterior sampling in binary-system
@@ -410,7 +411,7 @@ must occur under very constraining data.
 Here we describe the procedure we use to generate per-target posterior samplings
 for the \apogee\ targets.
 We execute the full procedure twice for different goals (as described in
-\sectionname~\ref{sec:results}), and only here outline the key steps in the
+\sectionname~\ref{sec:catalogs}), and only here outline the key steps in the
 pipeline.
 
 For all \nstars\ \apogee\ stars with $\geq 3$ good visits (see
@@ -427,7 +428,7 @@ prior similar to that defined in \citet{Price-Whelan:2017}:
 For the prior over the excess variance parameter, $s^2$, we initially use
 a Gaussian over the transformed parameter $y = \ln s^2$ with the mean and
 standard deviation $(\mu_y, \sigma_y)$ indicated where the runs are described
-(see \sectionname~\ref{sec:results}).
+(see \sectionname~\ref{sec:catalogs}).
 The reference time for each star is set to the minimum visit epoch; $M_0$ then
 becomes the mean anomaly at the first visit observation.
 \tablename~\ref{tbl:params} contains descriptions of all parameters and priors
@@ -539,7 +540,7 @@ samples, the sampling is flagged as ``incomplete.''
 
 We construct a control sample of simulated data with no RV variability to assess
 our false-positive rates in the selections below (see
-\sectionname~\ref{sec:results}).
+\sectionname~\ref{sec:catalogs}).
 We randomly pick \ncontrol\ stars from the parent sample used in this work and
 replace the visit velocity measurements with simulated data.
 For each star $n$, we randomly sample an excess variance parameter value from
@@ -634,8 +635,8 @@ linear, respectively.
 \end{figure}
 
 
-\section{Results: companion catalogs}
-\label{sec:results}
+\section{Companion catalogs}
+\label{sec:catalogs}
 
 Using the maximum-likelihood hyperparameters derived from the initial posterior
 samplings (see \sectionname~\ref{sec:inferjitter}), we update and fix the
@@ -758,22 +759,63 @@ continue")}
 
 \todo{Stars with Martig or Ness masses - m2min}
 
+\subsection{Confident companions with effectively uniquely determined orbits}
+\label{sec:catalog-unimodal}
+
+\section{Results}
+\label{sec:results}
+
+\todo{Period-logg plot - lack of short-period companions for red clump stars?}
+
+\todo{The companions that don't make sense / can't be}
+
+\todo{Period-eccentricity plot - tidal circularization}
+
+\todo{Companion mass and mass-ratio distribution for stars with Ness / Martig masses}
+
 \section{Discussion}
 
 \subsection{Assumptions}
 \label{sec:discuss-assumptions}
 
-\todo{Return to our various assumptions and make sure that we discuss them
-\emph{by name} here.}
+It is important to keep in mind that the companion catalogs and results
+presented in this \documentname\ depend on the assumptions laid out in
+\sectionname~\ref{sec:fitting}.
+We have only considered radial velocity modulations from a single massive
+companion---\emph{no multiplets}; This is a fundamental limitation of our search
+and methodology.
+However, stars with multiple companions will likely be included in our companion
+catalog anyway, only with two-body orbital solutions that either don't fit the
+data well or pick out the shortest period orbit.
 
-\todo{\emph{no multiplets} punt to future work}
+Related to the above, we assume that all RV variations are
+gravitational---\emph{Kepler}.
+We see tentative evidence for coherent oscillations at the upper giant branch
+(see \figurename~\ref{fig:todo}), which we presently treat as excess variance or
+intrinsic jitter.
+If these oscillations are indeed from asteroseismic modes, \todo{why is this
+interesting?}.
 
-\todo{\emph{Kepler} evidence for coherent oscillations at the upper giant branch? companions that don't make sense}
+We assume that one star in each two-body system overwhelmingly dominates the
+luminosity and therefore spectrum of each system---\emph{SB1}.
+As seen in \figurename~\ref{fig:todo}, there are some companions with minimum
+masses comparable to or consistent with being larger than the masses of the
+observed star.
+These systems are either (a) nearly edge-on MS--RGB binaries (i.e. consistent
+with our assumption), (b) SB2 systems where the \apogee\ pipeline failed to flag
+the source as having broad lines or a bad fit, or (c) RGB--stellar remnant
+systems with a black hole or neutron star companion.
+A subset of these systems that look like they fall in category (c) are being
+followed-up to obtain further RV measurements to test whether any companions are
+black holes (Geha et al., in prep.).
 
-\todo{\emph{SB1} comment that there are some companions with masses large enough that they should be evolved, and therefore should contribute to the light! where are the companions? neutron stars / BHs?}
-
-We find that the residuals away from our best-fit two-body orbital solutions
-appear close to Gaussian, indicating that the \emph{simple noise model}
+Finally, we have assumed that the visit velocity error distribution is Gaussian,
+and that the visit velocity uncertainties could be
+under-estimated---\emph{simple noise model}.
+We can test this assumption using posterior samples from \thejoker\ by computing
+the residuals away from our best-fit two-body orbital solutions.
+We find that the normalized residuals appear to be very close to Gaussian over a
+large dynamic range of normalized residual values, indicating that this
 assumption may be sufficient.
 \figurename~\ref{fig:residuals} shows the distribution of normalized residuals,
 $R_{nk}$, for each visit: the $k$ visit velocities for each $n$ star, $v_{nk}$,
