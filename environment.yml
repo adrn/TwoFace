@@ -15,6 +15,7 @@ dependencies:
   - h5py
   - jupyter
   - pandas
+  - pytables
   - pip
   - pip:
     - emcee
