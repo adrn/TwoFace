@@ -47,6 +47,7 @@
 \newcommand{\nstars}{96,231}
 \newcommand{\nvisits}{397,559}
 \newcommand{\ncontrol}{16,384}
+\newcommand{\nhighK}{4,510}
 \newcommand{\nunimodal}{XX}
 \newcommand{\nmultimodal}{XX}
 
@@ -108,7 +109,7 @@ orbit.
 % Results
 We provide (1)~a catalog of \nunimodal\ companions for which the stellar
 companion properties can be confidently determined in a posterior sense, (2)~a
-catalog of \nmultimodal\ stars that likely have companions, but for which
+catalog of \nhighK\ stars that likely have companions, but for which
 (in most cases) more observations would be needed to uniquely determine the
 orbital properties, and (3)~posterior samplings for all orbital-companion
 parameters for all stars in the parent sample.
@@ -687,25 +688,26 @@ high-confidence companions.
 We select a sample of stars that confidently have companions using percentiles
 computed from the posterior samples in the velocity semi-amplitude parameter,
 $K$.
-\figurename~\ref{fig:lnK-percentiles}, left panel, shows distributions of
-percentiles in $\ln K$ computed for all stars with posterior samplings from
-\thejoker.
-\figurename~\ref{fig:lnK-percentiles}, right panel, shows the same for posterior
-samplings for the null control sample.
-We define a cut in the \todo{XX} percentile of the $\ln K$ samples such that
-\todo{XX false-positives...} (vertical line in
-\figurename~\ref{fig:lnK-percentiles}); \nmultimodal\ stars pass this cut.
+\figurename~\ref{fig:lnK-percentiles}, shows the distribution of 1st percentiles
+of $\ln K$ computed for all stars with posterior samplings from \thejoker\
+(filled, blue histogram), along with the same for posterior samplings for the
+null control sample (solid line, black).
+To select stars with companions, we use a cut in the 1st percentile of the $\ln
+K$ samples such that $<1\%$ of the control sample is selected, i.e. our
+estimated false positive rate is $<1\%$.
+We use a threshold of $\ln K = 0$ to meet this constraint (vertical, dashed line
+in \figurename~\ref{fig:lnK-percentiles}); \nhighK\ stars pass this cut.
 
-% % Notebook: "TODO"
-% \begin{figure}[h]
-% \begin{center}
-% \includegraphics[width=\textwidth]{lnK-percentiles}
-% \end{center}
-% \caption{%
-% TODO
-% \label{fig:lnK-percentiles}
-% }
-% \end{figure}
+% Notebook: "Sample K cuts.ipynb"
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{lnK-percentiles}
+\end{center}
+\caption{%
+TODO
+\label{fig:lnK-percentiles}
+}
+\end{figure}
 
 \tablename~\ref{tbl:} contains a subset of the \apogee\ \DR\ \texttt{allStar}
 catalog information for the stars that pass the above cut and therefore likely
