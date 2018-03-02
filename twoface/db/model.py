@@ -48,6 +48,8 @@ class StarResult(Base):
                        ForeignKey('status.id'),
                        default=0, index=True)
 
+    high_K = Column('high_K', types.Boolean)
+
     star = relationship("AllStar")
     jokerrun = relationship("JokerRun",
                             backref=backref("results",
