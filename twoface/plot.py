@@ -244,14 +244,15 @@ def plot_phase_fold(data, sample, ax=None, label=True,
     rv_unit = u.km/u.s
     ax.errorbar(phase, data.rv.to(rv_unit).value,
                 data.stddev.to(rv_unit).value,
-                linestyle='none', marker='o', color='k', markersize=5)
+                linestyle='none', marker='o', color='k', markersize=5,
+                zorder=10)
 
     if jitter_errorbar:
         ax.errorbar(phase, data.rv.to(rv_unit).value,
                     np.sqrt(data.stddev**2 +
                             sample['jitter']**2).to(rv_unit).value,
                     linestyle='none', marker='', elinewidth=0., color='#aaaaaa',
-                    alpha=0.9, capsize=3, capthick=1)
+                    alpha=0.9, capsize=3, capthick=1, zorder=9)
 
     phase_grid = np.linspace(0, 1, 1024)
     ax.plot(phase_grid, orbit.radial_velocity(t0 + phase_grid*P),
