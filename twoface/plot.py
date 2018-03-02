@@ -5,14 +5,15 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import numpy as np
 
-from thejoker import JokerSamples
 from thejoker.plot import plot_rv_curves
 from thejoker.sampler.likelihood import get_ivar
 
-from .samples_analysis import unimodal_P
+from .samples_analysis import unimodal_P, max_likelihood_sample
 
 __all__ = ['plot_data_orbits', 'plot_mcmc_diagnostic', 'plot_two_panel']
 
+# TODO: customize this in TheJoker?
+_RV_LBL = 'RV [{0:latex_inline}]'
 
 def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
                      xlim_choice='data', ylim_fac=1., n_times=4096, title=None,
@@ -77,7 +78,7 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
     if plot_kwargs is None:
         plot_kwargs = dict()
 
-    plot_kwargs.setdefault('color', '#aaaaaa')
+    plot_kwargs.setdefault('color', 'tab:blue')
     # plot_kwargs.setdefault('alpha', 0.25)
     plot_kwargs.setdefault('linewidth', 0.5)
     plot_rv_curves(samples, t_grid, rv_unit=u.km/u.s, data=data, ax=ax,
@@ -204,58 +205,63 @@ def plot_two_panel(data, samples, axes=None, tight=True, title=None,
     return fig
 
 
-# def plot_phase_fold(data, period, ax=None):
-#     """
-#     TODO:
-#
-#     Parameters
-#     ----------
-#     star : `~twoface.db.AllStar`
-#     sample : `~thejoker.JokerSamples`
-#
-#     Returns
-#     -------
-#     fig : `matplotlib.Figure`
-#     """
-#
-#     if not unimodal_P(sample, data):
-#         raise ValueError('multi-modal period distribution')
-#
-#     if len(sample) > 1:
-#         raise ValueError('can only pass a single sample to phase-fold at.')
-#
-#     # HACK: hard-set getting the median
-#     orbit = sample.get_orbit(0)
-#     M0 = sample['M0']
-#     P = sample['P']
-#     s = sample['jitter']
-#     t0 = data.t0 + (P/(2*np.pi)*M0).to(u.day, u.dimensionless_angles())
-#     phase = data.phase(P=P, t0=t0)
-#
-#     # compute chi^2 of the orbit fit
-#     residual = data.rv - orbit.radial_velocity(data.t)
-#     err = np.sqrt(data.stddev**2 + s**2)
-#     # chisq = np.sum((residual**2 / err**2).decompose())
-#
-#     fig, axes = plt.subplots(1, 2, figsize=(10, 5), sharex=True)
-#
-#     # plot the phase-folded data and orbit
-#     rv_unit = u.km/u.s
-#     axes[0].errorbar(phase, data.rv.to(rv_unit).value,
-#                      data.stddev.to(rv_unit).value,
-#                      linestyle='none', marker='o', color='k', markersize=5)
-#     axes[0].errorbar(phase, data.rv.to(rv_unit).value, s.to(rv_unit).value,
-#                      linestyle='none', marker='', color='k',
-#                      alpha=0.4, zorder=-10)
-#
-#     phase_grid = np.linspace(0, 1, 1024)
-#     axes[0].plot(phase_grid, orbit.radial_velocity(t0 + phase_grid*P),
-#                  marker='', zorder=-1, color='#aaaaaa')
-#     axes[0].set_xlabel('phase')
-#     axes[0].set_ylabel('radial velocity [{0:latex_inline}]'.format(rv_unit))
-#     # ax.set_title(r'$\chi^2 = {0:.2f}$'.format(chisq))
-#
-#     return fig
+def plot_phase_fold(data, sample, ax=None, label=True,
+                    jitter_errorbar=True, orbit_style=None):
+    """
+    TODO:
+
+    Parameters
+    ----------
+    star : `~twoface.db.AllStar`
+    sample : `~thejoker.JokerSamples`
+
+    Returns
+    -------
+    fig : `matplotlib.Figure`
+    """
+
+    if ax is None:
+        ax = plt.gca()
+    fig = ax.figure
+
+    if len(sample) > 1:
+        sample = max_likelihood_sample(data, sample)
+        # raise ValueError('Can only pass one sample.')
+
+    if orbit_style is None:
+        orbit_style = dict()
+    orbit_style.setdefault('color', 'tab:blue')
+    orbit_style.setdefault('zorder', -1)
+
+    P = sample['P']
+    M0 = sample['M0']
+    orbit = sample.get_orbit(0)
+
+    t0 = data.t0 + (P/(2*np.pi)*M0).to(u.day, u.dimensionless_angles())
+    phase = data.phase(P=P, t0=t0)
+
+    # plot the phase-folded data and orbit
+    rv_unit = u.km/u.s
+    ax.errorbar(phase, data.rv.to(rv_unit).value,
+                data.stddev.to(rv_unit).value,
+                linestyle='none', marker='o', color='k', markersize=5)
+
+    if jitter_errorbar:
+        ax.errorbar(phase, data.rv.to(rv_unit).value,
+                    np.sqrt(data.stddev**2 +
+                            sample['jitter']**2).to(rv_unit).value,
+                    linestyle='none', marker='', elinewidth=0., color='#aaaaaa',
+                    alpha=0.9, capsize=3, capthick=1)
+
+    phase_grid = np.linspace(0, 1, 1024)
+    ax.plot(phase_grid, orbit.radial_velocity(t0 + phase_grid*P),
+            marker='', **orbit_style)
+
+    if label:
+        ax.set_xlabel(r'phase, $\frac{M-M_0}{2\pi}$')
+        ax.set_ylabel(_RV_LBL.format(rv_unit))
+
+    return fig
 
 
 # TODO: add and update function above
