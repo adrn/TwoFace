@@ -740,7 +740,7 @@ Examples of stars in our high-$K$ sample, i.e. stars that likely have companions
 visits.
 Left panels show the data (black markers, error bars are the visit velocity
 uncertainties) with 128 random orbits from the \nposterior\ posterior samples
-under-plotted (grey lines); The \texttt{APOGEE\_ID} of each target and the
+under-plotted (lines, blue); The \texttt{APOGEE\_ID} of each target and the
 number of visits that pass our quality cuts, $N$, are indicated on each panel.
 Right panels show the \nposterior\ posterior samples visualized in
 period--eccentricity space.
@@ -797,14 +797,14 @@ criteria.
 Note that in these cases, there are certain times at which a future observation
 would be far more informative: For example, \todo{top panel, time X vs. time Y}.
 
-% % Notebook: "TODO"
-% \begin{figure}[h]
+% % Notebook: TODO
+% \begin{figure}[hp]
 % \begin{center}
-% \includegraphics[width=\textwidth]{lowK}
+% \includegraphics[width=\textwidth]{highK-unimodal}
 % \end{center}
 % \caption{%
 % TODO
-% \label{fig:lowK}
+% \label{fig:highK-unimodal}
 % }
 % \end{figure}
 
@@ -820,6 +820,24 @@ possible?}
 \todo{Should figures be phase-folded?}
 
 \todo{Also include M2min and primary mass when possible?}
+
+% Notebook: HighK-unimodal
+\begin{figure}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{highK-unimodal}
+\end{center}
+\caption{%
+Examples of high-$K$ stars with effectively unimodal posterior samplings.
+Each panel shows the data (black markers), phase-folded at the period of the
+posterior sample with maximum posterior probability.
+Visit velocity uncertainties are shown as black error bars (these are typically
+smaller than or equal to the size of the markers), and the inferred jitter as
+grey, capped error bars.
+Line (blue) shows the orbit compute from the posterior sample with maximum
+posterior probability.
+\label{fig:highK-unimodal}
+}
+\end{figure}
 
 
 \section{Results}
