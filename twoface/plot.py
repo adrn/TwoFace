@@ -51,8 +51,8 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
     else:
         fig = ax.figure
 
+    w = np.ptp(data.t.mjd)
     if xlim_choice == 'tight': # twice the span of the data
-        w = np.ptp(data.t.mjd)
         t_grid = np.linspace(data.t.mjd.min() - w*0.05,
                              data.t.mjd.max() + w*1.05,
                              n_times)
@@ -61,8 +61,9 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
         t_min = data.t.mjd.min()
         t_max = max(data.t.mjd.min() + 2*samples['P'].max().value,
                     data.t.mjd.max())
-        span = t_max - t_min
-        t_grid = np.linspace(t_min - 0.05*span, t_max + 0.05*span, 2048)
+        t_grid = np.linspace(t_min - 0.05*w,
+                             t_max + 0.05*w,
+                             n_times)
 
     elif xlim_choice == 'data': # span of the data
         t_grid = np.linspace(data.t.mjd.min() - w*0.05,
