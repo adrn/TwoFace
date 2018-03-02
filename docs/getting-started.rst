@@ -33,6 +33,3 @@ linked to (from within the ``twoface/scripts`` directory) with:
     > --allvisit="$APOGEE_PATH/test-allVisit.fits" \
     > --redclump="$APOGEE_PATH/test-rc.fits" \
     > -vv
-
-Generating posterior samples for the ``RedClump`` table
-=======================================================
