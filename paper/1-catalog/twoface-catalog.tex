@@ -559,6 +559,10 @@ When we save the control data, we only store the visit uncertainty and
 %
 % \todo{Nontrivial computation - details about running on cluster, TheJoker vs. emcee}
 
+% How do we run TheJoker on all of APOGEE? Run on a cluster, send batches of samples to processors because individual likelihood calls are fast
+%
+% How do we do MCMC? Similar issues as above, but less control because not inherently embarassingly parallel
+
 
 \section{Experiment: infer the excess variance distribution}
 \label{sec:inferjitter}
@@ -872,9 +876,9 @@ companions with $XX < P < XX$~day.
 continue")}
 
 % Notebook: HighK-unimodal
-\begin{figure}[hp]
+\begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{unimodal-P-e}
+\includegraphics[width=0.7\textwidth]{unimodal-P-e}
 \end{center}
 \caption{%
 TODO:
@@ -894,6 +898,8 @@ TODO:
 
 
 \section{Discussion}
+
+\todo{comment on short period shit, eccentricities}
 
 \subsection{Assumptions}
 \label{sec:discuss-assumptions}
@@ -1050,8 +1056,6 @@ TODO:
 \end{figure}
 
 \subsection{Population inference}
-
-
 
 Comment on things we could do with these samples hierarchical inference...
 
