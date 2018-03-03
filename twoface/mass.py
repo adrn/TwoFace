@@ -3,12 +3,16 @@
 # Standard library
 
 # Third-party
+from astropy.utils.misc import isiterable
 from astropy.constants import G
 import astropy.units as u
 import numpy as np
 from scipy.optimize import root
 
-__all__ = ['CM_NM_to_CNM', 'CM_NM_to_CN', 'get_martig_vec', 'm2_func']
+# Project
+from .log import log as logger
+
+__all__ = ['CM_NM_to_CNM', 'CM_NM_to_CN', 'get_martig_vec', 'mf', 'm2_func']
 
 # For abundance transformations:
 log_eC = 8.39
@@ -77,6 +81,11 @@ def get_martig_vec(Teff, logg, M_H, C_M, N_M):
     return vec
 
 
+def mf(P, K, e):
+    mf_circ = P * K**3 / (2*np.pi * G)
+    return (mf_circ * (1 - e**2)**1.5).to(u.Msun)
+
+
 def m2_func(m2, m1, sini, mf):
     return (m2*sini)**3 / (m1 + m2)**2 - mf
 
@@ -84,8 +93,20 @@ def m2_func(m2, m1, sini, mf):
 @u.quantity_input(m1=u.Msun, mf=u.Msun)
 def get_m2_min(m1, mf):
     mf = mf.to(m1.unit)
-    res = root(m2_func, x0=10., args=(m1.value, 1., mf.value))
-    return res.x[0] * m1.unit
+    if isiterable(m1) and isiterable(mf):
+        m2s = []
+        for x, y in zip(m1, mf):
+            try:
+                res = root(m2_func, x0=10., args=(x.value, 1., y.value))
+                m2s.append(res.x[0])
+            except Exception as e:
+                logger.warning('Failed to compute m2_min for sample: {0}'.format(str(e)))
+                m2s.append(np.nan)
+        return m2s * m1.unit
+
+    else:
+        res = root(m2_func, x0=10., args=(m1.value, 1., mf.value))
+        return res.x[0] * m1.unit
 
 
 def stellar_radius(star, mass):
