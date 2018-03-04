@@ -1,0 +1,59 @@
+\begin{table}[htb]
+    \footnotesize
+    \centering
+    \begin{tabular}{l|l|l}
+        \hline
+        Column name & Unit / format & Description \\
+        \hline
+        \texttt{APOGEE\_ID}        &                          &
+            identifier used by \apogee \\
+        \texttt{P}                 & $\mathrm{d}$             & $P$, period \\
+        \texttt{P\_err}            & $\mathrm{d}$             & \\
+        \texttt{M0}                & $\mathrm{rad}$           &
+            $M_0$, phase at reference epoch \\
+        \texttt{M0\_err}           & $\mathrm{rad}$           & \\
+        \texttt{e}                 &                          &
+            $e$, eccentricity \\
+        \texttt{e\_err}            &                          & \\
+        \texttt{omega}             & $\mathrm{rad}$           &
+            $\omega$, argument of pericenter \\
+        \texttt{omega\_err}        & $\mathrm{rad}$           & \\
+        \texttt{jitter}            & $\mathrm{km\,s^{-1}}$    &
+            $s$, excess variance parameter \\
+        \texttt{jitter\_err}       & $\mathrm{km\,s^{-1}}$    & \\
+        \texttt{K}                 & $\mathrm{km\,s^{-1}}$    &
+            $K$, velocity semi-amplitude \\
+        \texttt{K\_err}            & $\mathrm{km\,s^{-1}}$    & \\
+        \texttt{v0}                & $\mathrm{km\,s^{-1}}$    &
+            $v_0$, systemic velocity \\
+        \texttt{v0\_err}           & $\mathrm{km\,s^{-1}}$    & \\
+        \texttt{t0}                & Barycentric MJD          &
+            $t_0$, reference epoch \\
+        \texttt{emcee\_converged}  &                          & binary flag
+            indicating whether MCMC converged \\
+        \texttt{Gelman-Rubin}      &                          &
+            Gelman-Rubin statistic for each MCMC parameter \\
+        \texttt{M1}                & $\mathrm{M_{\odot}}$     &
+            primary mass estimate (\citealt{Ness:2015}) \\
+        \texttt{M1\_err}           & $\mathrm{M_{\odot}}$     & \\
+        \texttt{M2\_min}           & $\mathrm{M_{\odot}}$     &
+            $M_{2, \textrm{min}}$, minimum $M_2$ mass \\
+        \texttt{M2\_min\_err}      & $\mathrm{M_{\odot}}$     & \\
+        \vdots & & all columns from \citet{Ness:2015} \\
+        \vdots & & all columns from \apogee\ \DR\ \texttt{allStar} file \\
+        \hline
+        \multicolumn{3}{c}{\textit{(\nunimodal\ rows)}}
+    \end{tabular}
+    \caption{Description of data table containing summary information for all
+    stars in the high-$K$, unimodal sample:
+    Stars that likely have companions and have well-determined orbital
+    parameters.
+    All columns for orbital parameters are the median values over the posterior
+    samples (either from \thejoker, or from \package{emcee}).
+    All columns ending in \texttt{\_err} are robust estimates of the
+    standard-deviation of the posterior samples, $\sigma$, computed using the
+    median absolute deviation, $\textrm{MAD}$, as $\sigma \approx 1.5 \times
+    \textrm{MAD}$.
+    }
+    \label{tbl:highK-unimodal}
+\end{table}
