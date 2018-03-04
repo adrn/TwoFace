@@ -17,7 +17,8 @@ _RV_LBL = 'RV [{0:latex_inline}]'
 
 def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
                      xlim_choice='data', ylim_fac=1., n_times=4096, title=None,
-                     ax=None, highlight_P_extrema=True, plot_kwargs=None):
+                     ax=None, highlight_P_extrema=True, plot_kwargs=None,
+                     relative_to_t0=False):
     """
     Plot the APOGEE RV data vs. time and orbits computed from The Joker samples.
 
@@ -84,7 +85,8 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
     plot_rv_curves(samples, t_grid, rv_unit=u.km/u.s, data=data, ax=ax,
                    n_plot=min(len(samples['P']), n_orbits),
                    plot_kwargs=plot_kwargs,
-                   data_plot_kwargs=dict(zorder=5, elinewidth=1,))
+                   data_plot_kwargs=dict(zorder=5, elinewidth=1,),
+                   relative_to_t0=relative_to_t0)
 
     if highlight_P_extrema:
         # Darken the shortest period sample
@@ -92,14 +94,20 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
 
         P_min_samples = samples[samples['P'].argmin()]
         plot_rv_curves(P_min_samples, t_grid, rv_unit=u.km/u.s, ax=ax,
-                       n_plot=1, plot_kwargs=dark_style)
+                       n_plot=1, plot_kwargs=dark_style,
+                       relative_to_t0=relative_to_t0)
 
         # Darken the longest period sample
         P_max_samples = samples[samples['P'].argmax()]
         plot_rv_curves(P_max_samples, t_grid, rv_unit=u.km/u.s, ax=ax,
-                       n_plot=1, plot_kwargs=dark_style)
+                       n_plot=1, plot_kwargs=dark_style,
+                       relative_to_t0=relative_to_t0)
 
-    ax.set_xlim(t_grid.min(), t_grid.max())
+    if relative_to_t0:
+        ax.set_xlim(t_grid.min() - data.t0.mjd,
+                    t_grid.max() - data.t0.mjd)
+    else:
+        ax.set_xlim(t_grid.min(), t_grid.max())
 
     _rv = data.rv.to(u.km/u.s).value
     h = np.ptp(_rv)
