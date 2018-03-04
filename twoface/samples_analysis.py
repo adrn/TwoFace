@@ -1,8 +1,9 @@
 # Third-party
 import astropy.units as u
 import numpy as np
+from thejoker.sampler.mcmc import TheJokerMCMCModel
 
-__all__ = ['unimodal_P', 'max_likelihood_sample']
+__all__ = ['unimodal_P', 'max_likelihood_sample', 'MAP_sample']
 
 
 def unimodal_P(samples, data):
@@ -22,7 +23,7 @@ def unimodal_P(samples, data):
     T = np.ptp(data.t.mjd)
     delta = 4*P_min**2 / (2*np.pi*T)
 
-    return np.std(P_samples) < delta
+    return np.ptp(P_samples) < delta
 
 
 def max_likelihood_sample(data, samples):
@@ -43,3 +44,24 @@ def max_likelihood_sample(data, samples):
         chisqs[i] = np.sum((residual**2 / err**2).decompose())
 
     return samples[np.argmin(chisqs)]
+
+
+def MAP_sample(data, samples, joker_params):
+    """Return the maximum a posteriori sample.
+
+    Parameters
+    ----------
+    data : `~thejoker.RVData`
+    samples : `~thejoker.JokerSamples`
+    joker_params : `~thejoker.JokerParams`
+
+    """
+    model = TheJokerMCMCModel(joker_params, data)
+
+    ln_ps = np.zeros(len(samples))
+
+    mcmc_p = np.squeeze(model.pack_samples_mcmc(samples))
+    for i in range(len(samples)):
+        ln_ps[i] = model.ln_posterior(mcmc_p[i])
+
+    return samples[np.argmax(ln_ps)]
