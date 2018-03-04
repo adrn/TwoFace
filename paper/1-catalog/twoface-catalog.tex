@@ -41,6 +41,7 @@
 \newcommand{\DR}{\acronym{DR14}}
 \newcommand{\RC}{\acronym{RC}}
 \newcommand{\RGB}{\acronym{RGB}}
+\newcommand{\quantile}[2]{\ensuremath{\textrm{Q}_{#1}}\left(#2\right)}
 
 \newcommand{\nprior}{536,870,912}
 \newcommand{\nposterior}{256}
@@ -48,8 +49,8 @@
 \newcommand{\nvisits}{397,559}
 \newcommand{\ncontrol}{16,384}
 \newcommand{\nhighK}{4,510}
-\newcommand{\nunimodal}{XX}
 \newcommand{\nmultimodal}{XX}
+\newcommand{\nunimodal}{319}
 
 % for response to referee
 % \renewcommand{\resp}[1]{#1}
@@ -666,12 +667,13 @@ sample is available online.
 \todo{Structure of table, where to download, make a webpage with some
 information?}
 
-We also run on the null control sample (see \sectionname~\ref{sec:control}) with
-the same parameters.
+We also run on the null control sample (see
+\sectionname~\ref{sec:control-sample}) with the same parameters.
 From the control sample run, 13 ``stars'' are flagged as \emph{needs MCMC}, and
 1023 are flagged as ``needs more prior samples'';
-For these stars, we don't continue sampling with \thejoker\ or MCMC and only use
-the posterior samples returned from the \thejoker.
+For these control sample stars, we don't continue sampling with \thejoker\ or
+MCMC and only use the ($<$\nposterior) posterior samples returned from the
+\thejoker.
 % See: Sample K cuts.ipynb
 
 
@@ -681,17 +683,17 @@ the posterior samples returned from the \thejoker.
 We don't expect there to be a sharp transition in orbital parameters between
 stars with companions and stars without companions: There is a continuum of
 companion properties.
-For example, the companion masses can be low mass, or at long periods, or at
-high inclination, all of which will make the velocity semi-amplitude, $K$, small
-for a given system.
+For example, the companions can be low mass, or at long periods, or at high
+inclination, all of which will make the velocity semi-amplitude, $K$, small for
+a given system.
 Therefore, from the radial velocity data alone, there is no way to define a
 simple cut to select a complete sample of stars with companions.
 It is nevertheless possible to define a cut that selects stars with
 high-confidence companions.
 
 We select a sample of stars that confidently have companions using percentiles
-computed from the posterior samples in the velocity semi-amplitude parameter,
-$K$.
+computed from the log of the posterior samples in the velocity semi-amplitude
+parameter, $\ln K$.
 \figurename~\ref{fig:lnK-percentiles}, shows the distribution of 1st percentiles
 of $\ln K$ computed for all stars with posterior samplings from \thejoker\
 (filled, blue histogram), along with the same for posterior samplings for the
@@ -734,7 +736,7 @@ cut.
     2M00000866+7122144 & -3.313 \\
     ... & ...
     \end{tabular}
-    \caption{This table contains the \texttt{APOGEE\_ID} for all \nstars\ stars
+    \caption{This table contains \texttt{APOGEE\_ID}'s for all \nstars\ stars
     in the parent sample used in this work, for which we have posterior
     samplings in orbital parameters.
     The other column contains the 1st percentile computed over the $\ln K$
@@ -750,14 +752,14 @@ and the value of the 1st percentile over the $\ln K$ samples for each star.
 \figurename s~\ref{fig:highK-0} and \ref{fig:highK-1} show eight examples of
 high-$K$ stars, i.e. stars that likely have companions, with different numbers
 of visits, $N$, indicated on the panels.
-\figurename s~\ref{fig:lowK-0} and \ref{fig:lowK-1} is the same for eight
+\figurename s~\ref{fig:lowK-0} and \ref{fig:lowK-1} shows the same for eight
 low-$K$ stars, i.e. stars that either have no companions, low-mass companions,
 or companions at long periods or high inclination.
-
 The majority of the stars in the high-$K$ sample have poorly constrained orbital
 parameters because the posterior pdfs are very multimodal.
-The high-$K$ sample includes all stars in the catalogs described in the next two
-subsections, however these two catalogs are mutually exclusive with one another.
+The high-$K$ sample selected from \tablename~\ref{tbl:lnK-per} includes all
+stars in the catalogs described in the next two subsections, however the
+following two catalogs are mutually exclusive.
 
 % Notebook: "HighK"
 \begin{figure}[hp]
@@ -819,15 +821,21 @@ Continuation of \figurename~\ref{fig:lowK-0}.
 
 A subset of the high-$K$ sample (\sectionname~\ref{sec:catalog-confident}) have
 multimodal posterior distributions over orbital parameters that are limited to
-just a few qualitatively different solutions.
+a few qualitatively different solutions.
 For these stars, one or a few more well-timed RV measurements would likely lead
 to uniquely-determined orbital parameters.
-\todo{How exactly do we select these stars?}
-
 \figurename~\ref{fig:todo} shows a few examples of stars that meet these
 criteria.
-Note that in these cases, there are certain times at which a future observation
-would be far more informative: For example, \todo{top panel, time X vs. time Y}.
+These stars are prime candidates for follow-up efforts.
+In many of these cases, there are certain times at which a future observation
+would be far more informative.
+Visually, these times correspond to regions of time when the predicted RVs have
+large variance as computed for orbits computed from the posterior samplings.
+For example, \todo{top panel, time X vs. time Y, node vs. large variance}.
+
+\tablename~\ref{tbl:todo} contains ...
+\todo{Describe catalog contents: Also include M2min and primary mass when
+possible?}
 
 % % Notebook: TODO
 % \begin{figure}[hp]
@@ -840,14 +848,25 @@ would be far more informative: For example, \todo{top panel, time X vs. time Y}.
 % }
 % \end{figure}
 
-\todo{Describe catalog contents: Also include M2min and primary mass when
-possible?}
-
 
 \subsection{Confident companions with effectively uniquely determined orbits}
 \label{sec:catalog-unimodal}
 
-\todo{Also include M2min and primary mass when possible?}
+Starting from the high-$K$ sample, we select stars that have posterior period
+samples that fall within a single mode.
+We define a period resolution for each star $\Delta =
+\left[4\,P_{\textrm{min}}^2 / (2\pi \, T) \right]$, where $P_{\textrm{min}}$ is
+the minimum period sample value, and $T$ is the epoch span of the data for that
+star.
+We consider a sampling to be unimodal when $P_{\textrm{max}} - P_{\textrm{min}}
+< \Delta$ (see \sectionname~2 of \citealt{Price-Whelan:2017}).
+Unlike the multi-modal stars, the posterior pdfs for these stars can be
+approximated using point-estimates and standard deviations of their respective
+samplings.
+
+\tablename~\ref{tbl:highK-unimodal} contains ...
+
+\input{tables/unimodal-schema}
 
 % Notebook: HighK-unimodal-catalog
 \begin{figure}[hp]
@@ -1194,5 +1213,12 @@ In practice, we evaluate the log-marginal-likelihood
 \end{align}
 where $\textrm{logsumexp}$ (the log-sum-exp trick) provides a more stable
 estimate of the sum in \eqname~\ref{eq:lnlike}.
+
+
+\section{Using data products...}
+\label{sec:code-demo}
+
+\todo{Brief example of how to use twobody and thejoker to visualize orbits, with
+link to a tutorial notebook on github}
 
 \end{document}
