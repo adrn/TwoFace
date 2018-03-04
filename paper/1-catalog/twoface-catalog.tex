@@ -701,6 +701,8 @@ K$ samples such that $<1\%$ of the control sample is selected, i.e. our
 estimated false positive rate is $<1\%$.
 We use a threshold of $\ln K = 0$ to meet this constraint (vertical, dashed line
 in \figurename~\ref{fig:lnK-percentiles}); \nhighK\ stars pass this cut.
+For brevity below, we refer to this sample as the ``high-$K$'' stars, and the
+complimentary sample as the ``low-$K$'' stars.
 
 % Notebook: "Sample K cuts.ipynb"
 \begin{figure}[h]
@@ -717,10 +719,34 @@ cut.
 }
 \end{figure}
 
-\tablename~\ref{tbl:} contains a subset of the \apogee\ \DR\ \texttt{allStar}
-catalog information for the stars that pass the above cut and therefore likely
-have companions; For brevity below, we refer to this sample as the ``high-$K$''
-stars, and the complimentary sample as the ``low-$K$'' stars.
+\begin{table}
+    \centering
+    \begin{tabular}{c | c}
+    \texttt{APOGEE\_ID} & \texttt{lnK\_per\_1} \\
+    \hline
+    2M00000002+7417074 & -2.028 \\
+    2M00000068+5710233 & -2.600 \\
+    2M00000222+5625359 &  2.134 \\
+    2M00000446+5854329 & -7.199 \\
+    2M00000535+1504343 & -4.457 \\
+    2M00000546+6152107 & -4.388 \\
+    2M00000797+6436119 & -0.774 \\
+    2M00000866+7122144 & -3.313 \\
+    ... & ...
+    \end{tabular}
+    \caption{This table contains the \texttt{APOGEE\_ID} for all \nstars\ stars
+    in the parent sample used in this work, for which we have posterior
+    samplings in orbital parameters.
+    The other column contains the 1st percentile computed over the $\ln K$
+    samples for each source, \texttt{lnK\_per\_1}:
+    The ``high-$K$'' sample (see \sectionname~\ref{sec:catalog-confident}) is
+    defined using this column, by selecting \texttt{lnK\_per\_1 > 0}.
+    }
+    \label{tbl:lnK-per}
+\end{table}
+
+\tablename~\ref{tbl:lnK-per} contains a list of all stars in the parent sample
+and the value of the 1st percentile over the $\ln K$ samples for each star.
 \figurename s~\ref{fig:highK-0} and \ref{fig:highK-1} show eight examples of
 high-$K$ stars, i.e. stars that likely have companions, with different numbers
 of visits, $N$, indicated on the panels.
@@ -789,6 +815,8 @@ Continuation of \figurename~\ref{fig:lowK-0}.
 \subsection{Confident companions with highly constrained orbits}
 \label{sec:catalog-multimodal}
 
+\todo{How do we actually select these?}
+
 A subset of the high-$K$ sample (\sectionname~\ref{sec:catalog-confident}) have
 multimodal posterior distributions over orbital parameters that are limited to
 just a few qualitatively different solutions.
@@ -821,7 +849,7 @@ possible?}
 
 \todo{Also include M2min and primary mass when possible?}
 
-% Notebook: HighK-unimodal-catalog 
+% Notebook: HighK-unimodal-catalog
 \begin{figure}[hp]
 \begin{center}
 \includegraphics[width=\textwidth]{highK-unimodal}
