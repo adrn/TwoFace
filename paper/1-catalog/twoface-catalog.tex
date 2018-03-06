@@ -884,8 +884,8 @@ columns in the high-$K$, unimodal sample catalog, available online.
 \includegraphics[width=\textwidth]{highK-unimodal}
 \end{center}
 \caption{%
-Examples of high-$K$ stars with effectively unimodal posterior samplings and
-converged MCMC samplings.
+Randomly-selected examples of high-$K$ stars with effectively unimodal posterior
+samplings and converged MCMC samplings.
 Each panel shows the data (black markers), phase-folded at the period of the
 posterior sample with maximum posterior probability.
 Visit velocity uncertainties are shown as black error bars (these are typically
@@ -904,6 +904,10 @@ posterior probability.
 \subsection{Red clump stars lack short-period companions}
 
 \todo{Period-logg plot - lack of short-period companions for red clump stars?}
+
+\todo{also look at trends with Teff?}
+
+\todo{Cite troup, who also noted this}
 
 Red clump (\RC) stars are horizontal branch stars and have therefore already
 climbed the RGB, where the surface of the star can grow to be several AU in
@@ -927,10 +931,14 @@ companions with $XX < P < XX$~day.
 
 \todo{Expectation from theory? What's special at 10 days?}
 
+\todo{Mathieu et al. 2004}
+
 \figurename~\ref{fig:unimodalPe} shows the orbital period and eccentricity...
 
 \todo{Period - eccentricity plot? Tidal circularization (See "Debug MCMC
 continue")}
+
+\todo{eccentricity distribution w/ prior over-plotted}
 
 % Notebook: HighK-unimodal
 \begin{figure}[h]
@@ -948,10 +956,16 @@ TODO:
 
 \todo{Companion mass and mass-ratio distribution for stars with Ness / Martig masses}
 
+\todo{Interesting companions w/ large M2min, WD/NS/BH companions?}
 
-\subsection{Impossible companions: coherent oscillations?}
+\todo{Plot: M1 vs. M2min}
 
-\todo{The companions that don't make sense / can't be}
+\todo{Plot: M2min vs. a2sini}
+
+
+\subsection{Eclipsing}
+
+\todo{Stars with Kepler light curves}
 
 
 \section{Discussion}
@@ -1028,6 +1042,11 @@ with slightly more populated tails and evidence of a few catastrophic outliers.
 \label{fig:residuals}
 }
 \end{figure}
+
+
+\subsection{Impossible companions: coherent oscillations?}
+
+\todo{The companions that don't make sense / can't be}
 
 
 \subsection{Comparison to other APOGEE companion catalogs}
@@ -1115,6 +1134,9 @@ TODO:
 \subsection{Population inference}
 
 Comment on things we could do with these samples hierarchical inference...
+
+We don't need to know the orbits of each individual system: that's the power in
+this.
 
 We are SB1 only, but should do SB2 as well - no reason to restrict.
 
