@@ -93,7 +93,7 @@ class AllStar(Base):
     telescope = Column("telescope", types.String)
     location_id = Column("location_id", types.SmallInteger)
     field = Column("field", types.String)
-    j = Column("j", types.REAL)
+    # j = Column("j", types.REAL)
     j_err = Column("j_err", types.REAL)
     h = Column("h", types.REAL)
     h_err = Column("h_err", types.REAL)
@@ -281,12 +281,12 @@ class AllStar(Base):
     # param_cov = Column("param_cov", postgresql.ARRAY(types.REAL))
     _fp_str = "fparam{i} = Column('fparam{i}', types.REAL)"
     _cov_str = "fparam_cov{i}{j} = Column('fparam_cov{i}{j}', types.REAL)"
-    for i in range(9):
-        exec(_fp_str.format(i=i))
-        for j in range(9):
-            if j < i:
+    for _i in range(9):
+        exec(_fp_str.format(i=_i))
+        for _j in range(9):
+            if _j < _i:
                 continue
-            exec(_cov_str.format(i=i, j=j))
+            exec(_cov_str.format(i=_i, j=_j))
 
     def __repr__(self):
         return ("<ApogeeStar(id='{0}', apogee_id='{1}', {2} results)>"
