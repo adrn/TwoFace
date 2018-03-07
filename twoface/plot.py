@@ -15,6 +15,7 @@ __all__ = ['plot_data_orbits', 'plot_mcmc_diagnostic', 'plot_two_panel']
 # TODO: customize this in TheJoker?
 _RV_LBL = 'RV [{0:latex_inline}]'
 
+
 def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
                      xlim_choice='data', ylim_fac=1., n_times=4096, title=None,
                      ax=None, highlight_P_extrema=True, plot_kwargs=None,
@@ -187,8 +188,8 @@ def plot_two_panel(data, samples, axes=None, tight=True, title=None,
         fig = ax1.figure
 
     # orbits
-    plot_data_orbits_kw['xlim_choice'] = plot_data_orbits_kw.get(
-        'xlim_choice', 'tight')
+    plot_data_orbits_kw.setdefault('xlim_choice', 'tight')
+    plot_data_orbits_kw.setdefault('highlight_P_extrema', False)
     fig = plot_data_orbits(data, samples, ax=ax1,
                            **plot_data_orbits_kw)
     if title is not None:
@@ -200,12 +201,12 @@ def plot_two_panel(data, samples, axes=None, tight=True, title=None,
     scatter_kw.setdefault('linewidth', 0.)
     ax2.scatter(samples['P'], samples['e'], **scatter_kw)
 
-    ax2.set_xscale('log', basex=2)
+    ax2.set_xscale('log', basex=10)
     ax2.set_xlim(0.5, 2**15)
     ax2.set_ylim(-0.02, 1.02)
     ax2.set_xlabel('period, $P$ [day]')
     ax2.set_ylabel('eccentricity, $e$')
-    ax2.xaxis.set_ticks(2**np.arange(0, 15+1, 3))
+    ax2.xaxis.set_ticks(10**np.arange(0, 4+1, 1))
 
     if tight:
         fig.tight_layout()
