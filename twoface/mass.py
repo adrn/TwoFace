@@ -99,15 +99,22 @@ def get_m2_min(m1, mf):
         for x, y in zip(m1, mf):
             try:
                 res = root(m2_func, x0=10., args=(x.value, 1., y.value))
+                if not res.success:
+                    raise RuntimeError('Unsuccessful')
                 m2s.append(res.x[0])
             except Exception as e:
-                logger.warning('Failed to compute m2_min for sample: {0}'.format(str(e)))
+                logger.warning('Failed to compute m2_min for sample: {0}'
+                               .format(str(e)))
                 m2s.append(np.nan)
         return m2s * m1.unit
 
     else:
         res = root(m2_func, x0=10., args=(m1.value, 1., mf.value))
-        return res.x[0] * m1.unit
+
+        if res.success:
+            return res.x[0] * m1.unit
+        else:
+            return np.nan * m1.unit
 
 
 def stellar_radius(star, mass):

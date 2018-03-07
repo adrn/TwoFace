@@ -60,7 +60,7 @@ def MAP_sample(data, samples, joker_params):
 
     ln_ps = np.zeros(len(samples))
 
-    mcmc_p = np.squeeze(model.pack_samples_mcmc(samples))
+    mcmc_p = model.pack_samples_mcmc(samples)        
     for i in range(len(samples)):
         ln_ps[i] = model.ln_posterior(mcmc_p[i])
 
