@@ -2,9 +2,8 @@
 
 % to-do list
 % ----------
-% - write a first draft of the introduction
-% - list our assumptions for detection & characterization (TheJoker)
-% - Check abstract numbers (~80,000 RG stars with 3 or more good visits?)
+% - Make sure we don't use $K$ as a number of samples - that's $M$ - because $K$
+%   is the velocity semi-amplitude!
 
 % style notes
 % -----------
@@ -709,7 +708,7 @@ complimentary sample as the ``low-$K$'' stars.
 % Notebook: "Sample K cuts.ipynb"
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{lnK-percentiles}
+\includegraphics[width=0.8\textwidth]{lnK-percentiles}
 \end{center}
 \caption{%
 Distribution of 1st percentiles in $\ln K$ (in units of \kms) for the parent
@@ -814,41 +813,6 @@ Continuation of \figurename~\ref{fig:lowK-0}.
 \end{figure}
 
 
-\subsection{Confident companions with highly constrained orbits}
-\label{sec:catalog-multimodal}
-
-\todo{How do we actually select these?}
-
-A subset of the high-$K$ sample (\sectionname~\ref{sec:catalog-confident}) have
-multimodal posterior distributions over orbital parameters that are limited to
-a few qualitatively different solutions.
-For these stars, one or a few more well-timed RV measurements would likely lead
-to uniquely-determined orbital parameters.
-\figurename~\ref{fig:todo} shows a few examples of stars that meet these
-criteria.
-These stars are prime candidates for follow-up efforts.
-In many of these cases, there are certain times at which a future observation
-would be far more informative.
-Visually, these times correspond to regions of time when the predicted RVs have
-large variance as computed for orbits computed from the posterior samplings.
-For example, \todo{top panel, time X vs. time Y, node vs. large variance}.
-
-\tablename~\ref{tbl:todo} contains ...
-\todo{Describe catalog contents: Also include M2min and primary mass when
-possible?}
-
-% % Notebook: TODO
-% \begin{figure}[hp]
-% \begin{center}
-% \includegraphics[width=\textwidth]{highK-unimodal}
-% \end{center}
-% \caption{%
-% TODO
-% \label{fig:highK-unimodal}
-% }
-% \end{figure}
-
-
 \subsection{Confident companions with effectively uniquely determined orbits}
 \label{sec:catalog-unimodal}
 
@@ -858,8 +822,11 @@ We define a period resolution for each star $\Delta =
 \left[4\,P_{\textrm{min}}^2 / (2\pi \, T) \right]$, where $P_{\textrm{min}}$ is
 the minimum period sample value, and $T$ is the epoch span of the data for that
 star.
-We consider a sampling to be unimodal when $P_{\textrm{max}} - P_{\textrm{min}}
-< \Delta$ (see \sectionname~2 of \citealt{Price-Whelan:2017}); \nunimodal\ stars
+We consider a sampling to be unimodal when
+\begin{equation}
+    P_{\textrm{max}} - P_{\textrm{min}} < \Delta \label{eq:unimodal}
+\end{equation}
+(see \sectionname~2 of \citealt{Price-Whelan:2017}); \nunimodal\ stars
 pass this cut.
 Unlike the multi-modal stars, the posterior pdfs for these stars can be
 approximated using point-estimates and standard deviations of their respective
@@ -896,6 +863,76 @@ posterior probability.
 \label{fig:highK-unimodal}
 }
 \end{figure}
+
+
+\subsection{Confident companions with highly constrained orbits}
+\label{sec:catalog-multimodal}
+
+A subset of the high-$K$ sample (\sectionname~\ref{sec:catalog-confident}) have
+multimodal posterior distributions over orbital parameters that are limited to
+a few qualitatively different solutions.
+For these stars, one or a few more RV measurements would likely lead to
+uniquely-determined orbital parameters; These stars are prime candidates for
+follow-up efforts.
+As examples of such cases, we include an additional catalog of systems that have
+effectively bimodal posterior samplings in orbital period.
+We identify these systems using $k$-means clustering (\citealt{Lloyd:1982}) of
+the posterior samples.
+In detail, for all stars in the high-$K$ sample, we compute $\ln P$ for all
+period samples, then use $k$-means clustering with $k=2$ as implemented in the
+\texttt{scikit-learn} package (\citealt{Pedregosa:2011}) to identify two
+clusters of samples.
+For each cluster, we then ask whether the samples assigned to that cluster are
+unimodal (\eqname~\ref{eq:unimodal}): If the samples in each respective cluster
+are unimodal, we call the sampling ``bimodal.''
+
+\figurename~\ref{fig:highK-bimodal} shows a few examples of stars that meet
+this criterion.
+In many of these cases, there are certain times at which a future observation
+would be far more informative.
+Visually, those times correspond to regions of time when the predicted RVs have
+large variance based on the posterior samples at hand.
+% For example, \todo{top panel, time X vs. time Y, node vs. large variance}.
+
+\tablename~\ref{fig:highK-bimodal} contains ...
+\todo{Describe catalog contents: Also include M2min and primary mass when
+possible?}
+
+% Notebook: HighK-multimodal
+\begin{figure}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{highK-bimodal}
+\end{center}
+\caption{%
+TODO
+\label{fig:highK-bimodal}
+}
+\end{figure}
+
+\begin{table}
+    \centering
+    \begin{tabular}{c | c | c | c}
+    \texttt{APOGEE\_ID} & \texttt{P} & \texttt{e} & \texttt{K} \\
+    & $\mathrm{d}$ & & $\mathrm{km\,s^{-1}}$ \\
+    \hline
+    2M21362657-0017579 & 14.639 & 0.1171 & 30.68 \\
+    2M21362657-0017579 & 2.3049 & 0.0026 & 28.69 \\
+    2M03180303-0004215 & 35.553 & 0.1302 & 4.541 \\
+    2M03180303-0004215 & 107.22 & 0.3192 & 8.792 \\
+    ... & ... & ...
+    \end{tabular}
+    \caption{\todo{copy pasta}This table contains \texttt{APOGEE\_ID}'s for all \nstars\ stars
+    in the parent sample used in this work, for which we have posterior
+    samplings in orbital parameters.
+    The other column contains the 1st percentile computed over the $\ln K$
+    samples for each source, \texttt{lnK\_per\_1}:
+    The ``high-$K$'' sample (see \sectionname~\ref{sec:catalog-confident}) is
+    defined using this column, by selecting \texttt{lnK\_per\_1 > 0}.
+    }
+    \label{tbl:lnK-per}
+\end{table}
+
+\todo{We could instead select stars with log(Pmax) - log(Pmin) < 1, or some other metric to select things that have constrained periods but are multimodal}
 
 
 \section{Results}
@@ -1047,6 +1084,8 @@ with slightly more populated tails and evidence of a few catastrophic outliers.
 \subsection{Impossible companions: coherent oscillations?}
 
 \todo{The companions that don't make sense / can't be}
+
+\todo{Semi-periodic variables, etc.}
 
 
 \subsection{Comparison to other APOGEE companion catalogs}
