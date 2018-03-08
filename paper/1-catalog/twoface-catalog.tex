@@ -832,15 +832,18 @@ velocity semi-amplitude values from the MAP sample from each period mode.
 
 \begin{table}
     \centering
-    \begin{tabular}{c | c | c | c}
-    \texttt{APOGEE\_ID} & \texttt{P} & \texttt{e} & \texttt{K} \\
-    & $\mathrm{d}$ & & $\mathrm{km\,s^{-1}}$ \\
+    \begin{tabular}{c | c | c | c | c | c | c}
+    \texttt{APOGEE\_ID} & \texttt{P} & \texttt{e} & \texttt{K} &
+        \texttt{M1} & \texttt{M2\_min} & \texttt{clean\_flag} \\
+    & $\mathrm{d}$ & & $\mathrm{km\,s^{-1}}$ &
+        $\mathrm{M_{\odot}}$ & $\mathrm{M_{\odot}}$ &  \\
     \hline
-    2M21362657-0017579 & 14.639 & 0.1171 & 30.68 \\
-    2M21362657-0017579 & 2.3049 & 0.0026 & 28.69 \\
-    2M03180303-0004215 & 35.553 & 0.1302 & 4.541 \\
-    2M03180303-0004215 & 107.22 & 0.3192 & 8.792 \\
-    ... & ... & ...
+    2M21362657-0017579 & 14.639 & 0.1171 & 30.68 & -- & -- & 0 \\
+    2M21362657-0017579 & 2.3049 & 0.0026 & 28.69 & -- & -- & 0 \\
+    2M03180303-0004215 & 35.553 & 0.1302 & 4.541 & 1.20 & 0.20 & 0 \\
+    2M03180303-0004215 & 107.22 & 0.3192 & 8.792 & 1.20 & 0.13 & 0 \\
+    ... & ... & ... \\
+    \multicolumn{6}{c}{\textit{(210 rows)}}
     \end{tabular}
     \caption{This table contains \texttt{APOGEE\_ID}'s and limited orbital
     parameter information for all \nbimodal\ stars identified as having bimodal
@@ -848,6 +851,9 @@ velocity semi-amplitude values from the MAP sample from each period mode.
     Each source is listed twice, with MAP values of period, \texttt{P},
     eccentricity, \texttt{e}, and velocity semi-amplitude, \texttt{K}, from each
     period mode of the posterior sampling for the source.
+    When available, this table also includes point-mass estimates of the primary
+    mass, \texttt{M1}, from \citet{Ness:2015}, and minimum companion masses,
+    \texttt{M2\_min}, computed for each period mode.
     }
     \label{tbl:highK-bimodal}
 \end{table}
@@ -858,49 +864,28 @@ velocity semi-amplitude values from the MAP sample from each period mode.
 \section{Results}
 \label{sec:results}
 
-% TODO:
+\subsection{Companion masses and mass ratios}
+
+\todo{Companion mass and mass-ratio distribution for stars with Ness / Martig masses}
+
+\todo{Interesting companions w/ large M2min, WD/NS/BH companions?}
+
+\todo{Plot: M1 vs. M2min}
+
+\todo{Plot: M2min vs. a2sini}
+
 % Notebook: "Results"
-% \begin{figure}[h]
-% \begin{center}
-% \includegraphics[width=\textwidth]{infer-jitter}
-% \end{center}
-% \caption{%
-% Inferred prior over excess variance parameter ($y = \ln s^2$) using posterior
-% samples for 1,825 lower-RGB stars with $>10$ visits.
-% Left and right panels show the distribution corresponding to the
-% maximum-likelihood parameters $(\mu_y, \sigma_y) = (9.50, 1.64)$ in log and
-% linear, respectively.
-% \label{fig:infer-jitter}
-% }
-% \end{figure}
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{mass}
+\end{center}
+\caption{%
+TODO
+\label{fig:mass}
+}
+\end{figure}
 
-\subsection{Red clump stars lack short-period companions}
-
-\todo{Period-logg plot - lack of short-period companions for red clump stars?}
-
-\todo{also look at trends with Teff?}
-
-\todo{Cite troup, who also noted this}
-
-Red clump (\RC) stars are horizontal branch stars and have therefore already
-climbed the RGB, where the surface of the star can grow to be several AU in
-size.
-\RC\ stars are therefore expected to less frequently have companions at short
-periods ($P<XX$~day) because short period companions would have been
-common-envelope during the RGB phase.
-\figurename~\ref{fig:todo} hints that there is an apparent dearth of
-short-period companions around $\log g \sim 2.5$ (the approximate location of
-the red clump).
-Another way to look at this is to compare the fraction of subgiant stars with
-short-period companions to the same for stars near the \RC.
-
-\todo{To assess this, take boxes in log g-Teff}
-We find that, empirically, XX\% of the subgiants and YY\% of the \RC\ stars have
-companions with $XX < P < XX$~day.
-\todo{Assuming selection function doesn't preferentially bias...}
-
-
-\subsection{Evidence for tidal circularization at $P\sim 10~\textrm{day}$}
+\subsection{Evidence for tidal circularization}
 
 \todo{Expectation from theory? What's special at 10 days?}
 
@@ -923,17 +908,6 @@ TODO:
 \label{fig:unimodalPe}
 }
 \end{figure}
-
-
-\subsection{Companion masses and mass ratios}
-
-\todo{Companion mass and mass-ratio distribution for stars with Ness / Martig masses}
-
-\todo{Interesting companions w/ large M2min, WD/NS/BH companions?}
-
-\todo{Plot: M1 vs. M2min}
-
-\todo{Plot: M2min vs. a2sini}
 
 
 \subsection{Eclipsing}
