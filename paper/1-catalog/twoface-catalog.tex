@@ -58,7 +58,8 @@
 
 \begin{document}\sloppy\sloppypar\raggedbottom\frenchspacing % trust me
 
-\title{Binary companions of red giant stars in \apogee\ \DR}
+\title{Binary companions of red giant stars in \apogee\ \DR: \\
+       Search method and catalog of $>$4,500 systems}
 
 \author[0000-0003-0872-7098]{Adrian~M.~Price-Whelan}
 \affiliation{Department of Astrophysical Sciences,
@@ -534,11 +535,11 @@ equivalent to concatenating the results from a second, independent run of
 If at the end of this second run the target still has fewer than \nposterior\
 samples, the sampling is flagged as ``incomplete.''
 
-\subsection{Null control sample}
+\subsection{Null comparison sample}
 \label{sec:control-sample}
 
-We construct a control sample of simulated data with no RV variability to assess
-our false-positive rates in the selections below (see
+We construct a comparison sample of simulated data with no RV variability to
+assess our false-positive rates in the selections below (see
 \sectionname~\ref{sec:catalogs}).
 We randomly pick \ncontrol\ stars from the parent sample used in this work and
 replace the visit velocity measurements with simulated data.
@@ -551,7 +552,7 @@ $\sigma_{nk}$, and the excess variance,
 \begin{equation}
     v_{nk} \sim \mathcal{N}(\bar{v}_n, \sigma_{nk}^2 + s_n^2) \quad .
 \end{equation}
-When we save the control data, we only store the visit uncertainty and
+When we save the comparison data, we only store the visit uncertainty and
 ``forget'' the fact that the simulated data is generated with excess variance.
 
 
@@ -666,11 +667,11 @@ sample is available online.
 \todo{Structure of table, where to download, make a webpage with some
 information?}
 
-We also run on the null control sample (see
+We also run on the null comparison sample (see
 \sectionname~\ref{sec:control-sample}) with the same parameters.
-From the control sample run, 13 ``stars'' are flagged as \emph{needs MCMC}, and
-1023 are flagged as ``needs more prior samples'';
-For these control sample stars, we don't continue sampling with \thejoker\ or
+From the comparison sample run, 13 ``stars'' are flagged as \emph{needs MCMC},
+and 1023 are flagged as ``needs more prior samples'';
+For these comparison sample stars, we don't continue sampling with \thejoker\ or
 MCMC and only use the ($<$\nposterior) posterior samples returned from the
 \thejoker.
 % See: Sample K cuts.ipynb
@@ -696,9 +697,9 @@ parameter, $\ln K$.
 \figurename~\ref{fig:lnK-percentiles}, shows the distribution of 1st percentiles
 of $\ln K$ computed for all stars with posterior samplings from \thejoker\
 (filled, blue histogram), along with the same for posterior samplings for the
-null control sample (solid, dark line).
+null comparison sample (solid, dark line).
 To select stars with companions, we use a cut in the 1st percentile of the $\ln
-K$ samples such that $<1\%$ of the control sample is selected, i.e. our
+K$ samples such that $<1\%$ of the comparison sample is selected, i.e. our
 estimated false positive rate is $<1\%$.
 We use a threshold of $\ln K = 0$ to meet this constraint (vertical, dashed line
 in \figurename~\ref{fig:lnK-percentiles}); \nhighK\ stars pass this cut.
@@ -712,10 +713,10 @@ complimentary sample as the ``low-$K$'' stars.
 \end{center}
 \caption{%
 Distribution of 1st percentiles in $\ln K$ (in units of \kms) for the parent
-\apogee\ sample (blue, filled) and for the control sample (solid, dark line).
+\apogee\ sample (blue, filled) and for the comparison sample (solid, dark line).
 The vertical line (dashed, orange) indicates our adopted cut to select high-$K$
-stars that likely have companions; $<1\%$ of the control sample falls above this
-cut.
+stars that likely have companions; $<1\%$ of the comparison sample falls above
+this cut.
 \label{fig:lnK-percentiles}
 }
 \end{figure}
@@ -856,6 +857,22 @@ velocity semi-amplitude values from the MAP sample from each period mode.
 
 \section{Results}
 \label{sec:results}
+
+% TODO:
+% Notebook: "Results"
+% \begin{figure}[h]
+% \begin{center}
+% \includegraphics[width=\textwidth]{infer-jitter}
+% \end{center}
+% \caption{%
+% Inferred prior over excess variance parameter ($y = \ln s^2$) using posterior
+% samples for 1,825 lower-RGB stars with $>10$ visits.
+% Left and right panels show the distribution corresponding to the
+% maximum-likelihood parameters $(\mu_y, \sigma_y) = (9.50, 1.64)$ in log and
+% linear, respectively.
+% \label{fig:infer-jitter}
+% }
+% \end{figure}
 
 \subsection{Red clump stars lack short-period companions}
 
