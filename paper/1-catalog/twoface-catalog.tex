@@ -48,7 +48,7 @@
 \newcommand{\nvisits}{397,559}
 \newcommand{\ncontrol}{16,384}
 \newcommand{\nhighK}{4,510}
-\newcommand{\nmultimodal}{XX}
+\newcommand{\nbimodal}{113}
 \newcommand{\nunimodal}{319}
 
 % for response to referee
@@ -729,10 +729,6 @@ cut.
     2M00000068+5710233 & -2.600 \\
     2M00000222+5625359 &  2.134 \\
     2M00000446+5854329 & -7.199 \\
-    2M00000535+1504343 & -4.457 \\
-    2M00000546+6152107 & -4.388 \\
-    2M00000797+6436119 & -0.774 \\
-    2M00000866+7122144 & -3.313 \\
     ... & ...
     \end{tabular}
     \caption{This table contains \texttt{APOGEE\_ID}'s for all \nstars\ stars
@@ -760,60 +756,8 @@ The high-$K$ sample selected from \tablename~\ref{tbl:lnK-per} includes all
 stars in the catalogs described in the next two subsections, however the
 following two catalogs are mutually exclusive.
 
-% Notebook: "HighK"
-\begin{figure}[hp]
-\begin{center}
-\includegraphics[width=\textwidth]{highK-0}
-\end{center}
-\caption{%
-Examples of stars in our high-$K$ sample, i.e. stars that likely have companions
-(see \sectionname~\ref{sec:catalog-confident}), with different numbers of
-visits.
-Left panels show the data (black markers, error bars are the visit velocity
-uncertainties) with 128 random orbits from the \nposterior\ posterior samples
-under-plotted (lines, blue); The \texttt{APOGEE\_ID} of each target and the
-number of visits that pass our quality cuts, $N$, are indicated on each panel.
-Right panels show the \nposterior\ posterior samples visualized in
-period--eccentricity space.
-In most cases, despite confidently having companions based on the RV amplitude,
-the permitted orbit fits are highly multimodal.
-\label{fig:highK-0}
-}
-\end{figure}
 
-\begin{figure}[hp]
-\begin{center}
-\includegraphics[width=\textwidth]{highK-1}
-\end{center}
-\caption{%
-Continuation of \figurename~\ref{fig:highK-0}.
-\label{fig:highK-1}
-}
-\end{figure}
-
-\begin{figure}[hp]
-\begin{center}
-\includegraphics[width=\textwidth]{lowK-0}
-\end{center}
-\caption{%
-Same as \figurename~\ref{fig:highK-0}, but for stars in the low-$K$ sample, i.e.
-stars that have undetected or no companions.
-\label{fig:lowK-0}
-}
-\end{figure}
-
-\begin{figure}[hp]
-\begin{center}
-\includegraphics[width=\textwidth]{lowK-1}
-\end{center}
-\caption{%
-Continuation of \figurename~\ref{fig:lowK-0}.
-\label{fig:lowK-1}
-}
-\end{figure}
-
-
-\subsection{Confident companions with effectively uniquely determined orbits}
+\subsection{Confident companions with uniquely-determined orbits}
 \label{sec:catalog-unimodal}
 
 Starting from the high-$K$ sample, we select stars that have posterior period
@@ -841,28 +785,10 @@ We additionally join with the \apogee\ \DR\ \texttt{allStar} catalog and provide
 all columns from this catalog for convenience.
 \tablename~\ref{tbl:highK-unimodal} contains descriptions and units for all
 columns in the high-$K$, unimodal sample catalog, available online.
-\todo{where?}
+\todo{Link to a webpage with the catalogs and info on how to use with
+TwoBody/TheJoker}
 
 \input{tables/unimodal-schema}
-
-% Notebook: HighK-unimodal-catalog
-\begin{figure}[hp]
-\begin{center}
-\includegraphics[width=\textwidth]{highK-unimodal}
-\end{center}
-\caption{%
-Randomly-selected examples of high-$K$ stars with effectively unimodal posterior
-samplings and converged MCMC samplings.
-Each panel shows the data (black markers), phase-folded at the period of the
-posterior sample with maximum posterior probability.
-Visit velocity uncertainties are shown as black error bars (these are typically
-smaller than or equal to the size of the markers), and the inferred jitter as
-grey, capped error bars.
-Line (blue) shows the orbit compute from the posterior sample with maximum
-posterior probability.
-\label{fig:highK-unimodal}
-}
-\end{figure}
 
 
 \subsection{Confident companions with highly constrained orbits}
@@ -877,16 +803,19 @@ follow-up efforts.
 As examples of such cases, we include an additional catalog of systems that have
 effectively bimodal posterior samplings in orbital period.
 We identify these systems using $k$-means clustering (\citealt{Lloyd:1982}) of
-the posterior samples.
+the posterior samples in period.
 In detail, for all stars in the high-$K$ sample, we compute $\ln P$ for all
 period samples, then use $k$-means clustering with $k=2$ as implemented in the
 \texttt{scikit-learn} package (\citealt{Pedregosa:2011}) to identify two
 clusters of samples.
+We initialize the cluster positions at either end of the range of possible
+periods.
 For each cluster, we then ask whether the samples assigned to that cluster are
-unimodal (\eqname~\ref{eq:unimodal}): If the samples in each respective cluster
-are unimodal, we call the sampling ``bimodal.''
+unimodal (\eqname~\ref{eq:unimodal}).
+If the samples in each respective cluster are unimodal, we call the sampling
+``bimodal''; \nbimodal\ systems are identified as bimodal.
 
-\figurename~\ref{fig:highK-bimodal} shows a few examples of stars that meet
+\figurename~\ref{fig:highK-bimodal} shows a few examples of systems that meet
 this criterion.
 In many of these cases, there are certain times at which a future observation
 would be far more informative.
@@ -895,20 +824,10 @@ large variance based on the posterior samples at hand.
 For example, in the bottom left panel of \figurename~\ref{fig:highK-bimodal}, an
 observation at $t = 60$ would rule out one of the two possible orbits.
 
-\tablename~\ref{fig:highK-bimodal} contains ...
-\todo{Describe catalog contents: Also include M2min and primary mass when
-possible?}
-
-% Notebook: HighK-multimodal
-\begin{figure}[hp]
-\begin{center}
-\includegraphics[width=\textwidth]{highK-bimodal}
-\end{center}
-\caption{%
-TODO
-\label{fig:highK-bimodal}
-}
-\end{figure}
+\tablename~\ref{tbl:highK-bimodal} contains a list of all \apogee\ targets with
+bimodal samplings identified in this way.
+The table contains two rows for each source, with the period, eccentricity, and
+velocity semi-amplitude values from the MAP sample from each period mode.
 
 \begin{table}
     \centering
@@ -922,15 +841,14 @@ TODO
     2M03180303-0004215 & 107.22 & 0.3192 & 8.792 \\
     ... & ... & ...
     \end{tabular}
-    \caption{\todo{copy pasta}This table contains \texttt{APOGEE\_ID}'s for all \nstars\ stars
-    in the parent sample used in this work, for which we have posterior
-    samplings in orbital parameters.
-    The other column contains the 1st percentile computed over the $\ln K$
-    samples for each source, \texttt{lnK\_per\_1}:
-    The ``high-$K$'' sample (see \sectionname~\ref{sec:catalog-confident}) is
-    defined using this column, by selecting \texttt{lnK\_per\_1 > 0}.
+    \caption{This table contains \texttt{APOGEE\_ID}'s and limited orbital
+    parameter information for all \nbimodal\ stars identified as having bimodal
+    posterior samplings in orbital period.
+    Each source is listed twice, with MAP values of period, \texttt{P},
+    eccentricity, \texttt{e}, and velocity semi-amplitude, \texttt{K}, from each
+    period mode of the posterior sampling for the source.
     }
-    \label{tbl:lnK-per}
+    \label{tbl:highK-bimodal}
 \end{table}
 
 \todo{We could instead select stars with log(Pmax) - log(Pmin) < 1, or some other metric to select things that have constrained periods but are multimodal}
@@ -1204,6 +1122,7 @@ University Office of Information Technology's Research Computing department.
     \package{IPython} (\citealt{Perez:2007}),
     \package{matplotlib} (\citealt{Hunter:2007}),
     \package{numpy} (\citealt{Van-der-Walt:2011}),
+    \package{scikit-learn} (\citealt{Pedregosa:2011}),
     \package{scipy} (\url{https://www.scipy.org/}),
     \package{schwimmbad} (\todo{JOSS paper}),
     \package{sqlalchemy} (\url{https://www.sqlalchemy.org/}),
@@ -1292,5 +1211,91 @@ estimate of the sum in \eqname~\ref{eq:lnlike}.
 
 \todo{Brief example of how to use twobody and thejoker to visualize orbits, with
 link to a tutorial notebook on github}
+
+\section{Example data and orbit samples}
+
+% Notebook: "HighK"
+\begin{figure}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{highK-0}
+\end{center}
+\caption{%
+Examples of stars in our high-$K$ sample, i.e. stars that likely have companions
+(see \sectionname~\ref{sec:catalog-confident}), with different numbers of
+visits.
+Left panels show the data (black markers, error bars are the visit velocity
+uncertainties) with 128 random orbits from the \nposterior\ posterior samples
+under-plotted (lines, blue); The \texttt{APOGEE\_ID} of each target and the
+number of visits that pass our quality cuts, $N$, are indicated on each panel.
+Right panels show the \nposterior\ posterior samples visualized in
+period--eccentricity space.
+In most cases, despite confidently having companions based on the RV amplitude,
+the permitted orbit fits are highly multimodal.
+\label{fig:highK-0}
+}
+\end{figure}
+
+\begin{figure}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{highK-1}
+\end{center}
+\caption{%
+Continuation of \figurename~\ref{fig:highK-0}.
+\label{fig:highK-1}
+}
+\end{figure}
+
+\begin{figure}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{lowK-0}
+\end{center}
+\caption{%
+Same as \figurename~\ref{fig:highK-0}, but for stars in the low-$K$ sample, i.e.
+stars that have undetected or no companions.
+\label{fig:lowK-0}
+}
+\end{figure}
+
+\begin{figure}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{lowK-1}
+\end{center}
+\caption{%
+Continuation of \figurename~\ref{fig:lowK-0}.
+\label{fig:lowK-1}
+}
+\end{figure}
+
+
+% Notebook: HighK-unimodal-catalog
+\begin{figure}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{highK-unimodal}
+\end{center}
+\caption{%
+Randomly-selected examples of high-$K$ stars with effectively unimodal posterior
+samplings and converged MCMC samplings.
+Each panel shows the data (black markers), phase-folded at the period of the
+posterior sample with maximum posterior probability.
+Visit velocity uncertainties are shown as black error bars (these are typically
+smaller than or equal to the size of the markers), and the inferred jitter as
+grey, capped error bars.
+Line (blue) shows the orbit compute from the posterior sample with maximum
+posterior probability.
+\label{fig:highK-unimodal}
+}
+\end{figure}
+
+
+% Notebook: HighK-multimodal
+\begin{figure}[hp]
+\begin{center}
+\includegraphics[width=\textwidth]{highK-bimodal}
+\end{center}
+\caption{%
+TODO
+\label{fig:highK-bimodal}
+}
+\end{figure}
 
 \end{document}
