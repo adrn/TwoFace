@@ -789,6 +789,19 @@ columns in the high-$K$, unimodal sample catalog, available online.
 \todo{Link to a webpage with the catalogs and info on how to use with
 TwoBody/TheJoker}
 
+We have visually inspected the inferred orbits for all systems in this sample
+and have flagged systems with questionable or invalid fits.
+The value of the flag is: 0, when the orbits look reasonable, 1, when the orbits
+look reasonable but the value of the inferred excess variance is large, and 2,
+when the orbits are clearly poor fits.
+Many of the stars flagged as ``2'' look like they may be triple systems, as they
+tend to have radial velocity variations over two distinct timescales that are
+never well-fit by a single Keplerian orbit.
+This flag is included in the catalog (\tablename~\ref{tbl:highK-unimodal}) as
+the column \texttt{clean\_flag}; To select a clean sample of companions that
+have been successfully vetted by-eye, select only stars with
+\texttt{clean\_flag == 0}.
+
 \input{tables/unimodal-schema}
 
 
@@ -812,7 +825,7 @@ clusters of samples.
 We initialize the cluster positions at either end of the range of possible
 periods.
 For each cluster, we then ask whether the samples assigned to that cluster are
-unimodal (\eqname~\ref{eq:unimodal}).
+unimodal (\eqname~\ref{eq:catalog-unimodal}).
 If the samples in each respective cluster are unimodal, we call the sampling
 ``bimodal''; \nbimodal\ systems are identified as bimodal.
 
@@ -829,6 +842,15 @@ observation at $t = 60$ would rule out one of the two possible orbits.
 bimodal samplings identified in this way.
 The table contains two rows for each source, with the period, eccentricity, and
 velocity semi-amplitude values from the MAP sample from each period mode.
+When available, this table also includes an estimate of the primary mass, $M_1$,
+from \citet{Ness:2015} and an estimate of the minimum companion mass, $M_{2,
+\textrm{min}}$.
+
+We again visually inspect all systems in this sample and assign a flag based on
+the apparent quality of the inferred orbits (see
+\sectionname~\ref{sec:unimodal}).
+Again, to select a clean sample of companions from this catalog that have been
+successfully vetted by-eye, select only stars with \texttt{clean\_flag == 0}.
 
 \begin{table}
     \centering
@@ -858,26 +880,41 @@ velocity semi-amplitude values from the MAP sample from each period mode.
     \label{tbl:highK-bimodal}
 \end{table}
 
-\todo{We could instead select stars with log(Pmax) - log(Pmin) < 1, or some other metric to select things that have constrained periods but are multimodal}
+% Note: We could instead select stars with log(Pmax) - log(Pmin) < 1, or some
+% other metric to select things that have constrained periods but are
+% multimodal. This would get us more stars, but may be harder to interpret...
 
 
 \section{Results}
 \label{sec:results}
 
+Here we highlight a few interesting results from visualizing the properties of
+companions in the unimodal and bimodal samples defined above (see \sectionname
+s~\ref{sec:catalog-unimodal} and \ref{sec:catalog-bimodal}).
+In all figures, we only plot companions with inferred orbits that pass our
+visual inspection (\texttt{clean\_flag == 0}).
+We additionally restrict to stars with $\log g > 2$ to avoid upper RGB stars
+that may have coherent oscillations that mimic RV modulations from companions.
+
 \subsection{Companion masses and mass ratios}
 
-\todo{Companion mass and mass-ratio distribution for stars with Ness / Martig masses}
-
-\todo{Interesting companions w/ large M2min, WD/NS/BH companions?}
-
-\todo{Plot: M1 vs. M2min}
-
-\todo{Plot: M2min vs. a2sini}
+Most of the companions we find have minimum masses $M_{2, \textrm{min}} <
+1~\Msun$.
+\figurename~\ref{fig:mass}, left panel shows primary and companion mass
+estimates for systems with unimodal (black markers) and bimodal (blue lines)
+period samplings using primary masses from \citet{Ness:2015}.
+Upper dashed line shows the $M_{2, \textrm{min}} = M_1$ line, and lower dashed
+line shows the Hydrogen-burning limit, $M_{2, \textrm{min}} = 0.08~\msun$.
+For the systems with bimodal samplings, we compute the minimum companion mass
+for each period mode and connect these estimates with a line.
+Three interesting systems are immediately obvious: two systems with bimodal
+period samplings in which both period modes put the minimum companion mass below
+the Hydrogen-burning limit, and one system in which $M_{2, \textrm{min}} > M_1$.
 
 % Notebook: "Results"
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=0.7\textwidth]{mass}
+\includegraphics[width=\textwidth]{mass}
 \end{center}
 \caption{%
 TODO
@@ -885,7 +922,19 @@ TODO
 }
 \end{figure}
 
-\subsection{Evidence for tidal circularization}
+\subsubsection{2M04582049+2232000}
+% BD candidate
+
+
+\subsubsection{2M20130687+2044173}
+% BD candidate
+
+
+\subsubsection{2M01231070+1801407}
+% NS/BH candidate
+
+
+\subsection{Tidal circularization}
 
 \todo{Expectation from theory? What's special at 10 days?}
 
