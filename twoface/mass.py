@@ -103,8 +103,8 @@ def get_m2_min(m1, mf):
                     raise RuntimeError('Unsuccessful')
                 m2s.append(res.x[0])
             except Exception as e:
-                logger.warning('Failed to compute m2_min for sample: {0}'
-                               .format(str(e)))
+                logger.debug('Failed to compute m2_min for sample: {0}'
+                             .format(str(e)))
                 m2s.append(np.nan)
         return m2s * m1.unit
 
