@@ -721,28 +721,6 @@ this cut.
 }
 \end{figure}
 
-\begin{table}
-    \centering
-    \begin{tabular}{c | c}
-    \texttt{APOGEE\_ID} & \texttt{lnK\_per\_1} \\
-    \hline
-    2M00000002+7417074 & -2.028 \\
-    2M00000068+5710233 & -2.600 \\
-    2M00000222+5625359 &  2.134 \\
-    2M00000446+5854329 & -7.199 \\
-    ... & ...
-    \end{tabular}
-    \caption{This table contains \texttt{APOGEE\_ID}'s for all \nstars\ stars
-    in the parent sample used in this work, for which we have posterior
-    samplings in orbital parameters.
-    The other column contains the 1st percentile computed over the $\ln K$
-    samples for each source, \texttt{lnK\_per\_1}:
-    The ``high-$K$'' sample (see \sectionname~\ref{sec:catalog-confident}) is
-    defined using this column, by selecting \texttt{lnK\_per\_1 > 0}.
-    }
-    \label{tbl:lnK-per}
-\end{table}
-
 \tablename~\ref{tbl:lnK-per} contains a list of all stars in the parent sample
 and the value of the 1st percentile over the $\ln K$ samples for each star.
 \figurename s~\ref{fig:highK-0} and \ref{fig:highK-1} show eight examples of
@@ -802,8 +780,6 @@ the column \texttt{clean\_flag}; To select a clean sample of companions that
 have been successfully vetted by-eye, select only stars with
 \texttt{clean\_flag == 0}.
 
-\input{tables/unimodal-schema}
-
 
 \subsection{Confident companions with highly constrained orbits}
 \label{sec:catalog-multimodal}
@@ -852,34 +828,6 @@ the apparent quality of the inferred orbits (see
 Again, to select a clean sample of companions from this catalog that have been
 successfully vetted by-eye, select only stars with \texttt{clean\_flag == 0}.
 
-\begin{table}
-    \centering
-    \begin{tabular}{c | c | c | c | c | c | c}
-    \texttt{APOGEE\_ID} & \texttt{P} & \texttt{e} & \texttt{K} &
-        \texttt{M1} & \texttt{M2\_min} & \texttt{clean\_flag} \\
-    & $\mathrm{d}$ & & $\mathrm{km\,s^{-1}}$ &
-        $\mathrm{M_{\odot}}$ & $\mathrm{M_{\odot}}$ &  \\
-    \hline
-    2M21362657-0017579 & 14.639 & 0.1171 & 30.68 & -- & -- & 0 \\
-    2M21362657-0017579 & 2.3049 & 0.0026 & 28.69 & -- & -- & 0 \\
-    2M03180303-0004215 & 35.553 & 0.1302 & 4.541 & 1.20 & 0.20 & 0 \\
-    2M03180303-0004215 & 107.22 & 0.3192 & 8.792 & 1.20 & 0.13 & 0 \\
-    ... & ... & ... \\
-    \multicolumn{6}{c}{\textit{(210 rows)}}
-    \end{tabular}
-    \caption{This table contains \texttt{APOGEE\_ID}'s and limited orbital
-    parameter information for all \nbimodal\ stars identified as having bimodal
-    posterior samplings in orbital period.
-    Each source is listed twice, with MAP values of period, \texttt{P},
-    eccentricity, \texttt{e}, and velocity semi-amplitude, \texttt{K}, from each
-    period mode of the posterior sampling for the source.
-    When available, this table also includes point-mass estimates of the primary
-    mass, \texttt{M1}, from \citet{Ness:2015}, and minimum companion masses,
-    \texttt{M2\_min}, computed for each period mode.
-    }
-    \label{tbl:highK-bimodal}
-\end{table}
-
 % Note: We could instead select stars with log(Pmax) - log(Pmin) < 1, or some
 % other metric to select things that have constrained periods but are
 % multimodal. This would get us more stars, but may be harder to interpret...
@@ -899,17 +847,33 @@ that may have coherent oscillations that mimic RV modulations from companions.
 \subsection{Companion masses and mass ratios}
 
 Most of the companions we find have minimum masses $M_{2, \textrm{min}} <
-1~\Msun$.
+1~\msun$.
 \figurename~\ref{fig:mass}, left panel shows primary and companion mass
 estimates for systems with unimodal (black markers) and bimodal (blue lines)
-period samplings using primary masses from \citet{Ness:2015}.
-Upper dashed line shows the $M_{2, \textrm{min}} = M_1$ line, and lower dashed
+period samplings, again using primary masses from \citet{Ness:2015}.
+Upper dashed line shows the $M_{2, \textrm{min}} = M_1$ curve, and lower dashed
 line shows the Hydrogen-burning limit, $M_{2, \textrm{min}} = 0.08~\msun$.
 For the systems with bimodal samplings, we compute the minimum companion mass
 for each period mode and connect these estimates with a line.
-Three interesting systems are immediately obvious: two systems with bimodal
-period samplings in which both period modes put the minimum companion mass below
-the Hydrogen-burning limit, and one system in which $M_{2, \textrm{min}} > M_1$.
+
+\figurename~\ref{fig:mass}, right panel shows the ratio of the primary stellar
+radius to the projected separation of the two bodies, $R_1 / (a\,\sin i)$, and
+the minimum mass ratio, $q_{\textrm{min}} = M_{2, \textrm{min}} / M_1$, for the
+same samples.
+Again, black large markers indicate systems from the unimodal sample, and blue
+markers and lines connect the two estimates for systems with bimodal period
+samplings.
+Upper dashed line in this panel indicates the Roche radius, computed using an approximate functional form (\citealt{Eggleton:1983})
+\begin{equation}
+    \frac{R}{a} = \frac{0.49\,q^{-2/3}}{0.6\,q^{-2/3} +
+        \ln\left(1 + q^{-1/3}\right)} \quad .
+\end{equation}
+All of these systems are generally consistent with being detached binaries.
+
+In \figurename~\ref{fig:mass}, three interesting systems are immediately
+obvious: two systems with bimodal period samplings in which both period modes
+put the minimum companion mass below the Hydrogen-burning limit, and one system
+in which $M_{2, \textrm{min}} > M_1$; We discuss these systems below
 
 % Notebook: "Results"
 \begin{figure}[h]
@@ -917,21 +881,38 @@ the Hydrogen-burning limit, and one system in which $M_{2, \textrm{min}} > M_1$.
 \includegraphics[width=\textwidth]{mass}
 \end{center}
 \caption{%
-TODO
+\textit{Left panel:} Estimated minimum companion mass and primary mass for
+systems in the high-$K$, unimodal sample (black markers) and bimodal sample
+(blue markers and lines).
+Lines connecting markers (blue) show estimates from each period mode for each
+system with bimodal period samplings.
+Upper, dashed line shows the equal-mass curve, and lower dashed line shows the
+Hydrogen-burning limit.
+\textit{Right panel:} Ratio of primary stellar radius, $R_1$, to projected
+separation of the two bodies, $a\,\sin i$, and minimum mass ratio,
+$q_{\textrm{min}}$, again for systems in the high-$K$, unimodal sample
+(black markers) and bimodal sample (blue markers and lines).
 \label{fig:mass}
 }
 \end{figure}
 
-\subsubsection{2M04582049+2232000}
+
+\subsubsection{2M04582049+2232000 -- brown dwarf companion candidate}
 % BD candidate
 
+\todo{What to show?}
 
-\subsubsection{2M20130687+2044173}
+
+\subsubsection{2M20130687+2044173 -- brown dwarf companion candidate}
 % BD candidate
 
+\todo{What to show?}
 
-\subsubsection{2M01231070+1801407}
+
+\subsubsection{2M01231070+1801407 -- black hole companion candidate}
 % NS/BH candidate
+
+\todo{What to show?}
 
 
 \subsection{Tidal circularization}
@@ -940,33 +921,59 @@ TODO
 
 \todo{Mathieu et al. 2004}
 
-\figurename~\ref{fig:unimodalPe} shows the orbital period and eccentricity...
+\figurename~\ref{fig:PeK}, left panel, shows the normalized orbital period and
+eccentricity for all systems in the high-$K$, unimodal sample, and, right panel,
+the RV semi-amplitude.
+We normalize the inferred periods by the orbital period of a companion at the
+surface of the primary, $P_{\textrm{surface}}$:
+To do this for all systems in this sample, we assume that all primary stars have
+masses equal to the median mass over all stars with prior mass measurements in
+this sample, $M_1 = 1.36~\msun$, and assume a companion mass also equal to the
+median over minimum companion masses $M_{2, \textrm{min}} = 0.5~\msun$.
+We then use the surface gravity, $\log g$, of the primary, and eccentricity to
+compute
+\begin{align}
+    P_{\textrm{surface}} &= \frac{2\pi \, G^{1/4}}{(1-e)^{-3/2}} \,
+        \left(\frac{M_1 + M_2}{M_1^{3/4}}\right) \,
+        10^{-3/4\,\log g} \\
+    &= XX ...
+\end{align}
+where we use $M_{2, \textrm{min}}$ as $M_2$.
+There is a clear signature of circularization just under $P/P_{\textrm{surface}}
+\approx 10$.
+\todo{why is this novel with a large sample of giant stars}
 
-\todo{Period - eccentricity plot? Tidal circularization (See "Debug MCMC
-continue")}
-
-\todo{eccentricity distribution w/ prior over-plotted}
-
-% Notebook: HighK-unimodal
+% Notebook: Results
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=0.7\textwidth]{unimodal-P-e}
+\includegraphics[width=\textwidth]{P-e-K}
 \end{center}
 \caption{%
 TODO:
-\label{fig:unimodalPe}
+\label{fig:PeK}
+}
+\end{figure}
+
+% Notebook: Results
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{ecc-dist}
+\end{center}
+\caption{%
+TODO:
+\label{fig:ecc}
 }
 \end{figure}
 
 
-\subsection{Eclipsing}
-
-\todo{Stars with Kepler light curves}
+% \subsection{Eclipsing}
+%
+% \todo{Stars with Kepler light curves}
 
 
 \section{Discussion}
 
-\todo{comment on short period shit, eccentricities}
+\todo{comment on short period shit at low logg, eccentricities}
 
 \subsection{Assumptions}
 \label{sec:discuss-assumptions}
@@ -1252,7 +1259,66 @@ estimate of the sum in \eqname~\ref{eq:lnlike}.
 \todo{Brief example of how to use twobody and thejoker to visualize orbits, with
 link to a tutorial notebook on github}
 
-\section{Example data and orbit samples}
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{c | c}
+    \multicolumn{2}{c}{\textbf{Parent sample of \apogee\ \DR\ stars}}\\
+    \hline
+    \texttt{APOGEE\_ID} & \texttt{lnK\_per\_1} \\
+    \hline
+    2M00000002+7417074 & -2.028 \\
+    2M00000068+5710233 & -2.600 \\
+    2M00000222+5625359 &  2.134 \\
+    2M00000446+5854329 & -7.199 \\
+    ... & ... \\
+    \hline
+    \multicolumn{2}{c}{\textit{(\nstars\ rows)}}
+    \end{tabular}
+    \caption{This table contains \texttt{APOGEE\_ID}'s for all \nstars\ stars
+    in the parent sample used in this work, for which we have posterior
+    samplings in orbital parameters.
+    The other column contains the 1st percentile computed over the $\ln K$
+    samples for each source, \texttt{lnK\_per\_1}:
+    The ``high-$K$'' sample (see \sectionname~\ref{sec:catalog-confident}) is
+    defined using this column, by selecting \texttt{lnK\_per\_1 > 0}.
+    }
+    \label{tbl:lnK-per}
+\end{table}
+
+\input{tables/unimodal-schema}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{c | c | c | c | c | c | c}
+    \multicolumn{7}{c}{\textbf{High-$K$, bimodal systems}}\\
+    \hline
+    \texttt{APOGEE\_ID} & \texttt{P} & \texttt{e} & \texttt{K} &
+        \texttt{M1} & \texttt{M2\_min} & \texttt{clean\_flag} \\
+    & $\mathrm{d}$ & & $\mathrm{km\,s^{-1}}$ &
+        $\mathrm{M_{\odot}}$ & $\mathrm{M_{\odot}}$ &  \\
+    \hline
+    2M21362657-0017579 & 14.639 & 0.1171 & 30.68 & -- & -- & 0 \\
+    2M21362657-0017579 & 2.3049 & 0.0026 & 28.69 & -- & -- & 0 \\
+    2M03180303-0004215 & 35.553 & 0.1302 & 4.541 & 1.20 & 0.20 & 0 \\
+    2M03180303-0004215 & 107.22 & 0.3192 & 8.792 & 1.20 & 0.13 & 0 \\
+    ... & ... & ... \\
+    \hline
+    \multicolumn{6}{c}{\textit{(210 rows)}}
+    \end{tabular}
+    \caption{This table contains \texttt{APOGEE\_ID}'s and limited orbital
+    parameter information for all \nbimodal\ stars identified as having bimodal
+    posterior samplings in orbital period.
+    Each source is listed twice, with MAP values of period, \texttt{P},
+    eccentricity, \texttt{e}, and velocity semi-amplitude, \texttt{K}, from each
+    period mode of the posterior sampling for the source.
+    When available, this table also includes point-mass estimates of the primary
+    mass, \texttt{M1}, from \citet{Ness:2015}, and minimum companion masses,
+    \texttt{M2\_min}, computed for each period mode.
+    }
+    \label{tbl:highK-bimodal}
+\end{table}
+
+\clearpage
 
 % Notebook: "HighK"
 \begin{figure}[hp]
