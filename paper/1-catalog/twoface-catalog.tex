@@ -4,6 +4,7 @@
 % ----------
 % - Make sure we don't use $K$ as a number of samples - that's $M$ - because $K$
 %   is the velocity semi-amplitude!
+% - Figure out what to say about upper RGB stars / coherent oscillations!
 
 % style notes
 % -----------
@@ -38,6 +39,7 @@
 \newcommand{\thejoker}{\project{The~Joker}}
 \newcommand{\thecannon}{\project{The~Cannon}}
 \newcommand{\DR}{\acronym{DR14}}
+\newcommand{\DRtw}{\acronym{DR12}}
 \newcommand{\RC}{\acronym{RC}}
 \newcommand{\RGB}{\acronym{RGB}}
 \newcommand{\quantile}[2]{\ensuremath{\textrm{Q}_{#1}}\left(#2\right)}
@@ -150,27 +152,19 @@ dynamics of multi-body systems (for recent reviews, see
 
 Most of what is known about stellar companions comes from studies of
 nearby main-sequence (MS) stars.
+\todo{occurrence rates}
 MS stars with companions have a large dynamic range of constituent and orbital
 characteristics.
 For example, binary stars have mass-ratios that span from $\approx 0.03$
 to 1 (e.g., \citealt{Kraus:2008}), and have periods from days to
 millions of years (e.g., \citealt{Raghavan:2010}).
-\todo{multiplicity in general: occurrence rates}
+Less is known about population properties of non-interacting or detached
+companions to evolved stars.
 
-Less is known about non-interacting or detached companions to evolved stars.
-Such systems are interesting because they enable studying extreme outcomes or
-conditions of star formation and multiplicity.
-For example, evolved stars are typically much brighter than their MS
-counterparts, which enables characterizing the stellar companion population
-throughout the Galactic disk over a wide range of chemical abundances.
-They also provide a means to study the outcomes of stellar engulfment or
-common-envelope evolution: Do short-period companions exist around evolved
-stars, and do their statistics constrain stellar evolution on the red giant
-branch (RGB)?
-\todo{motivate time-domain spectroscopy}
-
+Large spectroscopic surveys with repeat observations offer a novel way to study
+binary star and companion populations.
 Time-domain radial-velocity measurements of stars contain information about
-massive companions: even with two successive observations of a single star, a
+massive companions: Even with two successive observations of a single star, a
 difference in the measured radial velocities implies the existence of at least
 one companion.
 However, with few or imprecise radial-velocity measurements, the orbital
@@ -291,9 +285,10 @@ set in the \texttt{ASPCAPFLAGS} bitmask: \texttt{STAR\_BAD}.
 After these cuts, and the requirement of $\geq 3$ visits for a given star, we
 are left with \nvisits\ visits for \nstars\ unique sources.
 \figurename~\ref{fig:nvisits} shows the number of stars in several bins of
-number of visits that pass the above quality cuts: \todo{XX}\% of the stars in
-\DR\ have $< 8$ visits.
-\figurename~\ref{fig:loggteff} ...
+number of visits that pass the above quality cuts: \todo{92}\% of the stars in
+our parent sample have $< 8$ visits.
+\figurename~\ref{fig:loggteff} shows the stellar parameters of all \nstars\
+stars in the parent sample used in this work.
 
 % Notebook: "Numbers of visits and sample overview"
 \begin{figure}[h]
@@ -337,7 +332,7 @@ samplings---under the following assumptions:
   induced by a single companion.
   This is motivated by the idea that triple star systems are usually
   hierarchical so that the period of the inner binary is typically much shorter
-  than the orbital period of the outer body (\todo{CITATION NEEDED}).
+  than the orbital period of the outer body (e.g., \citealt{Tokovinin:2018}).
   At present, we ignore the possibility of higher-order multiple systems.
   % \todo{revisit this - do we want to also sample over a long-term trend?}
 \item[Kepler] Related to the first point, all velocity variations of the primary
@@ -775,6 +770,10 @@ when the orbits are clearly poor fits.
 Many of the stars flagged as ``2'' look like they may be triple systems, as they
 tend to have radial velocity variations over two distinct timescales that are
 never well-fit by a single Keplerian orbit.
+The stars flagged as ``1'' tend to be either upper RGB stars, where
+astrophysical surface jitter can lead to RV modulations, or SB2 systems, where
+absorption lines from the secondary confuse the RV pipeline and lead to strange
+RV signals.
 This flag is included in the catalog (\tablename~\ref{tbl:highK-unimodal}) as
 the column \texttt{clean\_flag}; To select a clean sample of companions that
 have been successfully vetted by-eye, select only stars with
@@ -824,7 +823,7 @@ from \citet{Ness:2015} and an estimate of the minimum companion mass, $M_{2,
 
 We again visually inspect all systems in this sample and assign a flag based on
 the apparent quality of the inferred orbits (see
-\sectionname~\ref{sec:unimodal}).
+\sectionname~\ref{sec:catalog-unimodal}).
 Again, to select a clean sample of companions from this catalog that have been
 successfully vetted by-eye, select only stars with \texttt{clean\_flag == 0}.
 
@@ -838,7 +837,7 @@ successfully vetted by-eye, select only stars with \texttt{clean\_flag == 0}.
 
 Here we highlight a few interesting results from visualizing the properties of
 companions in the unimodal and bimodal samples defined above (see \sectionname
-s~\ref{sec:catalog-unimodal} and \ref{sec:catalog-bimodal}).
+s~\ref{sec:catalog-unimodal} and \ref{sec:catalog-multimodal}).
 In all figures, we only plot companions with inferred orbits that pass our
 visual inspection (\texttt{clean\_flag == 0}).
 We additionally restrict to stars with $\log g > 2$ to avoid upper RGB stars
@@ -872,8 +871,10 @@ All of these systems are generally consistent with being detached binaries.
 
 In \figurename~\ref{fig:mass}, three interesting systems are immediately
 obvious: two systems with bimodal period samplings in which both period modes
-put the minimum companion mass below the Hydrogen-burning limit, and one system
-in which $M_{2, \textrm{min}} > M_1$; We discuss these systems below
+put the minimum companion mass below the Hydrogen-burning limit (brown dwarf
+candidates), and one system in which $M_{2, \textrm{min}} > M_1$ (a neutron star
+or black hole candidate).
+These systems are being followed-up and will be studied in future work.
 
 % Notebook: "Results"
 \begin{figure}[h]
@@ -897,35 +898,56 @@ $q_{\textrm{min}}$, again for systems in the high-$K$, unimodal sample
 \end{figure}
 
 
-\subsubsection{2M04582049+2232000 -- brown dwarf companion candidate}
-% BD candidate
-
-\todo{What to show?}
-
-
-\subsubsection{2M20130687+2044173 -- brown dwarf companion candidate}
-% BD candidate
-
-\todo{What to show?}
-
-
-\subsubsection{2M01231070+1801407 -- black hole companion candidate}
-% NS/BH candidate
-
-\todo{What to show?}
-
-
 \subsection{Tidal circularization}
 
-\todo{Expectation from theory? What's special at 10 days?}
+From studies of binary star systems in open clusters, it is clear that
+short-period binaries tend to be more circular (have smaller eccentricities) as
+compared to longer-period binaries of the same age (e.g.,
+\citealt{Mathieu:2005}).
+Within a given population of binaries, this manifests as an apparently steep
+transition from a distribution of eccentricities to mainly circularized orbits
+at some characteristic period that depends on the age and evolutionary state of
+the population (see, e.g., \figurename~5 in \citealt{Mathieu:2005})---i.e. above
+this critical value of the period (or log-period), systems have some
+distribution of eccentricities, and below the eccentricities are close to zero.
+Many studies have measured this ``circularization period,'' predominantly for
+main-sequence binaries (e.g., \citealt{Meibom:2006, Kjurkchieva:2017}), and
+have found that it tends to be between 5--20 days, depending on age (e.g.,
+\citealt{Mathieu:1988}).
+For giant stars, the circularization period appears to be longer, closer to
+$\approx 100$ days (\citealt{Mayor:1984}).
 
-\todo{Mathieu et al. 2004}
+Theories for the tidal circularization process generally rely on tidal
+dissipation via eddy viscosity in the convective regions of stars to explain
+this (e.g., \citealt{Zahn:1989}).
+The circularization timescale and period should therefore depend on the size of
+the convective region, and the stellar parameters of the primary star.
+RGB stars are therefore excellent test-cases for these theories, since
+they are fully-convective:
+By comparing to (small) samples of giant star binaries in open clusters, it
+seems that the circularization timescales predicted by eddy viscosity
+dissipation at least qualitatively scale to giant stars
+(\citealt{Verbunt:1995}).
 
-\figurename~\ref{fig:PeK}, left panel, shows the normalized orbital period and
-eccentricity for all systems in the high-$K$, unimodal sample, and, right panel,
-the RV semi-amplitude.
-We normalize the inferred periods by the orbital period of a companion at the
-surface of the primary, $P_{\textrm{surface}}$:
+It is less clear what to expect for red clump (\RC) stars:
+RC stars are horizontal branch stars and have therefore already climbed the RGB.
+Short period, circularized companions in place before or while on the RGB could
+be engulfed, or will at least have been common-envelope with the evolving star.
+However, it is difficult to select samples of \RC\ stars to study this process
+because first-ascent RGB stars will have similar colors and stellar parameters.
+\citet{Verbunt:1995} argue that companion orbits may be a way to separate the
+two overlapping populations: eccentric, short-period orbits around stars near
+the red-clump should be first-ascent giants.
+
+The samples produced in this work provide excellent datasets to study tidal
+circularization of companions to giant stars across a range of ages and
+metallicities
+However, our samples consist of a mix of subgiants, giants, and RC stars which
+have distinct distributions in mass and stellar radius.
+To visualize the distribution of systems in period--eccentricity space, we have
+therefore computed normalized periods, where we normalize by the orbital period
+of a typical companion on a circular orbit at the surface of the primary,
+$P_{\textrm{surface}}$.
 To do this for all systems in this sample, we assume that all primary stars have
 masses equal to the median mass over all stars with prior mass measurements in
 this sample, $M_1 = 1.36~\msun$, and assume a companion mass also equal to the
@@ -935,13 +957,16 @@ compute
 \begin{align}
     P_{\textrm{surface}} &= \frac{2\pi \, G^{1/4}}{(1-e)^{-3/2}} \,
         \left(\frac{M_1 + M_2}{M_1^{3/4}}\right) \,
-        10^{-3/4\,\log g} \\
-    &= XX ...
+        10^{-3/4\,\log g}
 \end{align}
 where we use $M_{2, \textrm{min}}$ as $M_2$.
+
+\figurename~\ref{fig:PeK}, left panel, shows this normalized orbital period and
+eccentricity for all systems in the high-$K$, unimodal sample, and, right panel,
+the RV semi-amplitude.
 There is a clear signature of circularization just under $P/P_{\textrm{surface}}
 \approx 10$.
-\todo{why is this novel with a large sample of giant stars}
+\todo{what else can or should we say?}
 
 % Notebook: Results
 \begin{figure}[h]
@@ -949,21 +974,31 @@ There is a clear signature of circularization just under $P/P_{\textrm{surface}}
 \includegraphics[width=\textwidth]{P-e-K}
 \end{center}
 \caption{%
-TODO:
+\textit{Left panel:} Orbital period and eccentricity for all high-$K$ unimodal
+systems with $\log g > 2$, with period values normalized by the orbital period
+of a hypothetical companion at the surface of each primary star,
+$P_{\textrm{surface}}$, assuming $M_1 = 1.36~\msun$ and $M_2 =0.5~\msun$.
+Stars in the \apogee\ \DR\ red clump catalog are outlined in red.
+The sharp transition from eccentric systems to almost all circular orbits at
+$P/P_\textrm{surface} \approx 7$ is likely an outcome of tidal circularization.
+\textit{Right panel:} Normalized period and inferred radial velocity amplitude
+for the same systems.
+Points below $P/P_\textrm{surface} = 1$ are likely systems where the primary and
+companion mass assumptions used to compute $P_\textrm{surface}$ are invalid.
 \label{fig:PeK}
 }
 \end{figure}
 
 % Notebook: Results
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=0.7\textwidth]{ecc-dist}
-\end{center}
-\caption{%
-TODO:
-\label{fig:ecc}
-}
-\end{figure}
+% \begin{figure}[h]
+% \begin{center}
+% \includegraphics[width=0.7\textwidth]{ecc-dist}
+% \end{center}
+% \caption{%
+% TODO:
+% \label{fig:ecc}
+% }
+% \end{figure}
 
 
 % \subsection{Eclipsing}
@@ -1032,7 +1067,7 @@ sample:
 % Notebook: "Residuals-vs-metadata"
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=0.7\textwidth]{residuals}
+\includegraphics[width=0.6\textwidth]{residuals}
 \end{center}
 \caption{%
 Histogram shows the distribution of normalized visit residuals (see
@@ -1045,13 +1080,6 @@ with slightly more populated tails and evidence of a few catastrophic outliers.
 \label{fig:residuals}
 }
 \end{figure}
-
-
-\subsection{Impossible companions: coherent oscillations?}
-
-\todo{The companions that don't make sense / can't be}
-
-\todo{Semi-periodic variables, etc.}
 
 
 \subsection{Comparison to other APOGEE companion catalogs}
@@ -1072,8 +1100,8 @@ This sample is therefore complimentary to and non-overlapping with the catalog
 presented in this work.
 
 The other recent catalog searched for stellar and substellar companions to all
-stars in \apogee\ \acronym{DR12} (including the RGB) that passed a series of
-quality cuts, and had $\geq 8$ visits (\citealt{Troup:2016}).
+stars in \apogee\ \DRtw\ (including the RGB) that passed a series of quality
+cuts, and had $\geq 8$ visits (\citealt{Troup:2016}).
 For each star in the sample, orbits were fit to the visit RVs using a multi-step
 orbit-fitting procedure: it starts by identifying significant periods and a few
 harmonics of those periods, then fits a Keplerian orbit at each of these
@@ -1092,7 +1120,7 @@ We find that the comparisons fall in three categories:
 samplings, and the period distribution appears unimodal,
 (2) the parameters reported in \citet{Troup:2016} identify one possible mode of
 a likely multi-modal posterior pdf over orbital parameters, and
-(3) the data changed significantly between \apogee\ \acronym{DR12} and \DR, so
+(3) the data changed significantly between \apogee\ \DRtw\ and \DR, so
 no meaningful comparisons can be made; Roughly 1/3 of the comparison sample
 falls into each class.
 \figurename~\ref{fig:troup-unimodal} shows a few representative cases in which
@@ -1106,39 +1134,10 @@ For completeness, \figurename~\ref{fig:troup-datachanged} shows two instances in
 which the orbital parameters from \citet{Troup:2016} no longer make sense,
 likely because the data changed between data releases.
 
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{troup-unimodal.pdf}
-\end{center}
-\caption{%
-TODO:
-\label{fig:troup-unimodal}
-}
-\end{figure}
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{troup-multimodal.pdf}
-\end{center}
-\caption{%
-TODO:
-\label{fig:troup-multimodal}
-}
-\end{figure}
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{troup-data-changed.pdf}
-\end{center}
-\caption{%
-TODO:
-\label{fig:troup-datachanged}
-}
-\end{figure}
-
 \subsection{Population inference}
 
-Comment on things we could do with these samples hierarchical inference...
+\todo{Comment on things we could do with these samples hierarchical
+inference...}
 
 We don't need to know the orbits of each individual system: that's the power in
 this.
@@ -1171,10 +1170,10 @@ University Office of Information Technology's Research Computing department.
     \package{numpy} (\citealt{Van-der-Walt:2011}),
     \package{scikit-learn} (\citealt{Pedregosa:2011}),
     \package{scipy} (\url{https://www.scipy.org/}),
-    \package{schwimmbad} (\todo{JOSS paper}),
+    \package{schwimmbad} (\citealt{Price-Whelan:2017a}),
     \package{sqlalchemy} (\url{https://www.sqlalchemy.org/}),
-    \package{thejoker} (\todo{thejoker zenodo?}),
-    \package{twobody} (\todo{twobody zenodo?}).
+    \package{thejoker} (\citealt{Price-Whelan:2017b}),
+    \package{twobody} (\todo{twobody zenodo}).
 }
 
 \facility{\sdssiv, \apogee}
@@ -1401,6 +1400,51 @@ posterior probability.
 \caption{%
 TODO
 \label{fig:highK-bimodal}
+}
+\end{figure}
+
+% Notebook: Compare Troup
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{troup-unimodal.pdf}
+\end{center}
+\caption{%
+Four examples of stars that also appear in the \citet{Troup:2016} companion
+catalog where our orbit samplings are unimodal, and agree well with the previous
+orbit fits.
+Left panels show the data from \apogee\ \DR\ (black markers), the orbit fit
+(orange, thick line; \citealt{Troup:2016}), and 128 orbits computed from
+posterior samples generated in this work (blue, thinner lines).
+Right panels show the period and eccentricity of the orbit fit (orange, +
+marker; \citealt{Troup:2016}) and the posterior samples from this work (blue
+markers).
+\label{fig:troup-unimodal}
+}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{troup-multimodal.pdf}
+\end{center}
+\caption{%
+Same as \figurename~\ref{fig:troup-unimodal}, but for four stars where we find a
+multi-modal posterior sampling.
+In this cases, the orbit fit from \citet{Troup:2016} generally identify one of
+the possible period modes, but multiple orbit solutions are typically allowed.
+\label{fig:troup-multimodal}
+}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{troup-data-changed.pdf}
+\end{center}
+\caption{%
+Same as \figurename~\ref{fig:troup-unimodal} and
+\figurename~\ref{fig:troup-multimodal}, but for two stars in which no meaningful
+comparison can be made because the visit velocities changed significantly
+between \DRtw\ and \DR.
+\label{fig:troup-datachanged}
 }
 \end{figure}
 
