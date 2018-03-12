@@ -27,9 +27,10 @@ from twoface.log import log as logger
 from twoface.db import db_connect
 from twoface.db import JokerRun, AllStar, StarResult, Status
 from twoface.config import TWOFACE_CACHE_PATH
+from twoface.sample_prior import make_prior_cache
 
 
-def main(db_file, pool, seed):
+def main(db_file, pool, seed, overwrite=False):
 
     db_path = join(TWOFACE_CACHE_PATH, db_file)
     if not os.path.exists(db_path):
@@ -46,15 +47,29 @@ def main(db_file, pool, seed):
     params = JokerParams(P_min=10 * u.day,
                          P_max=1000 * u.day,
                          jitter=150 * u.m/u.s)
-    n_prior_samples = 2**26
+    # n_prior_samples = 2**26
+    n_prior_samples = 2**18
     run_name = 'apogee-jitter'
     apogee_id = '2M01231070+1801407'
+
     results_filename = join(TWOFACE_CACHE_PATH, '{0}.hdf5'.format(apogee_id))
+    prior_samples_file = join(TWOFACE_CACHE_PATH,
+                              '{0}-prior.hdf5'.format(apogee_id))
 
     # Create TheJoker sampler instance with the specified random seed and pool
     rnd = np.random.RandomState(seed=seed)
     logger.debug("Creating TheJoker instance with {0}, {1}".format(rnd, pool))
     joker = TheJoker(params, random_state=rnd, pool=pool)
+
+    # Create a cache of prior samples (if it doesn't exist) and store the
+    # filename in the database.
+    if not os.path.exists(prior_samples_file) or overwrite:
+        logger.debug("Prior samples file not found - generating {0} samples..."
+                     .format(n_prior_samples))
+        make_prior_cache(prior_samples_file, joker,
+                         N=n_prior_samples,
+                         max_batch_size=2**22) # MAGIC NUMBER
+        logger.debug("...done")
 
     # Query to get all stars associated with this run that need processing:
     # they should have a status id = 0 (needs processing)
@@ -71,8 +86,8 @@ def main(db_file, pool, seed):
                .format(time.time()-t0))
     try:
         samples = joker.iterative_rejection_sample(
-            data=data, n_prior_samples=n_prior_samples, return_logprobs=False,
-            n_requested_samples=1024)
+            data=data, prior_cache_file=prior_samples_file,
+            return_logprobs=False, n_requested_samples=1024)
 
     except Exception as e:
         logger.warning("\t Failed sampling for star {0} \n Error: {1}"
