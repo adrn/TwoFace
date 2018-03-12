@@ -29,9 +29,9 @@ from twoface.db import JokerRun, AllStar, StarResult, Status
 from twoface.config import TWOFACE_CACHE_PATH
 
 
-def main(database_file, pool, seed):
+def main(db_file, pool, seed):
 
-    db_path = join(TWOFACE_CACHE_PATH, database_file)
+    db_path = join(TWOFACE_CACHE_PATH, db_file)
     if not os.path.exists(db_path):
         raise IOError("sqlite database not found at '{0}'\n Did you run "
                       "scripts/initdb.py yet for that database?"
