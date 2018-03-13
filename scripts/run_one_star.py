@@ -48,7 +48,7 @@ def main(db_file, pool, seed, overwrite=False):
                          P_max=1000 * u.day,
                          jitter=(9.5, 1.64),
                          jitter_unit=u.m/u.s)
-    n_prior_samples = 2**26
+    n_prior_samples = 2**28
     run_name = 'apogee-jitter'
     apogee_id = '2M01231070+1801407'
 
