@@ -16,6 +16,7 @@ sudo: false
 addons:
     apt:
         packages:
+            - dvipng
             - texlive-latex-recommended
             - texlive-latex-extra
             - texlive-fonts-recommended
