@@ -13,14 +13,14 @@ sudo: false
 #
 # https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
 
-addons:
-    apt:
-        packages:
-            - dvipng
-            - texlive-latex-recommended
-            - texlive-latex-extra
-            - texlive-fonts-recommended
-            - texlive-fonts-extra
+# addons:
+#     apt:
+#         packages:
+#             - dvipng
+#             - texlive-latex-recommended
+#             - texlive-latex-extra
+#             - texlive-fonts-recommended
+#             - texlive-fonts-extra
 
 env:
     global:
@@ -56,9 +56,9 @@ matrix:
     include:
 
         # compile the latex to make a PDF of the paper
-        - os: linux
-          env: BUILD_PAPER='true'
-          python: 3.6
+        # - os: linux
+        #   env: BUILD_PAPER='true'
+        #   python: 3.6
 
         # Do a coverage test in Python 2.
         # - python: 2.7
