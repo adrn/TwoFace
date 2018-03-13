@@ -84,9 +84,9 @@ def main(db_file, pool, seed, overwrite=False):
     logger.log(1, "\t visits loaded ({:.2f} seconds)"
                .format(time.time()-t0))
     try:
-        samples = joker.iterative_rejection_sample(
+        samples = joker.rejection_sample(
             data=data, prior_cache_file=prior_samples_file,
-            return_logprobs=False, n_requested_samples=1024)
+            return_logprobs=False)
 
     except Exception as e:
         logger.warning("\t Failed sampling for star {0} \n Error: {1}"
