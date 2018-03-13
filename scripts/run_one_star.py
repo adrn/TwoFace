@@ -47,8 +47,7 @@ def main(db_file, pool, seed, overwrite=False):
     params = JokerParams(P_min=10 * u.day,
                          P_max=1000 * u.day,
                          jitter=150 * u.m/u.s)
-    # n_prior_samples = 2**26
-    n_prior_samples = 2**18
+    n_prior_samples = 2**26
     run_name = 'apogee-jitter'
     apogee_id = '2M01231070+1801407'
 
@@ -124,6 +123,8 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--seed", dest="seed", default=None, type=int,
                         help="Random number seed")
 
+    parser.add_argument("-o", "--overwrite", dest="overwrite", default=False, action='store_true')
+
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--procs", dest="n_procs", default=1,
                        type=int, help="Number of processes.")
@@ -160,4 +161,4 @@ if __name__ == "__main__":
     pool_kwargs = dict(mpi=args.mpi, processes=args.n_procs)
     pool = choose_pool(**pool_kwargs)
 
-    main(db_file=args.db_file, pool=pool, seed=args.seed)
+    main(db_file=args.db_file, pool=pool, seed=args.seed, overwrite=args.overwrite)
