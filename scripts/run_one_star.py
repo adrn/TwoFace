@@ -46,7 +46,8 @@ def main(db_file, pool, seed, overwrite=False):
     # TODO: all hard-set, these should be options
     params = JokerParams(P_min=10 * u.day,
                          P_max=1000 * u.day,
-                         jitter=150 * u.m/u.s)
+                         jitter=(9.5, 1.64),
+                         jitter_unit=u.m/u.s)
     n_prior_samples = 2**26
     run_name = 'apogee-jitter'
     apogee_id = '2M01231070+1801407'
