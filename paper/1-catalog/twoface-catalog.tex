@@ -44,6 +44,8 @@
 \newcommand{\RGB}{\acronym{RGB}}
 \newcommand{\quantile}[2]{\ensuremath{\textrm{Q}_{#1}}\left(#2\right)}
 \newcommand{\pdf}{\textit{pdf}}
+\newcommand{\logg}{\ensuremath{\log g}}
+\newcommand{\Teff}{\ensuremath{T_{\textrm{eff}}}}
 
 \newcommand{\nprior}{536,870,912}
 \newcommand{\nposterior}{256}
@@ -249,8 +251,8 @@ Most relevant for this work, the visit radial velocities (RVs) are determined
 using an iterative scheme: the individual visit spectra are combined using
 initial guesses for the relative RVs into a coadded spectrum, which is then used
 to re-derive the relative visit velocities.
-The stellar parameters---surface gravity, $\log g$, and effective temperature,
-$T_{\textrm{eff}}$---and the chemical abundances are determined from the coadded
+The stellar parameters---surface gravity, \logg, and effective temperature,
+\Teff---and the chemical abundances are determined from the coadded
 spectrum as a part of the \apogee\ Stellar Parameters and Chemical Abundances
 Pipeline (\acronym{ASPCAP}; \citealt{ASPCAP}).
 
@@ -276,7 +278,7 @@ For each visit, we require that the visit velocity uncertainty is $< 100~\kms$
 (\texttt{VRELERR}) and the following bits are not set in the \texttt{STARFLAGS}
 bitmask: \texttt{PERSIST\_HIGH}, \texttt{PERSIST\_JUMP\_POS},
 \texttt{PERSIST\_JUMP\_NEG}, \texttt{VERY\_BRIGHT\_NEIGHBOR}, \texttt{LOW\_SNR}.
-For each star, we require that $0 < \log g < 4$ and the following bits are not
+For each star, we require that $0 < \logg < 4$ and the following bits are not
 set in the \texttt{ASPCAPFLAGS} bitmask: \texttt{STAR\_BAD}.
 After these cuts, and the requirement of $\geq 3$ visits for a given star, we
 are left with \nvisits\ visits for \nstars\ unique sources.
@@ -296,8 +298,8 @@ stars in the parent sample used in this work.
 $[\textrm{Fe}/\textrm{H}]$, that pass the quality cuts described in
 \sectionname~\ref{sec:data}.
 \textit{Right panel}: Distribution of stars in our sample in stellar parameters
-log-surface-gravity, $\log g$, and effective temperature, $T_{\textrm{eff}}$,
-with points colored by the iron abundance.
+log-surface-gravity, \logg, and effective temperature, \Teff, with points
+colored by the iron abundance.
 \label{fig:loggteff}
 }
 \end{figure}
@@ -588,7 +590,7 @@ This run took approximately 300 hours on a compute cluster with 448 cores, with
 the time dominated by sources with many ($\gtrsim 10$) visits.  For this initial
 run, we do not follow up on stars that return $<$\nposterior\ samples.
 
-We use 1,825 stars with $>10$ visits and $\log g < 2$ (to avoid upper RGB stars
+We use 1,825 stars with $>10$ visits and $\logg > 2$ (to avoid upper RGB stars
 that have large intrinsic jitter) and maximize the above likelihood to determine
 better hyperparameters for the log-excess-variance parameter distribution.
 \figurename~\ref{fig:infer-jitter} shows the distribution corresponding to the
@@ -835,7 +837,7 @@ companions in the unimodal and bimodal samples defined above (see \sectionname
 s~\ref{sec:catalog-unimodal} and \ref{sec:catalog-multimodal}).
 In all figures, we only plot companions with inferred orbits that pass our
 visual inspection (\texttt{clean\_flag == 0}).
-We additionally restrict to stars with $\log g > 2$ to avoid upper RGB stars
+We additionally restrict to stars with $\logg > 2$ to avoid upper RGB stars
 that may have coherent oscillations that mimic RV modulations from companions.
 
 \todo{here:} \figurename~\ref{fig:logg-teff-p} ...
@@ -898,7 +900,7 @@ These systems are being followed-up and will be studied in future work.
 \textit{Left panel:} Estimated minimum companion mass and primary mass for a
 subset of the systems in the high-$K$, unimodal converged sample (31 systems;
 black circles), unimodal unconverged sample (38 systems; grey circles), and
-bimodal sample (25 systems; blue squares and lines) with $\log g > 2$ and
+bimodal sample (25 systems; blue squares and lines) with $\logg > 2$ and
 previously measured primary masses (\citealt{Ness:2015}).
 Lines connecting markers (blue) show estimates from each period mode for each
 system with bimodal period samplings.
@@ -1015,7 +1017,7 @@ unexpected absorption lines will appear superimposed on the brighter star's
 spectrum, and (b) for close to equal-mass stars, the line depths and ratios will
 not be well-matched by a single stellar model.
 Using this technique, they identified thousands of candidate MS binaries and
-trinaries, but did not consider giant stars ($\log g > 4$).
+trinaries, but did not consider giant stars ($\logg > 4$).
 This sample is therefore complimentary to and non-overlapping with the catalog
 presented in this work.
 
