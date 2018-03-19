@@ -13,7 +13,8 @@ from scipy.optimize import root
 from .log import log as logger
 
 __all__ = ['CM_NM_to_CNM', 'CM_NM_to_CN', 'get_martig_vec', 'mf', 'm2_func',
-           'get_m2_min', 'stellar_radius', 'period_at_surface']
+           'get_m2_min', 'stellar_radius', 'period_at_surface', 'asini',
+           'a2sini']
 
 # For abundance transformations:
 log_eC = 8.39
@@ -117,10 +118,18 @@ def get_m2_min(m1, mf):
             return np.nan * m1.unit
 
 
-def stellar_radius(star, mass):
-    return np.sqrt(G*mass / (10**star.logg*u.cm/u.s**2)).to(u.Rsun)
+def stellar_radius(logg, mass):
+    return np.sqrt(G*mass / (10**logg*u.cm/u.s**2)).to(u.Rsun)
 
 
 def period_at_surface(M1, logg, e, M2=0*u.Msun):
     P = 2*np.pi * G**(1/4.) * (M1+M2) / (M1**(3/4.)) * (10**logg*u.cm/u.s**2)**(-3/4) * (1-e)**(-3/2)
     return P.to(u.day)
+
+
+def asini(P, e, K, m1, m2):
+    return (P/(2*np.pi) * np.sqrt(1-e**2) * K * (m1+m2) / m2).to(u.au)
+
+
+def a2sini(P, e, K, m1, m2):
+    return (P/(2*np.pi) * (m1/m2) * np.sqrt(1-e**2) * K).to(u.au)
