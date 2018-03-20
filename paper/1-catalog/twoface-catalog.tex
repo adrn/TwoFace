@@ -837,20 +837,19 @@ companions in the unimodal and bimodal samples defined above (see \sectionname
 s~\ref{sec:catalog-unimodal} and \ref{sec:catalog-multimodal}).
 In all figures, we only plot companions with inferred orbits that pass our
 visual inspection (\texttt{clean\_flag == 0}).
-We additionally restrict to stars with $\logg > 2$ to avoid upper RGB stars
-that may have coherent oscillations that mimic RV modulations from companions.
 
-\todo{here:} \figurename~\ref{fig:logg-teff-p} ...
+\todo{here:} \figurename~\ref{fig:logg-teff-p-e} ...
 
 % Notebook: "Results"
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{mass}
+\includegraphics[width=\textwidth]{P-Teff-logg-e}
 \end{center}
 \caption{%
-\textit{Left panel:}
-\textit{Right panel:}
-\label{fig:logg-teff-p}
+\textit{Top:} Inferred orbital period and eccentricity for all systems with unimodal posterior samplings from \thejoker.
+\textit{Bottom left:}
+\textit{Bottom Right:}
+\label{fig:logg-teff-p-e}
 }
 \end{figure}
 
@@ -867,6 +866,8 @@ Upper dashed line shows the $M_{2, \textrm{min}} = M_1$ curve, and lower dashed
 line shows the Hydrogen-burning limit, $M_{2, \textrm{min}} = 0.08~\msun$.
 For the systems with bimodal samplings, we compute the minimum companion mass
 for each period mode and connect these estimates with a line.
+Here we restrict to stars with $\logg > 2$ to avoid upper RGB stars that may
+have surface oscillations that mimic RV modulations from companions.
 
 \figurename~\ref{fig:mass}, right panel shows the ratio of the primary stellar
 radius to the projected separation of the two bodies, $R_1 / (a\,\sin i)$, and
