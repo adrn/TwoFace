@@ -52,6 +52,7 @@
 \newcommand{\nstars}{96,231}
 \newcommand{\nvisits}{397,559}
 \newcommand{\ncontrol}{16,384}
+\newcommand{\lnKcut}{-0.2}
 \newcommand{\nhighK}{4,898}
 \newcommand{\nbimodal}{106}
 \newcommand{\nunimodal}{322}
@@ -63,8 +64,8 @@
 
 \begin{document}\sloppy\sloppypar\raggedbottom\frenchspacing % trust me
 
-\title{Binary companions of red giant stars in \apogee\ \DR: \\
-       Search method and catalog of $>$4,500 systems}
+\title{Binary companions of evolved stars in \apogee\ \DR: \\
+       Search method and catalog of $\sim$5,000 companions}
 
 \author[0000-0003-0872-7098]{Adrian~M.~Price-Whelan}
 \affiliation{Department of Astrophysical Sciences,
@@ -116,7 +117,7 @@ companion properties can be confidently determined, (2)~a catalog of \nhighK\
 stars that likely have companions, but for which more observations would be
 needed to uniquely determine the orbital properties, and (3)~posterior samplings
 for the full orbital parameters for all stars in the parent sample.
-We highlight interesting systems and show the characteristics of stars with
+We highlight interesting systems and show the characteristics of systems with
 confidently determined companion properties.
 \end{abstract}
 
@@ -152,7 +153,8 @@ dynamics of multi-body systems (for recent reviews, see
 
 Most of what is known about stellar companions comes from studies of
 nearby main-sequence (MS) stars.
-\todo{occurrence rates}
+Nearly 50\% of MS stars in the solar neighborhood have companions
+(e.g., \citealt{Tokovinin:2014}).
 MS stars with companions have a large dynamic range of constituent and orbital
 characteristics.
 For example, binary stars have mass-ratios that span from $\approx 0.03$
@@ -196,13 +198,13 @@ period modes will exist in the likelihood function.
 We have solved this problem previously with \thejoker\
 (\citealt{Price-Whelan:2017}), a Monte Carlo rejection sampler that is
 computationally expensive but probabilistically righteous:
-It delivers independent posterior \pdf samples for single-companion binary
+It delivers independent posterior \pdf\ samples for single-companion binary
 orbital parameters, given any number of radial-velocity measurements.
-Here we use \thejoker\ to generate posterior \pdf samples for stars observed by
+Here we use \thejoker\ to generate posterior \pdf\ samples for stars observed by
 the \apogee\ survey (see \sectionname~\ref{sec:data}; \citealt{Majewski:2017}).
 
-The \apogee\ surveys primarily target red-giant-branch (\RGB) stars, which are
-ideal for the study of single-line binary systems.
+The \apogee\ surveys primarily target red-giant-branch (\RGB) and evolved stars,
+which are ideal for the study of single-line binary systems.
 In general, they are unlikely to have equally-bright companions, and their
 spectra are therefore fit as single-line objects.
 When this constraint is not met, \thejoker\ will in general fail, and a model
@@ -212,7 +214,7 @@ The subset of giant stars in the ``red clump'' (\RC) are even more powerful as
 they are standard candles and have masses that can be estimated using
 spectroscopy (using dredged-up elements; \citealt{Martig:2016,Ness:2016}).
 With mass estimates for the primary star, the binary-orbit fitting will return
-$m_2\,\sin i$ (minimum mass) estimates for the secondary, and not just estimates
+$M_2\,\sin i$ (minimum mass) estimates for the secondary, and not just estimates
 of the so-called ``binary mass function.''
 Additionally, the \apogee\ pipelines (\citealt{Garcia-Perez:2016}) and also
 \thecannon\ (\citealt{Ness:2015}) produce detailed abundance estimates for \RGB\
@@ -220,11 +222,9 @@ and \RC\ stars.
 If there are causal relationships between chemical abundances and binary
 companions---as are expected---these should be measurable.
 
-By making cuts on this library of posterior \pdf samples (described in detail in
-\sectionname~\ref{sec:whatever}), we deliver a catalog of binary-star systems
-from the \apogee\ survey \todo{with ... (tease some statistics)}.
-We additionally highlight the subset of this catalog with \RC\ star primaries,
-for which we can compute companion mass and pericentric distance.
+By making cuts on this library of posterior \pdf\ samples (described in detail
+in \sectionname~\ref{sec:catalogs}), we deliver catalogs of binary-star systems
+from the \apogee\ survey, and show the bulk properties of these systems.
 
 \section{Data} \label{sec:data}
 
@@ -238,7 +238,7 @@ high-resolution ($R \sim 22,500$) infrared ($H$-band) spectroscopy of primarily
 Targets are selected with simple color and brightness cuts, but the survey uses
 fiber-plugged plates with a maximum of 300 fibers per each $\approx
 1.5~\textrm{deg}^2$ field of view, leading to ``pencil-beam''-like sampling of
-the stellar distribution.
+the Galactic stellar distribution.
 In order to meet signal-to-noise ratio requirements, most \apogee\ stars are
 observed multiple times in a series of ``visits,'' typically with at least one
 visit separated by a month or more in order to help identify binary stars.
@@ -366,15 +366,15 @@ This parameter allows us to test whether the visit RV uncertainties are
 underestimated
 For upper \RGB\ stars the inferred excess variance will be a combination of
 extra systematic uncertainty and true astrophysical surface jitter
-(\todo{CITATION NEEDED}).
+(e.g., \cite{Hekker:2008}).
 
-\thejoker\ was designed for the extremely multi-modal \pdf s expected when the
+\thejoker\ was designed for the extremely multi-modal \pdf 's expected when the
 number of radial-velocity measurements of a source is small, or the data are
 sparse (in phase-coverage) or noisy.
 While other Markov Chain Monte Carlo (MCMC) methods have difficulty producing
 independent samples with such data, \thejoker\ succeeds by brute force:
 After generating an initial (very large) library of prior samples from an
-assumed prior \pdf (see below), the (typically multi-modal) likelihood is
+assumed prior \pdf\ (see below), the (typically multi-modal) likelihood is
 evaluated at each sample and used to rejection sample.
 In practice, given a number of requested samples for each star, the sampling
 proceeds iteratively: since it is easier to accept samples when the data is
@@ -415,10 +415,9 @@ prior similar to that defined in \citet{Price-Whelan:2017}:
     \item a beta distribution over eccentricity (using parameters from
     \citealt{Kipping:2013}).
 \end{itemize}
-For the excess variance parameter, $s^2$, we initially use a Gaussian over the
-transformed parameter $y = \ln s^2$ with the mean and standard deviation
-$(\mu_y, \sigma_y)$ indicated where the runs are described (see
-\sectionname~\ref{sec:catalogs}).
+For the excess variance parameter, $s^2$, we use a Gaussian over the transformed
+parameter $y = \ln s^2$ with the mean and standard deviation $(\mu_y, \sigma_y)$
+indicated where the runs are described (see \sectionname~\ref{sec:catalogs}).
 The reference time for each star is set to the minimum visit epoch; $M_0$ then
 becomes the mean anomaly at the first visit observation.
 \tablename~\ref{tbl:params} contains descriptions of all parameters and priors
@@ -459,7 +458,7 @@ Depending on the data quality and phase coverage of the visits, \thejoker\ will
 require different numbers of prior samples in order to rejection sample down to
 the requested number of posterior samples: For few-epoch or noisy RV data, many
 prior samples will pass the rejection step, whereas for very precise or
-many-epoch RV data, \thejoker\ may need to go process the full library of prior
+many-epoch RV data, \thejoker\ may need to process the full library of prior
 samples.
 We therefore generate the posterior samples using an iterative procedure that
 adaptively predicts how many prior samples to test for each star.
@@ -475,7 +474,7 @@ increasing the size of the prior cache and continuing rejection sampling with
 
 If just one posterior sample is returned after exhausting the full library of
 prior samples, or if multiple (but fewer than \nposterior) are returned that all
-lie within a single mode of the posterior \pdf, the posterior \pdf over orbital
+lie within a single mode of the posterior \pdf, the posterior \pdf\ over orbital
 parameters is treated as effectively unimodal: these stars are flagged ``needs
 MCMC.''
 In this case, we use the location of the returned sample (if only one is
@@ -484,9 +483,9 @@ are returned within one mode) to generate a small Gaussian ball of initial
 conditions and use standard MCMC to continue sampling until we obtain
 \nposterior\ samples.
 
-We use an ensemble MCMC sampling algorithm (\citealt{Goodman:2010}) implemented
-in \python\ (\package{emcee}; \citealt{Foreman-Mackey:2013}) to perform the
-samplings.
+In detail, we use an ensemble MCMC sampling algorithm (\citealt{Goodman:2010})
+implemented in \python\ (\package{emcee}; \citealt{Foreman-Mackey:2013}) to
+perform the samplings.
 We transform the standard Keplerian orbital parameters to a safer
 parametrization, $(\ln P, \sqrt{K}\,\cos M_0, \sqrt{K}\,\sin M_0, \sqrt{e}\,\cos
 \omega, \sqrt{e}\,\cos \omega, \ln s^2, v_0)$, for MCMC sampling.
@@ -495,7 +494,7 @@ This reparametrization is safer and more efficient for sampling with
 linear operations can be applied (see, e.g., \citealt{Hogg:2017}); the angle
 variables $(\omega, M_0)$ don't meet this requirement in the standard
 parametrization.
-We use the same prior \pdf s as in \thejoker\ when running MCMC (see
+We use the same prior \pdf 's as in \thejoker\ when running MCMC (see
 \tablename~\ref{tbl:params}).
 
 For each star that is flagged ``needs MCMC,'' we run \package{emcee} with 1024
@@ -524,6 +523,7 @@ equivalent to concatenating the results from a second, independent run of
 \thejoker: the log-likelihood values for all of the prior samples must be used.
 If at the end of this second run the target still has fewer than \nposterior\
 samples, the sampling is flagged as ``incomplete.''
+% TODO: this isn't done yet in the catalogs!
 
 \subsection{Null comparison sample}
 \label{sec:control-sample}
@@ -543,7 +543,8 @@ $\sigma_{nk}$, and the excess variance,
     v_{nk} \sim \mathcal{N}(\bar{v}_n, \sigma_{nk}^2 + s_n^2) \quad .
 \end{equation}
 When we save the comparison data, we only store the visit uncertainty and
-``forget'' the fact that the simulated data is generated with excess variance.
+``forget'' the fact that the simulated data is generated with excess variance
+(to be inferrred with \thejoker).
 
 
 % \subsection{Implementation notes}
@@ -558,8 +559,9 @@ When we save the comparison data, we only store the visit uncertainty and
 \section{Experiment: infer the excess variance distribution}
 \label{sec:inferjitter}
 
-\todo{Rix suggests this needs 1-2 more sentences to ease the transition: "It comes as an unexpected abrupt turn in the logical flow."}
-As an initial use of the per-source posterior samplings, we use a hierarchical
+% \todo{Rix suggests this needs 1-2 more sentences to ease the transition: "It comes as an unexpected abrupt turn in the logical flow."}
+With posterior samplings for all \apogee\ \DR\ systems in hand, and as an
+initial use of the per-source posterior samplings, we use a hierarchical
 Bayesian model to infer the parameters of the (assumed Gaussian) prior over the
 log-excess-variance parameter, $(\mu_y, \sigma_y)$ (see
 \tablename~\ref{tbl:params}).
@@ -691,10 +693,11 @@ of $\ln K$ computed for all stars with posterior samplings from \thejoker\
 (filled, blue histogram), along with the same for posterior samplings for the
 null comparison sample (solid, dark line).
 To select stars with companions, we use a cut in the 1st percentile of the $\ln
-K$ samples such that $<1\%$ of the comparison sample is selected, i.e. our
-estimated false positive rate is $<1\%$.
-We use a threshold of $\ln K = 0$ to meet this constraint (vertical, dashed line
-in \figurename~\ref{fig:lnK-percentiles}); \nhighK\ stars pass this cut.
+K$ samples such that $1\%$ of the comparison sample is selected, i.e. our
+estimated false positive rate is $\approx 1\%$.
+We use a threshold of $\ln K = \lnKcut$ to meet this constraint (vertical,
+dashed line in \figurename~\ref{fig:lnK-percentiles}); \nhighK\ stars pass this
+cut.
 For brevity below, we refer to this sample as the ``high-$K$'' stars, and the
 complimentary sample as the ``low-$K$'' stars.
 
@@ -707,8 +710,8 @@ complimentary sample as the ``low-$K$'' stars.
 Distribution of 1st percentiles in $\ln K$ (in units of \kms) for the parent
 \apogee\ sample (blue, filled) and for the comparison sample (solid, dark line).
 The vertical line (dashed, orange) indicates our adopted cut to select high-$K$
-stars that likely have companions; $<1\%$ of the comparison sample falls above
-this cut.
+stars that likely have companions at $\ln K = \lnKcut$; $1\%$ of the comparison
+sample falls above this cut.
 \label{fig:lnK-percentiles}
 }
 \end{figure}
@@ -722,7 +725,7 @@ of visits, $N$, indicated on the panels.
 low-$K$ stars, i.e. stars that either have no companions, low-mass companions,
 or companions at long periods or high inclination.
 The majority of the stars in the high-$K$ sample have poorly constrained orbital
-parameters because the posterior \pdf s are very multimodal.
+parameters because the posterior \pdf 's are very multimodal.
 The high-$K$ sample selected from \tablename~\ref{tbl:lnK-per} includes all
 stars in the catalogs described in the next two subsections, however the
 following two catalogs are mutually exclusive.
@@ -743,7 +746,7 @@ We consider a sampling to be unimodal when
 \end{equation}
 (see \sectionname~2 of \citealt{Price-Whelan:2017}); \nunimodal\ stars
 pass this cut.
-Unlike the multi-modal stars, the posterior \pdf s for these stars can be
+Unlike the multi-modal stars, the posterior \pdf 's for these stars can be
 approximated using point-estimates and standard deviations of their respective
 samplings.
 We report maximum \textit{a posteriori} (MAP) sample values for the orbital
@@ -759,8 +762,8 @@ columns in the high-$K$, unimodal sample catalog, available online.
 \todo{Link to a webpage with the catalogs and info on how to use with
 TwoBody/TheJoker}
 
-We have visually inspected the inferred orbits for all systems in this sample
-and have flagged systems with questionable or invalid fits.
+We have also visually inspected the inferred orbits for all systems in this
+sample and have flagged systems with questionable or invalid fits.
 The value of the flag is: 0, when the orbits look reasonable, 1, when the orbits
 look reasonable but the value of the inferred excess variance is large, and 2,
 when the orbits are clearly poor fits.
@@ -797,7 +800,7 @@ clusters of samples.
 We initialize the cluster positions at either end of the range of possible
 periods.
 For each cluster, we then ask whether the samples assigned to that cluster are
-unimodal (\eqname~\ref{eq:catalog-unimodal}).
+unimodal (\eqname~\ref{eq:unimodal}).
 If the samples in each respective cluster are unimodal, we call the sampling
 ``bimodal''; \nbimodal\ systems are identified as bimodal.
 
@@ -808,7 +811,8 @@ would be far more informative.
 Visually, those times correspond to regions of time when the predicted RVs have
 large variance based on the posterior samples at hand.
 For example, in the bottom left panel of \figurename~\ref{fig:highK-bimodal}, an
-observation at $t = 60$ would rule out one of the two possible orbits.
+observation at $t = 60$ would rule out one of the two possible  classes of
+orbits.
 
 \tablename~\ref{tbl:highK-bimodal} contains a list of all \apogee\ targets with
 bimodal samplings identified in this way.
@@ -816,7 +820,7 @@ The table contains two rows for each source, with the period, eccentricity, and
 velocity semi-amplitude values from the MAP sample from each period mode.
 When available, this table also includes an estimate of the primary mass, $M_1$,
 from \citet{Ness:2015} and an estimate of the minimum companion mass, $M_{2,
-\textrm{min}}$.
+\textrm{min}}$ for each mode.
 
 We again visually inspect all systems in this sample and assign a flag based on
 the apparent quality of the inferred orbits (see
@@ -835,10 +839,48 @@ successfully vetted by-eye, select only stars with \texttt{clean\_flag == 0}.
 Here we highlight a few interesting results from visualizing the properties of
 companions in the unimodal and bimodal samples defined above (see \sectionname
 s~\ref{sec:catalog-unimodal} and \ref{sec:catalog-multimodal}).
-In all figures, we only plot companions with inferred orbits that pass our
+In all figures below, we only plot companions with inferred orbits that pass our
 visual inspection (\texttt{clean\_flag == 0}).
 
-\todo{here:} \figurename~\ref{fig:logg-teff-p-e} ...
+\subsection{Systems with unimodal and bimodal posterior samplings}
+
+\figurename~\ref{fig:logg-teff-p-e} shows the companion and stellar properties
+of the unimodal and bimodal samples: upper left panel shows inferred period and
+eccentricity of the binary orbit, lower left panel shows inferred period and
+surface gravity of the primary star, lower right panel shows the primary star
+stellar parameters.
+
+The period-eccentricity plot (upper left panel in
+\figurename~\ref{fig:logg-teff-p-e}) shows a clear signature of tidal
+circularization: Such plots for main sequence stars typically show a more
+distinct circularization period, below which the majority of stars have
+eccentricities close to zero.
+Here, we see that close to $P\approx 10~\textrm{day}$ the majority of companion
+orbits appear to be circular, but between 10--100~days there appears to be a
+gradual decrease in eccentricity rather than a sharp transition.
+This is likely because the primary stars in this sample have a large range in
+surface gravities and therefore a large range in stellar radii (see lower right
+panel).
+
+In the lower left panel of \figurename~\ref{fig:logg-teff-p-e}, the diagonal
+(thick) line shows the orbital period of a hypothetical massless companion at
+the surface of a $1.35~\msun$ primary star (the median of our sample with
+measured masses) with the given surface gravity.
+The vertical line in this panel shows the same for a $1.35~\msun$ primary with
+$\logg=0$, i.e. the orbital period at the surface of such a star close to the
+tip of the RGB.
+The horizontal line in this panel shows the approximate upper bound of the red
+clump, above which most stars should be fully convective.
+Interestingly, there is a dearth of short-period systems for stars above the red
+clump ($\logg \lesssim 2.3$) in the triangle defined by the three qualitative
+lines, suggestive of possible companion engulfment as the primary star envelope
+encases the companion.
+
+The lower right panel of \figurename~\ref{fig:logg-teff-p-e} shows the stellar
+parameters of all primary stars in the unimodal and bimodal samples.
+Relative to \figurename~\ref{fig:loggteff}, upper RGB stars appear to be
+under-represented in these companion catalogs, another tentative signature of
+engulfment or depletion of companions on shorter-period orbits.
 
 % Notebook: "Results"
 \begin{figure}[h]
@@ -846,9 +888,16 @@ visual inspection (\texttt{clean\_flag == 0}).
 \includegraphics[width=\textwidth]{P-Teff-logg-e}
 \end{center}
 \caption{%
-\textit{Top:} Inferred orbital period and eccentricity for all systems with unimodal posterior samplings from \thejoker.
-\textit{Bottom left:}
-\textit{Bottom Right:}
+\textit{Top:} Inferred orbital period and eccentricity for all systems with
+unimodal and bimodal posterior samplings from \thejoker.
+\textit{Bottom left:} Inferred orbital period and primary star surface gravity,
+\logg.
+Diagonal line indicates the orbital period of a hypothetical massless companion
+at the surface of a $1.35~\msun$ primary star with the given \logg, vertical
+line shows the same for $\logg = 0$, and horizontal line shows the rough upper
+boundary of the red clump.
+\textit{Bottom Right:} Stellar parameters for all primary stars in the unimodal
+and bimodal samples.
 \label{fig:logg-teff-p-e}
 }
 \end{figure}
@@ -858,10 +907,10 @@ visual inspection (\texttt{clean\_flag == 0}).
 Most of the companions we find have minimum masses $M_{2, \textrm{min}} <
 1~\msun$.
 \figurename~\ref{fig:mass}, left panel shows primary and companion mass
-estimates for systems with unimodal (black markers) and bimodal (blue lines)
-period samplings for the subset of /\nunimodal\ unimodal and /\nbimodal\ bimodal
-systems with primary mass estimates, again using primary masses from
-\citet{Ness:2015}.
+estimates for systems with unimodal (circle markers) and bimodal (square markes,
+blue lines) period samplings for the subset of 69/\nunimodal\ unimodal and
+25/\nbimodal\ bimodal systems with primary mass estimates, again using primary
+masses from \citet{Ness:2015}.
 Upper dashed line shows the $M_{2, \textrm{min}} = M_1$ curve, and lower dashed
 line shows the Hydrogen-burning limit, $M_{2, \textrm{min}} = 0.08~\msun$.
 For the systems with bimodal samplings, we compute the minimum companion mass
@@ -872,25 +921,29 @@ have surface oscillations that mimic RV modulations from companions.
 \figurename~\ref{fig:mass}, right panel shows the ratio of the primary stellar
 radius to the projected separation of the two bodies, $R_1 / (a\,\sin i)$, and
 the minimum mass ratio, $q_{\textrm{min}} = M_{2, \textrm{min}} / M_1$, for the
-same samples.
-Again, black large markers indicate systems from the unimodal sample, and blue
-markers and lines connect the two estimates for systems with bimodal period
-samplings.
+same systems.
+Again, circle (black, grey) markers indicate systems from the unimodal sample,
+and square (blue) markers and lines connect the two estimates for systems with
+bimodal period samplings.
 Upper dashed line in this panel indicates the Roche radius, computed using an
 approximate functional form (\citealt{Eggleton:1983})
 \begin{equation}
     \frac{R}{a} = \frac{0.49\,q^{-2/3}}{0.6\,q^{-2/3} +
         \ln\left(1 + q^{-1/3}\right)}
 \end{equation}
-where $q = \M_2 / M_1$.
-All of these systems are generally consistent with being detached binaries.
+where $q = M_2 / M_1$.
+All of these systems are consistent with being detached binaries, with the
+exception of one notable system (discussed below).
 
-In \figurename~\ref{fig:mass}, three interesting systems are immediately
-obvious: two systems with bimodal period samplings in which both period modes
-put the minimum companion mass below the Hydrogen-burning limit (brown dwarf
-candidates), and one system in which $M_{2, \textrm{min}} > M_1$ (a neutron star
-or black hole candidate).
-These systems are being followed-up and will be studied in future work.
+In \figurename~\ref{fig:mass}, a few interesting systems are immediately
+obvious: From the left panel, two systems have bimodal period samplings in which
+both period modes put the minimum companion mass below the Hydrogen-burning
+limit (brown dwarf candidates), and two systems have $M_{2, \textrm{min}} > M_1$
+(neutron star or black hole candidates).
+In the right panel, one system appears right on the limit of being an
+interacting binary ($q_{\textrm{min}} \approx 0.5$), but \todo{does it have
+x-ray or UV data?}.
+These systems are prime candidates for spectroscopic follow-up.
 
 % Notebook: "Results"
 \begin{figure}[h]
@@ -915,23 +968,44 @@ $q_{\textrm{min}}$, for the same systems and markers in left panel.
 \end{figure}
 
 
-\subsection{Coherent...}
-
-\todo{Coherent oscillations?}
-
-% \subsection{Eclipsing}
-%
-% \todo{Stars with Kepler light curves}
-
-
 \section{Discussion}
 
-\todo{comment on short period shit at low logg, eccentricities}
+\subsection{Impossible companions and the upper RGB}
 
-\todo{Discuss tidal circ and mention worth pursuing. Don't say we are going to
-do this. Emphasize that the data contain information about those things.}
+Paradoxically, there exist short period ($\lesssim 100~\textrm{day}$) companions
+at low surface gravities ($\logg \lesssim 1$), obvious in the lower-left panel
+of \figurename~\ref{fig:logg-teff-p-e}: These companions would orbit within the
+surface of their primary stars.
+Each of these systems appears fine from the \apogee\ data quality flags, but
+could nonetheless have incorrect stellar parameters.
+As a test, we would ideally be able to compare the spectroscopic stellar
+parameters to an independent determination from, e.g., asteroseismology.
+Unfortunately, none of these short-period, low-\logg\ stars in the unimodal or
+bimodal samples appear in the \acronym{APOKASC} (\citealt{Serenelli:2017})
+catalog, which provides asteroseismic stellar parameters for a few hundred
+\apogee\ dwarf and giant stars.
+We therefore instead cross-match all high-$K$ stars with $\logg < 1$ and $99\%$
+of their period samples below $100~\textrm{day}$ to the \acronym{APOKASC}
+catalog: One star appears in both samples 2M19024490+4419523.
+In \apogee\ \DR, this star has $\logg = 0.57$, but asteroseismic $\logg > 4$
+(e.g., \texttt{HUBER\_LOGG}), consistent with being an M dwarf.
+Many of these systems could therefore be low-mass dwarf stars with incorrect
+stellar parameters in \apogee\ \DR.
 
-\todo{High-mass companions}
+Another possibility is that \thejoker\ interprets semi-coherent surface
+oscillations (from asteroseismic modes) with sparse time coverage as orbital RV
+variations (see, e.g., \citealt{Hekker:2008}).
+However, for RGB stars with $\logg < 1$, these modes would likely have
+frequencies between $\nu_{\textrm{max}} \approx 0.5$--$5~\mu\textrm{Hz}$
+(\citealt{Garcia:2018}), corresponding to periods between $P \approx
+20$--$2~\textrm{day}$ and amplitudes between $\approx
+20$--$200~\textrm{m}~\textrm{s}^{-1}$ (\citealt{Huber:2011,Huber:2017}).
+Except for the lowest \logg\ stars, these amplitudes wouldn't pass our cut on
+$K$ (\sectionname~\ref{sec:catalog-confident}).
+
+These systems would need precise, long-term photometric follow-up to obtain
+asteroseismic parameters to confirm or explain their existence.
+
 
 \subsection{Assumptions}
 \label{sec:discuss-assumptions}
@@ -948,15 +1022,16 @@ data well or pick out the shortest period orbit.
 
 Related to the above, we assume that all RV variations are
 gravitational---\emph{Kepler}.
-We see tentative evidence for coherent oscillations at the upper giant branch
-(see \figurename~\ref{fig:todo}), which we presently treat as excess variance or
-intrinsic jitter.
-If these oscillations are indeed from asteroseismic modes, \todo{why is this
-interesting?}.
+We see tentative evidence for surface oscillations at the upper giant branch
+(see \figurename~\ref{fig:P-Teff-logg-e}, lower left), which we presently treat
+as excess variance or intrinsic jitter.
+Further observations are needed to determine whether these ``systems'' have
+incorrect stellar parameters, or indeed show surface oscillations related to
+asteroseismic modes.
 
 We assume that one star in each two-body system overwhelmingly dominates the
 luminosity and therefore spectrum of each system---\emph{SB1}.
-As seen in \figurename~\ref{fig:todo}, there are some companions with minimum
+As seen in \figurename~\ref{fig:mass}, there are some companions with minimum
 masses comparable to or consistent with being larger than the masses of the
 observed star.
 These systems are either (a) nearly edge-on MS--RGB binaries (i.e. consistent
@@ -965,7 +1040,10 @@ the source as having broad lines or a bad fit, or (c) RGB--stellar remnant
 systems with a black hole or neutron star companion.
 A subset of these systems that look like they fall in category (c) are being
 followed-up to obtain further RV measurements to test whether any companions are
-black holes (Geha et al., in prep.).
+black holes.
+However, \thejoker\ can and should be extended to support sampling for SB2
+systems with just one additional parameter (typically the mass ratio, or ratio
+of velocity semi-amplitudes).
 
 Finally, we have assumed that the visit velocity error distribution is Gaussian,
 and that the visit velocity uncertainties could be
@@ -1033,8 +1111,8 @@ $\chi^2$ statistic that penalizes fits in which the phase coverage of the data
 is poor.
 This procedure is not guaranteed to provide a unique orbit solution.
 
-Of the 382 companions released as a part of this previous search, only 188 of
-the host stars passed the stellar parameter and quality cuts used to define the
+Of the 382 companions released as a part of the previous search, only 188 of the
+host stars passed the stellar parameter and quality cuts used to define the
 parent sample in this work (see \sectionname~\ref{sec:data}).
 We have looked at all of the overlapping stars to compare the previously derived
 companion orbital properties to the posterior samplings derived with \thejoker.
@@ -1042,7 +1120,7 @@ We find that the comparisons fall in three categories:
 (1) the parameters reported in \citet{Troup:2016} agree with the posterior
 samplings, and the period distribution appears unimodal,
 (2) the parameters reported in \citet{Troup:2016} identify one possible mode of
-a likely multi-modal posterior \pdf over orbital parameters, and
+a likely multi-modal posterior \pdf\ over orbital parameters, and
 (3) the data changed significantly between \apogee\ \DRtw\ and \DR, so
 no meaningful comparisons can be made; Roughly 1/3 of the comparison sample
 falls into each class.
@@ -1051,7 +1129,7 @@ the \citet{Troup:2016} orbital parameters (orbit shown as orange line in left
 panels, parameters shown as orange + in right panels) is consistent with the
 orbit samples from \thejoker.
 \figurename~\ref{fig:troup-multimodal} shows a few representative cases in which
-we find that the posterior \pdf over orbital parameters is multimodal, and the
+we find that the posterior \pdf\ over orbital parameters is multimodal, and the
 \citet{Troup:2016} orbit identifies one of these modes.
 For completeness, \figurename~\ref{fig:troup-datachanged} shows two instances in
 which the orbital parameters from \citet{Troup:2016} no longer make sense,
@@ -1059,25 +1137,48 @@ likely because the data changed between data releases.
 
 \subsection{Population inference}
 
-\todo{Comment on things we could do with these samples hierarchical
-inference...}
-
-We don't need to know the orbits of each individual system: that's the power in
-this.
-
-We are SB1 only, but should do SB2 as well - no reason to restrict.
+The main motivation for this work was to produce posterior samplings for all
+\apogee\ \DR\ stars to be used in a population inference.
+To use these samplings for population or hierarchical inference, the orbits of
+each individual system don't have to be unimodal and thus \emph{all} \nstars\
+samplings can be used in conjunction without well-determined orbital parameters
+for the majority of the stars.
+These samplings will be useful for constraining (through hierarchical inference)
+the period and eccentricity distributions of evolved stars, and the occurrence
+rates of companions to evolved stars to test for signatures of engulfment.
 
 \section{Conclusions}
 
+We have selected a catalog of nearly 5,000 stellar systems with companions by
+making cuts on posterior beliefs about the amplitude of orbital radial velocity
+variations for often low-epoch, sparsely sampled radial velocity data.
+We provide posterior samplings over orbital parameters for all \nstars\ in the
+parent sample of \apogee\ \DR\ systems used in this work, along with several
+sub-catalogs with better constrained orbital information:
+\begin{itemize}
+    \item A catalog of \nunimodal\ systems with unimodal posterior samplings,
+    and therefore uniquely determined orbits, of which 227 are newly discovered
+    binary star systems.
+    \item A catalog of \nbimodal\ systems with highly constrained posterior
+    samplings that, in period, span two distinct period modes.
+    For these systems, one or a few more radial velocity measurements would
+    uniquely determine their orbits.
+    79 of these systems are newly discovered binary star systems.
+    \item A catalog of \nhighK\ systems with radial velocity variations
+    consistent with having a companion, but which need further radial velocity
+    measurements to better constrain the orbital properties.
+\end{itemize}
 All companion catalogs described in this work (\sectionname~\ref{sec:catalogs})
 are available online at \todo{XX}.
+
 The source code for this project is open source and available from
 \url{https://github.com/adrn/TwoFace} under the MIT open source software
 license.
 
 \acknowledgements
 
-It is a pleasure to thank Keith Hawkins (Columbia), \todo{who else?}.
+It is a pleasure to thank Keith Hawkins (Columbia), Yuan-Sen Ting (Princeton),
+\todo{who else?}.
 
 The authors are pleased to acknowledge that the work reported on in this
 paper was substantially performed at the TIGRESS high performance computer
