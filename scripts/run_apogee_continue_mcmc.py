@@ -100,7 +100,7 @@ def main(config_file, pool, seed, overwrite=False):
 
     tasks = [(cache_path, results_filename, star.apogee_id,
               star.apogeervdata(), joker)
-             for star in star_query.all()]
+             for star in star_query.order_by(AllStar.apogee_id).all()]
     session.close()
 
     for r in pool.map(emcee_worker, tasks):
