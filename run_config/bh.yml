@@ -1,0 +1,10 @@
+name: bh
+hyperparams:
+  P_min: 1 day
+  P_max: 8192 day
+  requested_samples_per_star: 256 # M_min
+  jitter_prior_mean: 9.5 # See infer-jitter notebook
+  jitter_prior_stddev: 1.64
+  jitter_prior_unit: m/s
+prior:
+  num_cache: 536870912
