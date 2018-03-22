@@ -5,6 +5,7 @@ import pickle
 # Third-party
 from astropy.time import Time
 import h5py
+import matplotlib.pyplot as plt
 import numpy as np
 from thejoker.sampler import JokerSamples
 
@@ -71,7 +72,7 @@ def emcee_worker(task):
 
         fig = plot_mcmc_diagnostic(chain)
         fig.savefig(plot_path, dpi=250)
-        del fig
+        plt.close(fig)
 
         with open(model_path, 'rb') as f:
             model = pickle.load(f)
@@ -79,4 +80,4 @@ def emcee_worker(task):
         samples.t0 = Time(data._t0_bmjd, format='mjd', scale='tcb')
         fig = plot_data_orbits(data, samples)
         fig.savefig(orbits_plot_path, dpi=250)
-        del fig
+        plt.close(fig)
