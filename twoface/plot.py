@@ -275,7 +275,8 @@ def plot_phase_fold(data, sample, ax=None, label=True,
 
 
 # TODO: add and update function above
-def plot_phase_fold_residual(data, sample):
+def plot_phase_fold_residual(data, sample, axes=None, label=True,
+                             jitter_errorbar=True, orbit_style=None):
     """Plot the data phase-folded at the median period of the input samples,
     and the residuals as a function of phase.
 
@@ -308,39 +309,45 @@ def plot_phase_fold_residual(data, sample):
     err = np.sqrt(data.stddev**2 + s**2)
     # chisq = np.sum((residual**2 / err**2).decompose())
 
-    fig, axes = plt.subplots(1, 2, figsize=(10, 5), sharex=True)
+    if axes is None:
+        fig, axes = plt.subplots(1, 2, figsize=(10, 5), sharex=True)
+    else:
+        fig = axes[0].figure
 
     # plot the phase-folded data and orbit
     rv_unit = u.km/u.s
     axes[0].errorbar(phase, data.rv.to(rv_unit).value,
-                     data.stddev.to(rv_unit).value,
+                     data.stddev.to(rv_unit).value, zorder=10,
                      linestyle='none', marker='o', color='k', markersize=5)
-    axes[0].errorbar(phase, data.rv.to(rv_unit).value, s.to(rv_unit).value,
-                     linestyle='none', marker='', color='k',
-                     alpha=0.4, zorder=-10)
 
     phase_grid = np.linspace(0, 1, 1024)
     axes[0].plot(phase_grid, orbit.radial_velocity(t0 + phase_grid*P),
                  marker='', zorder=-1, color='#aaaaaa')
-    axes[0].set_xlabel('phase')
-    axes[0].set_ylabel('radial velocity [{0:latex_inline}]'.format(rv_unit))
-    # ax.set_title(r'$\chi^2 = {0:.2f}$'.format(chisq))
 
     # plot the residuals
-    rv_unit = u.m/u.s
     axes[1].errorbar(phase, residual.to(rv_unit).value,
                      data.stddev.to(rv_unit).value,
                      linestyle='none', marker='o', color='k', markersize=5)
-    axes[1].errorbar(phase, residual.to(rv_unit).value, s.to(rv_unit).value,
-                     linestyle='none', marker='', color='k',
-                     alpha=0.4, zorder=-10)
 
-    axes[1].set_xlabel('phase')
-    axes[1].set_ylabel('residual [{0:latex_inline}]'.format(rv_unit))
+    if jitter_errorbar:
+        axes[0].errorbar(phase, data.rv.to(rv_unit).value,
+                         err.to(rv_unit).value,
+                         linestyle='none', marker='', elinewidth=0., color='#aaaaaa', alpha=0.9, capsize=3, capthick=1,
+                         zorder=5)
+        axes[1].errorbar(phase, residual.to(rv_unit).value,
+                         err.to(rv_unit).value,
+                         linestyle='none', marker='', elinewidth=0., color='#aaaaaa', alpha=0.9, capsize=3, capthick=1,
+                         zorder=5)
+
     lim = np.abs(axes[1].get_ylim()).max()
     axes[1].set_ylim(-lim, lim)
-    axes[1].axhline(0, zorder=-100, color='tab:green', alpha=0.25)
-    # axes[1].set_title(r'$s = ${:.0f}'.format(s.to(u.m/u.s)))
 
-    fig.tight_layout()
+    if label:
+        axes[1].set_xlabel(r'phase, $\frac{M-M_0}{2\pi}$')
+        axes[0].set_ylabel(_RV_LBL.format(rv_unit))
+        axes[1].set_ylabel('residual [{0:latex_inline}]'.format(rv_unit))
+
+    axes[0].set_xlim(0, 1)
+    axes[1].set_xlim(0, 1)
+    
     return fig
