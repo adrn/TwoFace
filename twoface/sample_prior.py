@@ -4,7 +4,7 @@ import numpy as np
 from thejoker.sampler import pack_prior_samples
 
 
-def make_prior_cache(filename, thejoker, N, max_batch_size=2**24):
+def make_prior_cache(filename, thejoker, nsamples, batch_size=None):
     """
 
     Parameters
@@ -13,15 +13,17 @@ def make_prior_cache(filename, thejoker, N, max_batch_size=2**24):
         The HDF5 file name to cache to.
     thejoker : `~thejoker.sampler.TheJoker`
         An instance of ``TheJoker``.
-    N : int
+    ntotal : int
         Number of samples to generate in the cache.
-    max_batch_size : int (optional)
-        The batch size to generate each iteration.
+    batch_size : int (optional)
+        The batch size to generate each iteration. Defaults to ``nsamples/512``.
 
     """
+    nsamples = int(nsamples)
 
-    max_batch_size = int(max_batch_size)
-    N = int(N)
+    if batch_size is None:
+        batch_size = nsamples // 512
+    batch_size = int(batch_size)
 
     # first just make an empty file
     with h5py.File(filename, 'w') as f:
@@ -29,36 +31,38 @@ def make_prior_cache(filename, thejoker, N, max_batch_size=2**24):
 
     num_added = 0
     for i in range(2**16): # HACK: magic number, maximum num. iterations
-        samples, ln_probs = thejoker.sample_prior(min(max_batch_size, N),
+        samples, ln_probs = thejoker.sample_prior(min(batch_size, nsamples),
                                                   return_logprobs=True)
 
-        # TODO: make rv_unit configurable?
+        # TODO: make units configurable?
         packed_samples, units = pack_prior_samples(samples, u.km/u.s)
 
-        batch_size,K = packed_samples.shape
+        size, K = packed_samples.shape
 
-        if (num_added + batch_size) > N:
-            packed_samples = packed_samples[:N - (num_added + batch_size)]
-            batch_size,K = packed_samples.shape
+        if (num_added + size) > nsamples:
+            packed_samples = packed_samples[:nsamples - (num_added + size)]
+            size, K = packed_samples.shape
 
-        if batch_size <= 0:
+        if size <= 0:
             break
 
         with h5py.File(filename, 'r+') as f:
             if 'samples' not in f:
                 # make the HDF5 file with placeholder datasets
-                f.create_dataset('samples', shape=(N, K), dtype=np.float32)
-                f.create_dataset('ln_prior_probs', shape=(N,), dtype=np.float32)
+                f.create_dataset('samples', shape=(nsamples, K),
+                                 dtype=np.float32)
+                f.create_dataset('ln_prior_probs', shape=(nsamples,),
+                                 dtype=np.float32)
                 f.attrs['units'] = np.array([str(x)
                                              for x in units]).astype('|S6')
 
             i1 = num_added
-            i2 = num_added + batch_size
+            i2 = num_added + size
 
-            f['samples'][i1:i2,:] = packed_samples[:batch_size]
-            f['ln_prior_probs'][i1:i2] = ln_probs[:batch_size]
+            f['samples'][i1:i2, :] = packed_samples[:size]
+            f['ln_prior_probs'][i1:i2] = ln_probs[:size]
 
-        num_added += batch_size
+        num_added += size
 
-        if num_added >= N:
+        if num_added >= nsamples:
             break

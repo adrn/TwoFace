@@ -13,7 +13,7 @@ def test_make_prior_cache(tmpdir):
     params = JokerParams(P_min=8*u.day, P_max=8192*u.day)
     joker = TheJoker(params)
 
-    make_prior_cache(filename, joker, N=N, max_batch_size=2**14)
+    make_prior_cache(filename, joker, nsamples=N, batch_size=2**14)
 
     with h5py.File(filename, 'r') as f:
         assert f['samples'].shape == (N, 5)

@@ -67,8 +67,7 @@ def main(db_file, pool, seed, overwrite=False):
         logger.debug("Prior samples file not found - generating {0} samples..."
                      .format(n_prior_samples))
         make_prior_cache(prior_samples_file, joker,
-                         N=n_prior_samples,
-                         max_batch_size=2**22) # MAGIC NUMBER
+                         nsamples=n_prior_samples)
         logger.debug("...done")
 
     # Query to get all stars associated with this run that need processing:

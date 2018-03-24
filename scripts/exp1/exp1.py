@@ -184,7 +184,7 @@ def main(data_path, pool, overwrite=False):
                 logger.info("Generating prior cache - this could take a few minutes")
                 joker = TheJoker(params)
                 make_prior_cache(prior_file, joker,
-                                 N=2**29, max_batch_size=2**24)
+                                 nsamples=2**29, batch_size=2**24)
 
             joker = TheJoker(params, pool=pool)
 
