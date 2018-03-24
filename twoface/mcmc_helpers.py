@@ -12,6 +12,7 @@ from thejoker.sampler import JokerSamples
 # Project
 from twoface.log import log as logger
 from twoface.plot import plot_mcmc_diagnostic, plot_data_orbits
+from twoface.samples_analysis import MAP_sample
 
 __all__ = ['gelman_rubin', 'emcee_worker']
 
@@ -50,7 +51,8 @@ def emcee_worker(task):
         with h5py.File(results_filename, 'r') as f:
             samples0 = JokerSamples.from_hdf5(f[apogee_id])
 
-        model, samples, sampler = joker.mcmc_sample(data, samples0,
+        sample = MAP_sample(data, samples0, joker.params)
+        model, samples, sampler = joker.mcmc_sample(data, sample,
                                                     n_burn=0,
                                                     n_steps=16384,
                                                     n_walkers=n_walkers,
