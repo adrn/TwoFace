@@ -38,6 +38,7 @@ def gelman_rubin(chain):
 def emcee_worker(task):
     cache_path, results_filename, apogee_id, data, joker = task
     n_walkers = 1024
+    n_steps = 32768
 
     chain_path = path.join(cache_path, '{0}.npy'.format(apogee_id))
     plot_path = path.join(cache_path, '{0}.png'.format(apogee_id))
@@ -54,11 +55,11 @@ def emcee_worker(task):
         sample = MAP_sample(data, samples0, joker.params)
         model, samples, sampler = joker.mcmc_sample(data, sample,
                                                     n_burn=0,
-                                                    n_steps=16384,
+                                                    n_steps=n_steps,
                                                     n_walkers=n_walkers,
                                                     return_sampler=True)
 
-        np.save(chain_path, sampler.chain.astype('f4'))
+        np.save(chain_path, sampler.chain[:, n_steps//2:].astype('f4'))
 
         if not path.exists(model_path):
             with open(model_path, 'wb') as f:
