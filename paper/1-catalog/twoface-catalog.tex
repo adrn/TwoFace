@@ -128,15 +128,15 @@ Ave, Tucson, AZ 85719}
 % Context
 Multi-epoch radial velocity measurements of stars can be used to identify
 stellar, sub-stellar, and planetary-mass companions.
-Even a small number of observation epochs can be useful for detecting
+Even a small number of observation epochs can be informative about
 companions, though there can be multiple qualitatively different orbital
 solutions that fit the data.
-For these reasons, we custom-built a Monte Carlo sampler (\thejoker) that
-delivers reliable (and often highly multi-modal) posterior samplings for
-companion orbital parameters given sparse radial-velocity data.
+We have custom-built a Monte Carlo sampler (\thejoker) that delivers reliable
+(and often highly multi-modal) posterior samplings for companion orbital
+parameters given sparse radial-velocity data.
 % Aims
-Here we perform a search for companions to \nstars\ red-giant stars observed in
-the \apogee\ survey (\DR) with $\geq 3$ spectroscopic epochs.
+Here we use \thejoker\ to perform a search for companions to \nstars\ red-giant
+stars observed in the \apogee\ survey (\DR) with $\geq 3$ spectroscopic epochs.
 % Methods
 We select stars with probable companions by making a cut on our posterior belief
 about the amplitude of the stellar radial-velocity variation induced by the
@@ -144,9 +144,9 @@ orbit.
 % Results
 We provide (1)~a catalog of \nunimodal\ companions for which the stellar
 companion properties can be confidently determined, (2)~a catalog of \nhighK\
-stars that likely have companions, but for which more observations would be
-needed to uniquely determine the orbital properties, and (3)~posterior samplings
-for the full orbital parameters for all stars in the parent sample.
+stars that likely have companions, but would require more observations to
+uniquely determine the orbital properties, and (3)~posterior samplings for the
+full orbital parameters for all stars in the parent sample.
 We highlight interesting systems and show the characteristics of systems with
 confidently determined companion properties.
 \end{abstract}
@@ -166,32 +166,6 @@ confidently determined companion properties.
 }
 
 \section{Introduction} \label{sec:intro}
-
-Stars typically have companions.
-Main sequence stars in the solar neighborhood more often appear in binary or
-multiple star systems rather than as solitary stars (e.g.,
-\citealt{Duquennoy:1991,Raghavan:2010,Tokovinin:2014,Moe:2017}).
-This is likely a generic outcome of star formation, as, for example turbulent
-fragmentation in collapsing protostellar clouds can produce stellar multiplets
-within length-scales comparable to their spheres of influence (e.g.,
-\citealt{Raskutti:2016}).
-Binary and multiple star systems are therefore of great interest in
-astrophysics: The population of stars and their companions encodes information
-about star formation processes, stellar parameters and evolution, and the
-dynamics of multi-body systems (for recent reviews, see
-\citealt{Duchene:2013,Moe:2017}).
-
-Most of what is known about stellar companions comes from studies of
-nearby main-sequence (MS) stars.
-Nearly 50\% of MS stars in the solar neighborhood have companions
-(e.g., \citealt{Tokovinin:2014}).
-MS stars with companions have a large dynamic range of constituent and orbital
-characteristics.
-For example, binary stars have mass-ratios that span from $\approx 0.03$
-to 1 (e.g., \citealt{Kraus:2008}), and have periods from days to
-millions of years (e.g., \citealt{Raghavan:2010}).
-Less is known about population properties of non-interacting or detached
-companions to evolved stars.
 
 Large spectroscopic surveys with repeat observations offer a novel way to study
 binary star and companion populations.
@@ -225,24 +199,52 @@ many of the modes will have comparable integrated probability density.
 For example, with just two radial-velocity measurements, a harmonic series of
 period modes will exist in the likelihood function.
 
-We have solved this problem previously with \thejoker\
-(\citealt{Price-Whelan:2017}), a Monte Carlo rejection sampler that is
-computationally expensive but probabilistically righteous:
+We have solved the problem of deriving comprehensive multi-modal \pdf\ samplings
+previously with \thejoker\ (\citealt{Price-Whelan:2017}), a Monte Carlo
+rejection sampler that is computationally expensive but probabilistically
+righteous:
 It delivers independent posterior \pdf\ samples for single-companion binary
 orbital parameters, given any number of radial-velocity measurements.
 Here we use \thejoker\ to generate posterior \pdf\ samples for stars observed by
 the \apogee\ survey (see \sectionname~\ref{sec:data}; \citealt{Majewski:2017}).
 
-The \apogee\ surveys primarily target red-giant-branch (\RGB) and evolved stars,
-which are ideal for the study of single-line binary systems.
-In general, they are unlikely to have equally-bright companions, and their
+Stars typically have companions.
+Main sequence stars in the solar neighborhood more often appear in binary or
+multiple star systems rather than as solitary stars (e.g.,
+\citealt{Duquennoy:1991,Raghavan:2010,Tokovinin:2014,Moe:2017}).
+This is likely a generic outcome of star formation, as, for example turbulent
+fragmentation in collapsing protostellar clouds can produce stellar multiplets
+within length-scales comparable to their spheres of influence (e.g.,
+\citealt{Raskutti:2016}).
+Binary and multiple star systems are therefore of great interest in
+astrophysics: The population of stars and their companions encodes information
+about star formation processes, stellar parameters and evolution, and the
+dynamics of multi-body systems (for recent reviews, see
+\citealt{Duchene:2013,Moe:2017}).
+
+Most of what is known about stellar companions comes from studies of
+nearby main-sequence (MS) stars.
+Nearly 50\% of MS stars in the solar neighborhood have companions
+(e.g., \citealt{Tokovinin:2014}).
+MS stars with companions have a large dynamic range of constituent and orbital
+characteristics.
+For example, binary stars have mass-ratios that span from $\approx 0.03$
+to 1 (e.g., \citealt{Kraus:2008}), and have periods from days to
+millions of years (e.g., \citealt{Raghavan:2010}).
+Less is known about population properties of non-interacting or detached
+companions to evolved stars.
+
+The \apogee\ surveys primarily target red-giant-branch (\RGB) and other evolved
+stars (e.g., red clump giants, RC), which are ideal for the study of single-line
+binary systems.
+In general, they are unlikely to have comparably-bright companions, and their
 spectra are therefore fit as single-line objects.
 When this constraint is not met, \thejoker\ will in general fail, and a model
 that fits for a mixture of stellar spectra is more appropriate (e.g.,
 \citealt{El-Badry:2018}).
-The subset of giant stars in the ``red clump'' (\RC) are even more powerful as
-they are standard candles and have masses that can be estimated using
-spectroscopy (using dredged-up elements; \citealt{Martig:2016,Ness:2016}).
+The subset of RC stars are even more powerful as they are standard candles and
+have masses that can be estimated using spectroscopy (using dredged-up elements;
+\citealt{Martig:2016,Ness:2016}).
 With mass estimates for the primary star, the binary-orbit fitting will return
 $M_2\,\sin i$ (minimum mass) estimates for the secondary, and not just estimates
 of the so-called ``binary mass function.''
@@ -258,7 +260,7 @@ from the \apogee\ survey, and show the bulk properties of these systems.
 
 \section{Data} \label{sec:data}
 
-All data used in this work comes from the publicly-available data release 14
+All data used in this work come from the publicly-available data release 14
 (\DR) of the \apogee\ survey (\citealt{Majewski:2017,Abolfathi:2017}), a
 component of the Sloan Digital Sky Survey IV (\sdssiv;
 \citealt{Gunn:2006,Blanton:2017}).
@@ -351,8 +353,8 @@ catalog of companions.
 We now describe the assumptions and method used to generate samplings for
 individual systems:
 \begin{description}
-\item[no multiplets] All radial-velocity variations of the primary star are
-  induced by a single companion.
+\item[no multiple companions] All radial-velocity variations of the primary
+  star are induced by a single companion.
   This is motivated by the idea that triple star systems are usually
   hierarchical so that the period of the inner binary is typically much shorter
   than the orbital period of the outer body (e.g., \citealt{Tokovinin:2018}).
@@ -448,7 +450,7 @@ prior similar to that defined in \citet{Price-Whelan:2017}:
 For the excess variance parameter, $s^2$, we use a Gaussian over the transformed
 parameter $y = \ln s^2$ with the mean and standard deviation $(\mu_y, \sigma_y)$
 indicated where the runs are described (see \sectionname~\ref{sec:catalogs}).
-The reference time for each star is set to the minimum visit epoch; $M_0$ then
+The reference time for each star is set to the first visit epoch; $M_0$ then
 becomes the mean anomaly at the first visit observation.
 \tablename~\ref{tbl:params} contains descriptions of all parameters and priors
 used.
@@ -485,7 +487,7 @@ used.
 
 We request \nposterior\ posterior samples for each source.
 Depending on the data quality and phase coverage of the visits, \thejoker\ will
-require different numbers of prior samples in order to rejection sample down to
+require different numbers of prior samples in order to rejection-sample down to
 the requested number of posterior samples: For few-epoch or noisy RV data, many
 prior samples will pass the rejection step, whereas for very precise or
 many-epoch RV data, \thejoker\ may need to process the full library of prior
@@ -637,7 +639,7 @@ the excess variance distribution.
 First, we do not remove triple or other multiple systems: For any individual
 system, the radial velocity variations induced by other massive bodies will lead
 to larger preferred values for the excess variance parameter.
-We don't expect there to be a large number of triple systems in our sample, but
+We do not expect there to be a large number of triple systems in our sample, but
 this is still an important consideration for future efforts.
 Second, we are sensitive to outliers and very non-Gaussian systematic error
 distributions.
@@ -704,14 +706,13 @@ MCMC and only use the ($<$\nposterior) posterior samples returned from the
 \subsection{Stars with companions}
 \label{sec:catalog-confident}
 
-We don't expect a sharp transition in inferred orbital parameters between stars
-with companions and stars without companions: There is a continuum of companion
-properties.
+We do not expect a sharp transition in inferred orbital parameters between stars
+with and without companions: There is a continuum of companion properties.
 For example, the companions can be low mass, or at long periods, or at high
 inclination, all of which will make the velocity semi-amplitude, $K$, small for
 a given system.
-Therefore there is no simple cut on radial velocity data alone that would select
-a complete sample of stars with companions.
+Therefore, there is no simple cut on radial velocity data alone that would
+select a complete sample of stars with companions.
 It is nevertheless possible to define a cut that selects stars with
 high-confidence companions.
 
@@ -817,7 +818,7 @@ A subset of the high-$K$ sample (\sectionname~\ref{sec:catalog-confident}) have
 multimodal posterior distributions over orbital parameters that are limited to
 a few qualitatively different solutions.
 For these stars, one or a few more RV measurements would likely lead to
-uniquely-determined orbital parameters; These stars are prime candidates for
+uniquely-determined orbital parameters, making these stars prime candidates for
 follow-up efforts.
 As examples of such cases, we include an additional catalog of systems that have
 effectively bimodal posterior samplings in orbital period.
@@ -1002,10 +1003,10 @@ $q_{\textrm{min}}$, for the same systems and markers in left panel.
 
 \subsection{Impossible companions and the upper RGB}
 
-Paradoxically, there exist short period ($\lesssim 100~\textrm{day}$) companions
-at low surface gravities ($\logg \lesssim 1$), obvious in the lower-left panel
-of \figurename~\ref{fig:logg-teff-p-e}: These companions would orbit within the
-surface of their primary stars.
+Paradoxically, there appear to exist short period ($\lesssim 100~\textrm{day}$)
+companions at low surface gravities ($\logg \lesssim 1$), obvious in the
+lower-left panel of \figurename~\ref{fig:logg-teff-p-e}: These companions would
+orbit within the surface of their primary stars.
 Each of these systems appears fine from the \apogee\ data quality flags, but
 could nonetheless have incorrect stellar parameters.
 As a test, we would ideally be able to compare the spectroscopic stellar
@@ -1044,8 +1045,8 @@ It is important to keep in mind that the companion catalogs and results
 presented in this \documentname\ depend on the assumptions laid out in
 \sectionname~\ref{sec:fitting}.
 We have only considered radial velocity modulations from a single massive
-companion---\emph{no multiplets}; This is a fundamental limitation of our search
-and methodology.
+companion---\emph{no multiple companions}; This is a fundamental limitation of
+our search and methodology.
 However, stars with multiple companions will likely be included in our companion
 catalog anyway, only with two-body orbital solutions that either don't fit the
 data well or pick out the shortest period orbit.
@@ -1141,9 +1142,9 @@ $\chi^2$ statistic that penalizes fits in which the phase coverage of the data
 is poor.
 This procedure is not guaranteed to provide a unique orbit solution.
 
-Of the 382 companions released as a part of the previous search, only 188 of the
-host stars passed the stellar parameter and quality cuts used to define the
-parent sample in this work (see \sectionname~\ref{sec:data}).
+Of the 382 companions released as a part of the \citet{Troup:2016} search, only
+188 of the host stars passed the stellar parameter and quality cuts used to
+define the parent sample in this work (see \sectionname~\ref{sec:data}).
 We have looked at all of the overlapping stars to compare the previously derived
 companion orbital properties to the posterior samplings derived with \thejoker.
 We find that the comparisons fall in three categories:
@@ -1151,9 +1152,9 @@ We find that the comparisons fall in three categories:
 samplings, and the period distribution appears unimodal,
 (2) the parameters reported in \citet{Troup:2016} identify one possible mode of
 a likely multi-modal posterior \pdf\ over orbital parameters, and
-(3) the data changed significantly between \apogee\ \DRtw\ and \DR, so
-no meaningful comparisons can be made; Roughly 1/3 of the comparison sample
-falls into each class.
+(3) the radial velocity data used in \citet{Troup:2016} changed significantly
+between \apogee\ \DRtw\ and \DR, so no meaningful comparisons can be made;
+roughly 1/3 of the comparison sample falls into each class.
 \figurename~\ref{fig:troup-unimodal} shows a few representative cases in which
 the \citet{Troup:2016} orbital parameters (orbit shown as orange line in left
 panels, parameters shown as orange + in right panels) is consistent with the
@@ -1187,13 +1188,13 @@ parent sample of \apogee\ \DR\ systems used in this work, along with several
 sub-catalogs with better constrained orbital information:
 \begin{itemize}
     \item A catalog of \nunimodal\ systems with unimodal posterior samplings,
-    and therefore uniquely determined orbits, of which 227 are newly discovered
+    and therefore uniquely determined orbits, of which 225 are newly discovered
     binary star systems.
     \item A catalog of \nbimodal\ systems with highly constrained posterior
     samplings that, in period, span two distinct period modes.
     For these systems, one or a few more radial velocity measurements would
     uniquely determine their orbits.
-    79 of these systems are newly discovered binary star systems.
+    90 of these systems are newly discovered binary star systems.
     \item A catalog of \nhighK\ systems with radial velocity variations
     consistent with having a companion, but which need further radial velocity
     measurements to better constrain the orbital properties.
@@ -1214,6 +1215,11 @@ Keith Hawkins (Columbia),
 Melissa Ness (Columbia/Flatiron),
 David Spergel (Princeton/Flatiron),
 and Yuan-Sen Ting (Princeton).
+
+HWR acknowledges support by Sonderforschungsbereich SFB 881 (A3) of the German
+Research Foundation (DFG), and from the European Research Council under the
+European Union’s Seventh Framework Programme (FP 7) ERC Grant Agreement
+n. [321035].
 
 Funding for the Sloan Digital Sky Survey IV has been provided by the Alfred P. Sloan Foundation, the U.S. Department of Energy Office of Science, and the Participating Institutions. SDSS-IV acknowledges
 support and resources from the Center for High-Performance Computing at
