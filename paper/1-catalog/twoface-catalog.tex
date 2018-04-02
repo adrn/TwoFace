@@ -55,7 +55,7 @@
 \newcommand{\lnKcut}{-0.2}
 \newcommand{\nhighK}{4,898}
 \newcommand{\nbimodal}{106}
-\newcommand{\nunimodal}{322}
+\newcommand{\nunimodal}{320}
 
 % for response to referee
 % \renewcommand{\resp}[1]{#1}
@@ -167,12 +167,10 @@ confidently determined companion properties.
 
 \section{Introduction} \label{sec:intro}
 
-Large spectroscopic surveys with repeat observations offer a novel way to study
-binary star and companion populations.
 Time-domain radial-velocity measurements of stars contain information about
-massive companions: Even with two successive observations of a single star, a
-difference in the measured radial velocities implies the existence of at least
-one companion.
+massive companions.
+Even with two successive observations of a single star, a difference in the
+measured radial velocities implies the existence of at least one companion.
 However, with few or imprecise radial-velocity measurements, the orbital
 properties of the companion(s) may be poorly constrained (e.g.,
 \citealt{Price-Whelan:2017}).
@@ -208,32 +206,6 @@ orbital parameters, given any number of radial-velocity measurements.
 Here we use \thejoker\ to generate posterior \pdf\ samples for stars observed by
 the \apogee\ survey (see \sectionname~\ref{sec:data}; \citealt{Majewski:2017}).
 
-Stars typically have companions.
-Main sequence stars in the solar neighborhood more often appear in binary or
-multiple star systems rather than as solitary stars (e.g.,
-\citealt{Duquennoy:1991,Raghavan:2010,Tokovinin:2014,Moe:2017}).
-This is likely a generic outcome of star formation, as, for example turbulent
-fragmentation in collapsing protostellar clouds can produce stellar multiplets
-within length-scales comparable to their spheres of influence (e.g.,
-\citealt{Raskutti:2016}).
-Binary and multiple star systems are therefore of great interest in
-astrophysics: The population of stars and their companions encodes information
-about star formation processes, stellar parameters and evolution, and the
-dynamics of multi-body systems (for recent reviews, see
-\citealt{Duchene:2013,Moe:2017}).
-
-Most of what is known about stellar companions comes from studies of
-nearby main-sequence (MS) stars.
-Nearly 50\% of MS stars in the solar neighborhood have companions
-(e.g., \citealt{Tokovinin:2014}).
-MS stars with companions have a large dynamic range of constituent and orbital
-characteristics.
-For example, binary stars have mass-ratios that span from $\approx 0.03$
-to 1 (e.g., \citealt{Kraus:2008}), and have periods from days to
-millions of years (e.g., \citealt{Raghavan:2010}).
-Less is known about population properties of non-interacting or detached
-companions to evolved stars.
-
 The \apogee\ surveys primarily target red-giant-branch (\RGB) and other evolved
 stars (e.g., red clump giants, RC), which are ideal for the study of single-line
 binary systems.
@@ -257,6 +229,26 @@ companions---as are expected---these should be measurable.
 By making cuts on this library of posterior \pdf\ samples (described in detail
 in \sectionname~\ref{sec:catalogs}), we deliver catalogs of binary-star systems
 from the \apogee\ survey, and show the bulk properties of these systems.
+
+Binary and multiple star systems are of great interest in astrophysics: The
+population of stars and their companions encodes information about star
+formation processes, stellar parameters and evolution, and the dynamics of
+multi-body systems (for recent reviews, see \citealt{Duchene:2013,Moe:2017}).
+Most of what is known about stellar companions comes from studies of nearby
+main-sequence (MS) stars (e.g.,
+\citealt{Duquennoy:1991,Raghavan:2010,Tokovinin:2014,Moe:2017}).
+Nearly 50\% of MS stars in the solar neighborhood have companions
+(e.g., \citealt{Tokovinin:2014}).
+MS stars with companions have a large dynamic range of constituent and orbital
+characteristics.
+For example, binary stars have mass-ratios that span from $\approx 0.03$
+to 1 (e.g., \citealt{Kraus:2008}), and have periods from days to
+millions of years (e.g., \citealt{Raghavan:2010}).
+Less is known about population properties of non-interacting or detached
+companions to evolved stars.
+The catalogs and methodology presented in this work are a first step towards
+performing population inferences of binary star systems with evolved star
+members.
 
 \section{Data} \label{sec:data}
 
@@ -684,10 +676,9 @@ The remaining 5,135 stars did not return \nposterior\ samples: 4,744 were
 flagged as \emph{needs more prior samples}, 391 as \emph{needs MCMC}.
 We then proceed to generate \nposterior\ samples for these two subsets using the
 methodology explained above (see \sectionname~\ref{sec:samplings}).
-In the end, \todo{XX} stars have completed samplings with \nposterior\ samples,
-and, after re-running \thejoker\ with twice as many prior samples, \todo{XX}
-stars still have fewer samples that are multi-modal in period.
-
+% In the end, \todo{XX} stars have completed samplings with \nposterior\ samples,
+% and, after re-running \thejoker\ with twice as many prior samples, \todo{XX}
+% stars still have fewer samples that are multi-modal in period.
 The full catalog of posterior samples for all \apogee\ stars in our parent
 sample is available online.
 \todo{Structure of table, where to download, make a webpage with some
@@ -972,8 +963,8 @@ both period modes put the minimum companion mass below the Hydrogen-burning
 limit (brown dwarf candidates), and two systems have $M_{2, \textrm{min}} > M_1$
 (neutron star or black hole candidates).
 In the right panel, one system appears right on the limit of being an
-interacting binary ($q_{\textrm{min}} \approx 0.5$), but \todo{does it have
-x-ray or UV data?}.
+interacting binary ($q_{\textrm{min}} \approx 0.5$), but has no significant UV
+flux (\acronym{GALEX} DR5; \citealt{Bianchi:2011}).
 These systems are prime candidates for spectroscopic follow-up.
 
 % Notebook: "Results"
