@@ -18,8 +18,7 @@ _RV_LBL = 'RV [{0:latex_inline}]'
 
 def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
                      xlim_choice='data', ylim_fac=1., n_times=4096, title=None,
-                     ax=None, highlight_P_extrema=True, plot_kwargs=None,
-                     relative_to_t0=False):
+                     ax=None, highlight_P_extrema=True, plot_kwargs=None, data_plot_kwargs=None, relative_to_t0=False):
     """
     Plot the APOGEE RV data vs. time and orbits computed from The Joker samples.
 
@@ -81,12 +80,18 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
         plot_kwargs = dict()
 
     plot_kwargs.setdefault('color', 'tab:blue')
-    # plot_kwargs.setdefault('alpha', 0.25)
     plot_kwargs.setdefault('linewidth', 0.5)
+
+    if data_plot_kwargs is None:
+        data_plot_kwargs = dict()
+
+    data_plot_kwargs.setdefault('zorder', 5)
+    data_plot_kwargs.setdefault('elinewidth', 1)
+    
     plot_rv_curves(samples, t_grid, rv_unit=u.km/u.s, data=data, ax=ax,
                    n_plot=min(len(samples['P']), n_orbits),
                    plot_kwargs=plot_kwargs,
-                   data_plot_kwargs=dict(zorder=5, elinewidth=1,),
+                   data_plot_kwargs=data_plot_kwargs,
                    relative_to_t0=relative_to_t0)
 
     if highlight_P_extrema:
@@ -349,5 +354,5 @@ def plot_phase_fold_residual(data, sample, axes=None, label=True,
 
     axes[0].set_xlim(0, 1)
     axes[1].set_xlim(0, 1)
-    
+
     return fig

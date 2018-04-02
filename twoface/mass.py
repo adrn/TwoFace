@@ -123,7 +123,8 @@ def stellar_radius(logg, mass):
 
 
 def period_at_surface(M1, logg, e, M2=0*u.Msun):
-    P = 2*np.pi * G**(1/4.) * (M1+M2) / (M1**(3/4.)) * (10**logg*u.cm/u.s**2)**(-3/4) * (1-e)**(-3/2)
+    R1 = np.sqrt(G*M1 / (10**logg * u.cm/u.s**2))
+    P = 2*np.pi * (G*(M1+M2) / R1**3)**(-1/2) * (1-e)**(-3/2)
     return P.to(u.day)
 
 
