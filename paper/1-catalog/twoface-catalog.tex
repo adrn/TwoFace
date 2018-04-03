@@ -680,9 +680,7 @@ methodology explained above (see \sectionname~\ref{sec:samplings}).
 % and, after re-running \thejoker\ with twice as many prior samples, \todo{XX}
 % stars still have fewer samples that are multi-modal in period.
 The full catalog of posterior samples for all \apogee\ stars in our parent
-sample is available online.
-\todo{Structure of table, where to download, make a webpage with some
-information?}
+sample is available online.\footnote{\url{http://adrian.pw/twoface.html}}
 
 We also run on the null comparison sample (see
 \sectionname~\ref{sec:control-sample}) with the same parameters.
@@ -780,9 +778,7 @@ For stars with measured primary masses, $M_1$, from other work
 We additionally join with the \apogee\ \DR\ \texttt{allStar} catalog and provide
 all columns from this catalog for convenience.
 \tablename~\ref{tbl:highK-unimodal} contains descriptions and units for all
-columns in the high-$K$, unimodal sample catalog, available online.
-\todo{Link to a webpage with the catalogs and info on how to use with
-TwoBody/TheJoker}
+columns in the high-$K$, unimodal sample catalog, available online.\footnote{\url{http://adrian.pw/twoface.html}}
 
 We have also visually inspected the inferred orbits for all systems in this
 sample and have flagged systems with questionable or invalid fits.
@@ -1191,7 +1187,7 @@ sub-catalogs with better constrained orbital information:
     measurements to better constrain the orbital properties.
 \end{itemize}
 All companion catalogs described in this work (\sectionname~\ref{sec:catalogs})
-are available online at \todo{XX}.
+are available online.\footnote{\url{http://adrian.pw/twoface.html}}
 
 The source code for this project is open source and available from
 \url{https://github.com/adrn/TwoFace} under the MIT open source software
@@ -1333,11 +1329,11 @@ where $\textrm{logsumexp}$ (the log-sum-exp trick) provides a more stable
 estimate of the sum in \eqname~\ref{eq:lnlike}.
 
 
-\section{Using data products...}
+\section{Data products}
 \label{sec:code-demo}
 
-\todo{Brief example of how to use twobody and thejoker to visualize orbits, with
-link to a tutorial notebook on github}
+% \todo{Brief example of how to use twobody and thejoker to visualize orbits, with
+% link to a tutorial notebook on github}
 
 \begin{table}[ht]
     \centering
@@ -1479,7 +1475,9 @@ posterior probability.
 \includegraphics[width=\textwidth]{highK-bimodal}
 \end{center}
 \caption{%
-TODO
+Randomly-selected examples of high-$K$ stars with bimodal posterior samplings.
+Same as \figurename~\ref{fig:highK-unimodal}, but for bimodal posterior
+samplings.
 \label{fig:highK-bimodal}
 }
 \end{figure}
