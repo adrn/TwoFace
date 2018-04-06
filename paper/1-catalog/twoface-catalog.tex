@@ -1,11 +1,5 @@
 \documentclass[modern, letterpaper]{aastex62}
 
-% to-do list
-% ----------
-% - Make sure we don't use $K$ as a number of samples - that's $M$ - because $K$
-%   is the velocity semi-amplitude!
-% - Figure out what to say about upper RGB stars / coherent oscillations!
-
 % style notes
 % -----------
 % - This file generates by Makefile; don't be typing ``pdflatex'' or some BS.
@@ -20,10 +14,6 @@
 %   same name if they really are the same assumption: These are proper names!
 % - Hyphenate binary-star when it is an adjective, not when it is a noun!
 % - Where there are defined math symbols (like \pars), use them!
-
-% other notes
-% -----------
-% - Binary engulfment reference: https://arxiv.org/pdf/1002.2216.pdf
 
 \include{gitstuff}
 \include{preamble}
@@ -94,7 +84,8 @@
 
 % APOGEE RV var co-authors
 \author{Nathan De Lee}
-\affiliation{Department of Physics and Astronomy, Vanderbilt University, VU Station 1807, Nashville, TN 37235, USA}
+\affiliation{Department of Physics, Geology, and Engineering Technology, Northern Kentucky Univerity, Highland Heights, KY 41099}
+\affiliation{Department of Physics & Astronomy, Vanderbilt University, Nashville, TN 37235}
 
 \author{Steven R. Majewski}
 \affiliation{Department of Astronomy, University of Virginia, Charlottesville, VA 22904-4325, USA}
@@ -147,8 +138,9 @@ companion properties can be confidently determined, (2)~a catalog of \nhighK\
 stars that likely have companions, but would require more observations to
 uniquely determine the orbital properties, and (3)~posterior samplings for the
 full orbital parameters for all stars in the parent sample.
-We highlight interesting systems and show the characteristics of systems with
-confidently determined companion properties.
+We show the characteristics of systems with confidently determined companion
+properties and highlight interesting systems with candidate compact object
+companions.
 \end{abstract}
 
 \keywords{
@@ -1041,7 +1033,7 @@ data well or pick out the shortest period orbit.
 Related to the above, we assume that all RV variations are
 gravitational---\emph{Kepler}.
 We see tentative evidence for surface oscillations at the upper giant branch
-(see \figurename~\ref{fig:P-Teff-logg-e}, lower left), which we presently treat
+(see \figurename~\ref{fig:logg-teff-p-e}, lower left), which we presently treat
 as excess variance or intrinsic jitter.
 Further observations are needed to determine whether these ``systems'' have
 incorrect stellar parameters, or indeed show surface oscillations related to
@@ -1250,8 +1242,8 @@ University Office of Information Technology's Research Computing department.
     \package{scipy} (\url{https://www.scipy.org/}),
     \package{schwimmbad} (\citealt{Price-Whelan:2017a}),
     \package{sqlalchemy} (\url{https://www.sqlalchemy.org/}),
-    \package{thejoker} (\citealt{Price-Whelan:2017b}),
-    \package{twobody} (\todo{twobody zenodo}).
+    \package{thejoker} (\citealt{Price-Whelan:2017b}).
+    % \package{twobody} (\todo{twobody zenodo}).
 }
 
 \facility{\sdssiv, \apogee}
@@ -1265,7 +1257,7 @@ University Office of Information Technology's Research Computing department.
 \section{Hierarchical inference of the excess variance parameter}
 \label{sec:hierarch}
 
-For each $n$ of $N$ RGB stars in APOGEE, we obtain $K$ posterior samples over
+For each $n$ of $N$ RGB stars in APOGEE, we obtain $M$ posterior samples over
 primary orbital parameters $\bs{\theta} = (P, e, \omega, M_0, K, v_0)$ and the
 excess-variance parameter, $y = \ln s^2$, using \thejoker; For brevity in
 expressions below, we will use the vector
@@ -1279,7 +1271,7 @@ $\alpha_0 = (\mu_{y,0}, \sigma_{y,0})$ as described above.
 For a given source, the posterior samples in the above parameters are drawn from
 the distribution
 \begin{equation}
-    \bs{w}_k \sim p(\bs{w}_k \given D, \bs{\alpha}_0)
+    \bs{w}_m \sim p(\bs{w}_m \given D, \bs{\alpha}_0)
 \end{equation}
 where $D$ represents the data for a given object.
 
@@ -1301,11 +1293,11 @@ The per-source marginal likelihood in the above expression is given by
       p(\bs{w}_n \given D_n, \bs{\alpha}_0) \label{eq:marglike} \quad .
 \end{align}
 Using the Monte Carlo integration approximation, \eqname~\ref{eq:marglike} can
-be simplified to a sum over prior value ratios of the $K$ posterior samples in
+be simplified to a sum over prior value ratios of the $M$ posterior samples in
 the log-excess-variance parameter for each $n$ star
 \begin{equation}
-    \approx \frac{\mathcal{Z}_n}{K} \,
-      \sum_k^{K} \frac{p(y_{nk} \given \bs{\alpha})}{p(y_{nk} \given \bs{\alpha}_0)}
+    \approx \frac{\mathcal{Z}_n}{M} \,
+      \sum_m^{M} \frac{p(y_{nm} \given \bs{\alpha})}{p(y_{nm} \given \bs{\alpha}_0)}
 \end{equation}
 where we have canceled the other priors (over $\bs{\theta}$), and all
 normalization constants appear in the constant scale factor $\mathcal{Z}_n$.
@@ -1313,18 +1305,18 @@ normalization constants appear in the constant scale factor $\mathcal{Z}_n$.
 The above expresion gives the marginal likelihood of the velocity data for a single source given new hyperparameters $\bs{\alpha}$.
 The full marginal likelihood is then the product of these individual likelihoods
 \begin{align}
-    p(\{D_n\} \given \alpha) &\propto \prod_n^N \frac{1}{K} \,
-      \sum_k^{K} \frac{p(y_{nk} \given \alpha)}{p(y_{nk} \given \alpha_0)}
+    p(\{D_n\} \given \alpha) &\propto \prod_n^N \frac{1}{M} \,
+      \sum_m^{M} \frac{p(y_{nm} \given \alpha)}{p(y_{nm} \given \alpha_0)}
       \quad .
 \end{align}
 In practice, we evaluate the log-marginal-likelihood
 \begin{align}
     \ln p(\{D_n\} \given \alpha) &\propto \sum_n^N \left[
-      \ln\left( \sum_k^{K} \frac{p(y_{nk} \given \alpha)}{p(y_{nk} \given \alpha_0)} \right)
-      - \ln K\right]\label{eq:lnlike}\\
+      \ln\left( \sum_m^{M} \frac{p(y_{nm} \given \alpha)}{p(y_{nm} \given \alpha_0)} \right)
+      - \ln M\right]\label{eq:lnlike}\\
     &\propto \sum_n^N \left[
-      \underset{k}{\textrm{logsumexp}}\left[ \ln{p(y_{nk} \given \alpha)} - \ln{p(y_{nk} \given \alpha_0)} \right]
-      - \ln K\right]
+      \underset{k}{\textrm{logsumexp}}\left[ \ln{p(y_{nm} \given \alpha)} - \ln{p(y_{nm} \given \alpha_0)} \right]
+      - \ln M\right]
 \end{align}
 where $\textrm{logsumexp}$ (the log-sum-exp trick) provides a more stable
 estimate of the sum in \eqname~\ref{eq:lnlike}.
