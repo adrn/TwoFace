@@ -46,7 +46,7 @@ def max_likelihood_sample(data, samples):
     return samples[np.argmin(chisqs)]
 
 
-def MAP_sample(data, samples, joker_params):
+def MAP_sample(data, samples, joker_params, return_index=False):
     """Return the maximum a posteriori sample.
 
     Parameters
@@ -60,8 +60,12 @@ def MAP_sample(data, samples, joker_params):
 
     ln_ps = np.zeros(len(samples))
 
-    mcmc_p = model.pack_samples_mcmc(samples)        
+    mcmc_p = model.pack_samples_mcmc(samples)
     for i in range(len(samples)):
         ln_ps[i] = model.ln_posterior(mcmc_p[i])
 
-    return samples[np.argmax(ln_ps)]
+    if return_index:
+        idx = np.argmax(ln_ps)
+        return samples[idx], idx
+    else:
+        return samples[np.argmax(ln_ps)]
