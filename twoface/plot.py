@@ -87,7 +87,7 @@ def plot_data_orbits(data, samples, n_orbits=128, jitter=None,
 
     data_plot_kwargs.setdefault('zorder', 5)
     data_plot_kwargs.setdefault('elinewidth', 1)
-    
+
     plot_rv_curves(samples, t_grid, rv_unit=u.km/u.s, data=data, ax=ax,
                    n_plot=min(len(samples['P']), n_orbits),
                    plot_kwargs=plot_kwargs,
@@ -332,7 +332,8 @@ def plot_phase_fold_residual(data, sample, axes=None, label=True,
     # plot the residuals
     axes[1].errorbar(phase, residual.to(rv_unit).value,
                      data.stddev.to(rv_unit).value,
-                     linestyle='none', marker='o', color='k', markersize=5)
+                     linestyle='none', marker='o', color='k', markersize=5,
+                     zorder=10)
 
     if jitter_errorbar:
         axes[0].errorbar(phase, data.rv.to(rv_unit).value,
