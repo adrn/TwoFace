@@ -223,7 +223,6 @@ Additionally, the \apogee\ pipelines (\citealt{Garcia-Perez:2016}) and also
 and \RC\ stars.
 If there are causal relationships between chemical abundances and binary
 companions---as are expected---these should be measurable.
-
 By making cuts on this library of posterior \pdf\ samples (described in detail
 in \sectionname~\ref{sec:catalogs}), we deliver catalogs of binary-star systems
 from the \apogee\ survey, and show the bulk properties of these systems.
@@ -397,7 +396,8 @@ While other Markov Chain Monte Carlo (MCMC) methods have difficulty producing
 independent samples with such data, \thejoker\ succeeds by brute force:
 After generating an initial (very large) library of prior samples from an
 assumed prior \pdf\ (see below), the (typically multi-modal) likelihood is
-evaluated at each sample and used to rejection sample.
+evaluated at each sample and used to reject all prior samples above the
+likelihood surface (the rejection sampling step).
 In practice, given a number of requested samples for each star, the sampling
 proceeds iteratively: since it is easier to accept samples when the data is
 sparse or noisy, far more prior sample draws (and thus likelihood evaluations)
@@ -508,6 +508,10 @@ conditions and use standard MCMC to continue sampling until we obtain
 In detail, we use an ensemble MCMC sampling algorithm (\citealt{Goodman:2010})
 implemented in \python\ (\package{emcee}; \citealt{Foreman-Mackey:2013}) to
 perform the samplings.
+\package{emcee} uses an ensemble of ``walkers'' (separate Markov chains) that
+naturally adapt to the geometry of the parameter-space by generating proposal
+steps based on the locations of other walkers (i.e. the ensemble chains are not
+independent).
 We transform the standard Keplerian orbital parameters to a safer
 parametrization, $(\ln P, \sqrt{K}\,\cos (M_0 + \omega), \sqrt{K}\,\sin (M_0 +
 \omega), \sqrt{e}\,\cos \omega, \sqrt{e}\,\cos \omega, \ln s^2, v_0)$, for MCMC
