@@ -1,0 +1,35 @@
+We thank the referee for the strong affirmation of our work, and for catching the points for clarification. We have updated the text to address your points. Below is a summary of changes:
+
+
+End of subsection 3.1
+---------------------
+- We have tried to clarify this sentence by changing the text to:
+
+After generating an initial (very large) library of prior samples from an
+assumed prior PDF (see below), the (typically multi-modal) likelihood is
+evaluated at each sample and used to reject all prior samples above the
+likelihood surface (the rejection sampling step).
+
+
+End of subsubsection 3.2.1
+--------------------------
+- We have added some text to clarify the meaning of "walkers" in the context of emcee:
+
+emcee uses an ensemble of ``walkers'' (separate Markov chains) that
+naturally adapt to the geometry of the parameter-space by generating proposal
+steps based on the locations of other walkers (i.e. the ensemble chains are not
+independent).
+
+
+Capital after colon
+-------------------
+- Ah, I think you're right for the style guide used by the AAS journals. We have updated all instances!
+
+
+Other changes
+-------------
+- We fixed a typo in the MCMC parametrization: the 2nd and 3rd parameters should have read \sqrt{K}\,\cos (M_0 + \omega), \sqrt{K}\,\sin (M_0 + \omega).
+
+- We added a reference to a companion paper that explores tidal circularization in more detail: at the end of the discussion about the period-eccentricity diagram, we added the clause
+
+this result is explored in more detail in companion work (\citealt{Circularization:2018})
