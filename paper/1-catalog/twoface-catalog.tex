@@ -509,8 +509,9 @@ In detail, we use an ensemble MCMC sampling algorithm (\citealt{Goodman:2010})
 implemented in \python\ (\package{emcee}; \citealt{Foreman-Mackey:2013}) to
 perform the samplings.
 We transform the standard Keplerian orbital parameters to a safer
-parametrization, $(\ln P, \sqrt{K}\,\cos M_0, \sqrt{K}\,\sin M_0, \sqrt{e}\,\cos
-\omega, \sqrt{e}\,\cos \omega, \ln s^2, v_0)$, for MCMC sampling.
+parametrization, $(\ln P, \sqrt{K}\,\cos (M_0 + \omega), \sqrt{K}\,\sin (M_0 +
+\omega), \sqrt{e}\,\cos \omega, \sqrt{e}\,\cos \omega, \ln s^2, v_0)$, for MCMC
+sampling.
 This reparametrization is safer and more efficient for sampling with
 \package{emcee}, which expects parameters to be components of a vector so that
 linear operations can be applied (see, e.g., \citealt{Hogg:2017}); the angle
