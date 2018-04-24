@@ -199,7 +199,7 @@ We have solved the problem of deriving comprehensive multi-modal \pdf\ samplings
 previously with \thejoker\ (\citealt{Price-Whelan:2017}), a Monte Carlo
 rejection sampler that is computationally expensive but probabilistically
 righteous:
-It delivers independent posterior \pdf\ samples for single-companion binary
+it delivers independent posterior \pdf\ samples for single-companion binary
 orbital parameters, given any number of radial-velocity measurements.
 Here we use \thejoker\ to generate posterior \pdf\ samples for stars observed by
 the \apogee\ survey (see \sectionname~\ref{sec:data}; \citealt{Majewski:2017}).
@@ -227,7 +227,7 @@ By making cuts on this library of posterior \pdf\ samples (described in detail
 in \sectionname~\ref{sec:catalogs}), we deliver catalogs of binary-star systems
 from the \apogee\ survey, and show the bulk properties of these systems.
 
-Binary and multiple star systems are of great interest in astrophysics: The
+Binary and multiple star systems are of great interest in astrophysics: the
 population of stars and their companions encodes information about star
 formation processes, stellar parameters and evolution, and the dynamics of
 multi-body systems (for recent reviews, see \citealt{Duchene:2013,Moe:2017}).
@@ -370,7 +370,7 @@ posterior samples in Keplerian orbital parameters, given radial-velocity
 measurements under the assumptions listed above.
 Our parametrization of the orbital elements is similar to the notation in
 \citet{Murray:2010}:
-The radial velocity $v$ at time $t$ is given by
+the radial velocity $v$ at time $t$ is given by
 \begin{equation}
   v(t;\bs{\theta}) = v_0 + K\,[\cos\left(\omega + f(t; e, P, M_0, t_0)\right) +
     e\,\cos\omega]
@@ -394,7 +394,7 @@ number of radial-velocity measurements of a source is small, or the data are
 sparse (in phase-coverage) or noisy.
 While other Markov Chain Monte Carlo (MCMC) methods have difficulty producing
 independent samples with such data, \thejoker\ succeeds by brute force:
-After generating an initial (very large) library of prior samples from an
+after generating an initial (very large) library of prior samples from an
 assumed prior \pdf\ (see below), the (typically multi-modal) likelihood is
 evaluated at each sample and used to reject all prior samples above the
 likelihood surface (the rejection sampling step).
@@ -478,7 +478,7 @@ used.
 We request \nposterior\ posterior samples for each source.
 Depending on the data quality and phase coverage of the visits, \thejoker\ will
 require different numbers of prior samples in order to rejection-sample down to
-the requested number of posterior samples: For few-epoch or noisy RV data, many
+the requested number of posterior samples: for few-epoch or noisy RV data, many
 prior samples will pass the rejection step, whereas for very precise or
 many-epoch RV data, \thejoker\ may need to process the full library of prior
 samples.
@@ -596,7 +596,7 @@ This inference serves as a test-case for future work, where we intend to use the
 independent posterior samplings to construct a hierarchical inference over
 companion population properties.
 This is also a test of the visit velocity uncertainties reported in the \apogee\
-data products: If the catalog uncertainties are significantly underestimated, we
+data products: if the catalog uncertainties are significantly underestimated, we
 expect the inferred log-excess-variance distribution parameters to tend towards
 larger values.
 
@@ -631,7 +631,7 @@ observed multiple times and on multiple plates (\citealt{Nidever:2015}).
 
 However, there are a number of caveats to keep in mind about this estimate of
 the excess variance distribution.
-First, we do not remove triple or other multiple systems: For any individual
+First, we do not remove triple or other multiple systems: for any individual
 system, the radial velocity variations induced by other massive bodies will lead
 to larger preferred values for the excess variance parameter.
 We do not expect there to be a large number of triple systems in our sample, but
@@ -699,7 +699,7 @@ MCMC and only use the ($<$\nposterior) posterior samples returned from the
 \label{sec:catalog-confident}
 
 We do not expect a sharp transition in inferred orbital parameters between stars
-with and without companions: There is a continuum of companion properties.
+with and without companions: there is a continuum of companion properties.
 For example, the companions can be low mass, or at long periods, or at high
 inclination, all of which will make the velocity semi-amplitude, $K$, small for
 a given system.
@@ -873,7 +873,7 @@ stellar parameters.
 
 The period-eccentricity plot (upper left panel in
 \figurename~\ref{fig:logg-teff-p-e}) shows a clear signature of tidal
-circularization: Such plots for main sequence stars typically show a more
+circularization: such plots for main sequence stars typically show a more
 distinct circularization period, below which the majority of stars have
 eccentricities close to zero.
 Here, we see that close to $P\approx 10~\textrm{day}$ the majority of companion
@@ -957,7 +957,7 @@ All of these systems are consistent with being detached binaries, with the
 exception of one notable system (discussed below).
 
 In \figurename~\ref{fig:mass}, a few interesting systems are immediately
-obvious: From the left panel, two systems have bimodal period samplings in which
+obvious: from the left panel, two systems have bimodal period samplings in which
 both period modes put the minimum companion mass below the Hydrogen-burning
 limit (brown dwarf candidates), and two systems have $M_{2, \textrm{min}} > M_1$
 (neutron star or black hole candidates).
@@ -995,7 +995,7 @@ $q_{\textrm{min}}$, for the same systems and markers in left panel.
 
 Paradoxically, there appear to exist short period ($\lesssim 100~\textrm{day}$)
 companions at low surface gravities ($\logg \lesssim 1$), obvious in the
-lower-left panel of \figurename~\ref{fig:logg-teff-p-e}: These companions would
+lower-left panel of \figurename~\ref{fig:logg-teff-p-e}: these companions would
 orbit within the surface of their primary stars.
 Each of these systems appears fine from the \apogee\ data quality flags, but
 could nonetheless have incorrect stellar parameters.
@@ -1007,7 +1007,7 @@ catalog, which provides asteroseismic stellar parameters for a few hundred
 \apogee\ dwarf and giant stars.
 We therefore instead cross-match all high-$K$ stars with $\logg < 1$ and $99\%$
 of their period samples below $100~\textrm{day}$ to the \acronym{APOKASC}
-catalog: One star appears in both samples 2M19024490+4419523.
+catalog: one star appears in both samples 2M19024490+4419523.
 In \apogee\ \DR, this star has $\logg = 0.57$, but asteroseismic $\logg > 4$
 (e.g., \texttt{HUBER\_LOGG}), consistent with being an M dwarf.
 Many of these systems could therefore be low-mass dwarf stars with incorrect
@@ -1364,7 +1364,7 @@ estimate of the sum in \eqname~\ref{eq:lnlike}.
     samplings in orbital parameters.
     The other column contains the 1st percentile computed over the $\ln K$
     samples for each source, \texttt{lnK\_per\_1}:
-    The ``high-$K$'' sample (see \sectionname~\ref{sec:catalog-confident}) is
+    the ``high-$K$'' sample (see \sectionname~\ref{sec:catalog-confident}) is
     defined using this column, by selecting \texttt{lnK\_per\_1 > 0}.
     }
     \label{tbl:lnK-per}
