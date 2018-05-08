@@ -744,6 +744,8 @@ and the value of the 1st percentile over the $\ln K$ samples for each star.
 \figurename s~\ref{fig:highK-0} and \ref{fig:highK-1} show eight examples of
 high-$K$ stars, i.e. stars that likely have companions, with different numbers
 of visits, $N$, indicated on the panels.
+\tablename~\ref{tbl:highK} contains a list of all \texttt{APOGEE\_ID}'s for
+stars in the high-$K$ sample.
 \figurename s~\ref{fig:lowK-0} and \ref{fig:lowK-1} shows the same for eight
 low-$K$ stars, i.e. stars that either have no companions, low-mass companions,
 or companions at long periods or high inclination.
@@ -1372,6 +1374,28 @@ estimate of the sum in \eqname~\ref{eq:lnlike}.
     defined using this column, by selecting \texttt{lnK\_per\_1 > 0}.
     }
     \label{tbl:lnK-per}
+\end{table}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{c}
+    \multicolumn{1}{c}{\textbf{High-$K$ stars}}\\
+    \hline
+    \texttt{APOGEE\_ID}\\
+    \hline
+    2M00000222+5625359 \\
+    2M00001071+6258172 \\
+    2M00001296+5851378 \\
+    2M00003649+7948407 \\
+    2M00003987+6236456 \\
+    ... \\
+    \hline
+    \multicolumn{1}{c}{\textit{(\nhighK\ rows)}}
+    \end{tabular}
+    \caption{This table contains \texttt{APOGEE\_ID}'s for \nhighK\ stars
+    in the ``high-$K$'' sample (see \sectionname~\ref{sec:catalog-confident}).
+    }
+    \label{tbl:highK}
 \end{table}
 
 \input{tables/unimodal-schema}
